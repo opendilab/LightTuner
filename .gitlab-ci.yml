@@ -11,6 +11,43 @@ test_py_3_6_3:
   stage: test
   image: "registry.sensetime.com/xlab/python:3.6.3"
   script:
+    - python -V
+    - pip install -r requirements.txt
+    - pip install -r requirements-test.txt
+    - make unittest
+
+test_py_3_7_6:
+  stage: test
+  image: "registry.sensetime.com/xlab/python:3.7.6"
+  script:
+    - python -V
+    - pip install -r requirements.txt
+    - pip install -r requirements-test.txt
+    - make unittest
+
+test_py_3_8_1:
+  stage: test
+  image: "registry.sensetime.com/xlab/python:3.8.1"
+  script:
+    - python -V
+    - pip install -r requirements.txt
+    - pip install -r requirements-test.txt
+    - make unittest
+
+test_py_3_9_6:
+  stage: test
+  image: "registry.sensetime.com/xlab/python:3.9.6"
+  script:
+    - python -V
+    - pip install -r requirements.txt
+    - pip install -r requirements-test.txt
+    - make unittest
+
+test_py_3_10_1:
+  stage: test
+  image: "registry.sensetime.com/xlab/python:3.10.1"
+  script:
+    - python -V
     - pip install -r requirements.txt
     - pip install -r requirements-test.txt
     - make unittest
