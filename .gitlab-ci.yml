@@ -54,10 +54,17 @@ test_py_3_10_1:
 
 pages:
   stage: doc
+  services:
+    - name: registry.sensetime.com/xlab/plantuml-server:latest
+      alias: plantuml
+  variables:
+    ENV_PROD: 'true'
+    PLANTUML_HOST: http://plantuml:8080
   script:
     - pip install -r requirements.txt
     - pip install -r requirements-test.txt
     - pip install -r requirements-doc.txt
+    - plantumlcli -c
     - make pdocs
     - mv docs/build/html public
   artifacts:
