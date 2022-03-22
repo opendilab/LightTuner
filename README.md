@@ -11,7 +11,7 @@ You can simply install it with `pip` command line from the official PyPI site.
 pip install DI-toolkit
 ```
 
-For more information about installation, you can refer to [Installation]().
+For more information about installation, you can refer to [Installation](http://open-xlab.pages.gitlab.bj.sensetime.com/cell/di-toolkit/main/tutorials/installation/index.html).
 
 
 # Contributing
