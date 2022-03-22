@@ -64,6 +64,10 @@ pages:
     - pip install -r requirements.txt
     - pip install -r requirements-test.txt
     - pip install -r requirements-doc.txt
+    - git fetch --all --tags
+    - git branch -av
+    - git remote -v
+    - git tag
     - plantumlcli -c
     - make pdocs
     - mv docs/build/html public
