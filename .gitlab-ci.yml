@@ -1,0 +1,34 @@
+image: "registry.sensetime.com/xlab/python:3.6.3"
+
+variables:
+  CI: "true"
+
+stages:
+  - test
+  - doc
+
+test_py_3_6_3:
+  stage: test
+  image: "registry.sensetime.com/xlab/python:3.6.3"
+  script:
+    - pip install -r requirements.txt
+    - pip install -r requirements-test.txt
+    - make unittest
+
+pages:
+  stage: doc
+  script:
+    - pip install -r requirements.txt
+    - pip install -r requirements-test.txt
+    - pip install -r requirements-doc.txt
+    - make pdocs
+    - mv docs/build/html public
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
+    - /^dev/.*$/
+    - /^doc/.*$/
+
+
