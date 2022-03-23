@@ -1,4 +1,4 @@
-image: "registry.sensetime.com/xlab/python:3.6.3"
+image: "registry.sensetime.com/xlab/python:3.7.6"
 
 variables:
   CI: "true"
@@ -6,6 +6,8 @@ variables:
 stages:
   - test
   - doc
+  - build
+  - deploy
 
 test_py_3_6_3:
   stage: test
@@ -76,7 +78,42 @@ pages:
       - public
   only:
     - main
+    - tags
     - /^dev/.*$/
     - /^doc/.*$/
 
+build_package:
+  stage: build
+  script:
+    - pip install -r requirements.txt
+    - pip install -r requirements-build.txt
+    - make package
+    - ls -al dist/*
+  artifacts:
+    paths:
+      - dist/*
+  only:
+    - main
+    - tags
+    - /^dev/.*$/
+
+deploy_gitlab:
+  stage: deploy
+  dependencies:
+    - build_package
+  script:
+    - pip install gitlab-release
+    - gitlab-release dist/*
+  only:
+    - tags
+
+deploy_pypi:
+  stage: deploy
+  dependencies:
+    - build_package
+  script:
+    - pip install -U twine setuptools wheel
+    - twine upload -u $PYPI_USER -p $PYPI_PASS dist/*
+  only:
+    - tags
 
