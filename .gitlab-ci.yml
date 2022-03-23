@@ -86,7 +86,7 @@ build_package:
   stage: build
   script:
     - pip install -r requirements.txt
-    - pip install -r requirements-build.txt
+    - pip install -U build
     - make package
     - ls -al dist/*
   artifacts:
