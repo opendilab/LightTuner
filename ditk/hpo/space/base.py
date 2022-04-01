@@ -1,6 +1,8 @@
 from typing import Tuple, Union
 
-ALLOC_UNLIMITED = -1
+from hbutils.design import SingletonMark
+
+ALLOC_UNLIMITED = SingletonMark('HPO_ALLOC_UNLIMITED')
 
 
 class BaseSpace:

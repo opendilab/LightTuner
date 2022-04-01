@@ -75,7 +75,7 @@ class SeparateSpace(BaseSpace):
         return tuple(map(lambda x: x * self.__step + self.__start, self._alloc_unit(cnt)))
 
     def _alloc_unit(self, cnt: int = ALLOC_UNLIMITED):
-        if cnt == ALLOC_UNLIMITED:
+        if cnt is ALLOC_UNLIMITED:
             return range(self.__l, self.__r + 1)
         elif cnt == 0:
             return ()

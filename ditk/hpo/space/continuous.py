@@ -65,7 +65,7 @@ class ContinuousSpace(BaseSpace):
             >>> space.allocate(11)
             (0.4, 0.58, 0.76, 0.94, 1.12, 1.3, 1.48, 1.66, 1.84, 2.02, 2.2)
         """
-        if cnt == ALLOC_UNLIMITED:
+        if cnt is ALLOC_UNLIMITED:
             return self.allocate(DEFAULT_COUNT)
         elif cnt == 0:
             return ()
