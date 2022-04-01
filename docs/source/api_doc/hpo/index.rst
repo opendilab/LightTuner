@@ -10,6 +10,7 @@ ditk.hpo
     :maxdepth: 3
 
     utils/index
+    value/index
     space
 
 
