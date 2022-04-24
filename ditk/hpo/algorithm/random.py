@@ -1,13 +1,15 @@
 import random
+from itertools import cycle
 from typing import Iterator
 
+from .base import BaseAlgorithm
 from ..space import SeparateSpace, ContinuousSpace, FixedSpace, BaseSpace
 from ..value import HyperValue, struct_values
 
 
-class RandomAlgorithm:
-    def __init__(self, steps):
-        self.__steps = steps
+class RandomAlgorithm(BaseAlgorithm):
+    def __init__(self, max_steps):
+        BaseAlgorithm.__init__(self, max_steps)
 
     @classmethod
     def _random_space_value(cls, space: BaseSpace):
@@ -27,5 +29,6 @@ class RandomAlgorithm:
 
     def iter_config(self, vs) -> Iterator[object]:
         sfunc, svalues = struct_values(vs)
-        for i in range(self.__steps):
+        iter_obj = cycle([0]) if self.max_steps is None else range(self.max_steps)
+        for i in iter_obj:
             yield sfunc(*map(self._random_hyper_value, svalues))
