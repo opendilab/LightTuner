@@ -17,7 +17,7 @@ class SeparateSpace(BaseSpace):
         :param step: Step interval.
         """
         self.__l = 0
-        self.__r = int((end - start) // step)
+        self.__r = int((end - start) / step)
 
         self.__start = float((self.__l * step) + start)
         self.__end = float((self.__r * step) + start)

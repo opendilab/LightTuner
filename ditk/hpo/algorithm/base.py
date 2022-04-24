@@ -1,4 +1,7 @@
-from typing import Callable, Type, Iterator, Optional
+from typing import Callable, Type, Iterator, Optional, Tuple
+
+from .result import _to_model
+from ..value import HyperValue, struct_values
 
 
 class BaseAlgorithm:
@@ -11,17 +14,24 @@ class BaseAlgorithm:
     def max_steps(self) -> Optional[int]:
         return self.__max_steps
 
-    def iter_config(self, vs) -> Iterator[object]:
+    def _iter_spaces(self, vsp: Tuple[HyperValue, ...]) -> Iterator[Tuple[object, ...]]:
         raise NotImplementedError  # pragma: no cover
+
+    def iter_config(self, vs) -> Iterator[object]:
+        sfunc, svalues = struct_values(vs)
+        for vargs in self._iter_spaces(svalues):
+            yield sfunc(*vargs)
 
 
 class SearchRunner:
     def __init__(self, algo_cls: Type[BaseAlgorithm], func):
+        self.__func = func
         self.__config = {
             'max_steps': None,
         }
-        self.__algo_cls = algo_cls
-        self.__func = func
+        self.__algorithm_cls = algo_cls
+        self.__end_condition = None
+        self.__spaces = None
 
     def __getattr__(self, item) -> Callable[[object, ], 'SearchRunner']:
         def _get_config_value(v) -> SearchRunner:
@@ -34,18 +44,41 @@ class SearchRunner:
         self.__config['max_steps'] = n
         return self
 
+    def stop_when(self, end_condition) -> 'SearchRunner':
+        if callable(end_condition):
+            if self.__end_condition is None:
+                self.__end_condition = _to_model(end_condition)
+            else:
+                self.__end_condition = self.__end_condition | _to_model(end_condition)
+            return self
+        else:
+            raise ValueError(f'Not a callable object - {repr(end_condition)}.')
+
+    def never_stop(self) -> 'SearchRunner':
+        self.__end_condition = None
+        return self
+
     @property
     def _max_steps(self) -> Optional[int]:
         return self.__config['max_steps']
 
-    def _iter_config(self, vs):
-        return self.__algo_cls(**self.__config).iter_config(vs)
+    def _iter_config(self):
+        return self.__algorithm_cls(**self.__config).iter_config(self.__spaces)
 
     def _ret_can_end(self, retval):
-        return False
+        if self.__end_condition is not None:
+            return not not self.__end_condition(retval)
+        else:
+            return False
 
-    def iter_func(self, vs):
-        for step, cfg in enumerate(self._iter_config(vs), start=1):
+    def spaces(self, vs) -> 'SearchRunner':
+        self.__spaces = vs
+        return self
+
+    def run(self):
+        for step, cfg in enumerate(self._iter_config(), start=1):
             retval = self.__func(cfg)
             if self._max_steps is not None and step >= self._max_steps:
                 return  # max step is reached
+            if self._ret_can_end(retval):
+                return  # condition is meet

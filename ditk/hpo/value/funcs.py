@@ -12,7 +12,4 @@ def quniform(start, end, step):
 
 def choice(chs):
     mapping = list(chs)
-    cnt = len(mapping)
-    return HyperValue(FixedSpace(cnt), [
-        mapping.__getitem__,
-    ])
+    return HyperValue(FixedSpace(len(mapping))) >> (lambda x: mapping[x])

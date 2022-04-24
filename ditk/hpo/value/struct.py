@@ -1,5 +1,6 @@
 from itertools import chain
 from operator import itemgetter
+from typing import Tuple, Callable
 
 from .value import HyperValue
 
@@ -10,6 +11,7 @@ def _raw_struct_values(vs):
         for key, value in sorted(vs.items()):
             vkeys.append(key)
             vvalues.append(_raw_struct_values(value))
+
 
         type_ = type(vs)
 
@@ -41,6 +43,6 @@ def _raw_struct_values(vs):
         return (lambda: vs), iter([]), 0
 
 
-def struct_values(vs):
+def struct_values(vs) -> Tuple[Callable, Tuple[HyperValue, ...]]:
     func, iitems, _ = _raw_struct_values(vs)
     return func, tuple(iitems)
