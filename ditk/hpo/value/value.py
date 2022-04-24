@@ -1,9 +1,8 @@
 from functools import partial
 from operator import __neg__, __pos__
 from types import FunctionType, BuiltinFunctionType, MethodType, BuiltinMethodType, LambdaType
-from typing import Tuple, Union
 
-from ..space import BaseSpace, ALLOC_UNLIMITED
+from ..space import BaseSpace
 
 try:
     from types import MethodWrapperType, MethodDescriptorType, ClassMethodDescriptorType, WrapperDescriptorType
@@ -30,14 +29,11 @@ class HyperValue:
     def space(self) -> BaseSpace:
         return self.__space
 
-    def _proc(self, x):
+    def trans(self, x):
         v = x
         for func in self.__funcs:
             v = func(v)
         return v
-
-    def allocate(self, cnt: int = ALLOC_UNLIMITED) -> Tuple[Union[int, float], ...]:
-        return tuple(map(self._proc, self.__space.allocate(cnt)))
 
     def _then(self, f):
         return self.__class__(self.__space, (*self.__funcs, f))

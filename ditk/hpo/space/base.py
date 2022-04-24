@@ -1,8 +1,4 @@
-from typing import Tuple, Union
-
-from hbutils.design import SingletonMark
-
-ALLOC_UNLIMITED = SingletonMark('HPO_ALLOC_UNLIMITED')
+from typing import Union, Optional
 
 
 class BaseSpace:
@@ -13,34 +9,17 @@ class BaseSpace:
         .. warning::
             This is an abstract class, do not use.
     """
-    __priority__ = 0
 
     @property
-    def lbound(self):
-        """
-        Left bound.
-        """
-        raise NotImplementedError  # pragma: no cover
-
-    @property
-    def rbound(self):
-        """
-        Right bound.
-        """
-        raise NotImplementedError  # pragma: no cover
-
-    @property
-    def length(self):
+    def length(self) -> Union[int, float]:
         """
         Length of space.
         """
-        return self.rbound - self.lbound
+        raise NotImplementedError  # pragma: no cover
 
-    def allocate(self, cnt: int = ALLOC_UNLIMITED) -> Tuple[Union[int, float], ...]:
+    @property
+    def count(self) -> Optional[int]:
         """
-        Allocate the values in space with the given count ``cnt``.
-
-        :param cnt: Count of values.
-        :return: Tuple of values.
+        Count of elements in space.
         """
         raise NotImplementedError  # pragma: no cover
