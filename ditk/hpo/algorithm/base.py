@@ -16,7 +16,7 @@ class OptimizeDirection(IntEnum):
 
 
 class BaseAlgorithm:
-    def __init__(self, max_steps: Optional[int], allow_unlimited_steps: bool = False,
+    def __init__(self, max_steps: Optional[int] = None, allow_unlimited_steps: bool = True,
                  opt_direction=OptimizeDirection.NOTHING, allow_nothing_direction: bool = True):
         self.__max_steps = max_steps
         if not allow_unlimited_steps and self.__max_steps is None:

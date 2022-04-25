@@ -1,5 +1,4 @@
 import random
-from itertools import cycle
 from typing import Iterator, Tuple
 
 from .base import BaseAlgorithm
@@ -20,15 +19,15 @@ def random_space_value(space: BaseSpace):
 
 
 class RandomAlgorithm(BaseAlgorithm):
-    def __init__(self, max_steps, **kwargs):
-        BaseAlgorithm.__init__(self, max_steps, True)
+    # noinspection PyUnusedLocal
+    def __init__(self, **kwargs):
+        BaseAlgorithm.__init__(self)
 
     @classmethod
     def _random_hyper_value(cls, hv: HyperValue):
         return hv.trans(random_space_value(hv.space))
 
     def _iter_spaces(self, vsp: Tuple[HyperValue, ...], pres: ValueProxyLock) -> Iterator[Tuple[object, ...]]:
-        iter_obj = cycle([0]) if self.max_steps is None else range(self.max_steps)
-        for _ in iter_obj:
+        while True:
             yield tuple(map(self._random_hyper_value, vsp))
             _ = pres.get()
