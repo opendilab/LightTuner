@@ -68,7 +68,7 @@ class TestHpoAlgorithmRandom:
         }).run()
 
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
-        assert res['result'] >= 58
+        assert res['result'] >= 56
 
     def test_random_minimize(self):
         visited, func = get_hpo_func()

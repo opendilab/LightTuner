@@ -4,6 +4,7 @@ from typing import Callable, Type, Optional, Tuple
 
 from .base import BaseAlgorithm
 from .result import _to_model
+from ..utils import ValueProxyLock
 
 
 class SearchRunner:
@@ -71,14 +72,23 @@ class SearchRunner:
         else:
             return True
 
+    def _get_result_value(self, res):
+        if self.__order_condition is not None:
+            conf, _ = self.__order_condition
+            return conf(res)
+        else:
+            return res
+
     def run(self) -> Optional[Tuple[object, object]]:
-        iter_obj = self.self.__algorithm_cls(**self.__config).iter_config(self.__spaces)
+        proxy_lock = ValueProxyLock()
+        iter_obj = self.__algorithm_cls(**self.__config).iter_config(self.__spaces, proxy_lock)
         if self._max_steps is not None:
             iter_obj = islice(iter_obj, self._max_steps)
 
         current_result = None
         for cfg in iter_obj:
             retval = self.__func(cfg)
+            proxy_lock.put(self._get_result_value(retval))
             if current_result is None or self._is_result_greater(current_result[1], retval):
                 current_result = (cfg, retval)
 

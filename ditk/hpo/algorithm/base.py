@@ -1,5 +1,6 @@
 from typing import Iterator, Optional, Tuple
 
+from ..utils import ValueProxyLock
 from ..value import HyperValue, struct_values
 
 
@@ -13,10 +14,10 @@ class BaseAlgorithm:
     def max_steps(self) -> Optional[int]:
         return self.__max_steps
 
-    def _iter_spaces(self, vsp: Tuple[HyperValue, ...]) -> Iterator[Tuple[object, ...]]:
+    def _iter_spaces(self, vsp: Tuple[HyperValue, ...], pres: ValueProxyLock) -> Iterator[Tuple[object, ...]]:
         raise NotImplementedError  # pragma: no cover
 
-    def iter_config(self, vs) -> Iterator[object]:
+    def iter_config(self, vs, pres: ValueProxyLock) -> Iterator[object]:
         sfunc, svalues = struct_values(vs)
-        for vargs in self._iter_spaces(svalues):
+        for vargs in self._iter_spaces(svalues, pres):
             yield sfunc(*vargs)

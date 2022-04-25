@@ -4,6 +4,7 @@ from hbutils.reflection import nested_for
 
 from .base import BaseAlgorithm
 from ..space import ContinuousSpace, SeparateSpace, FixedSpace
+from ..utils import ValueProxyLock
 from ..value import HyperValue
 
 
@@ -35,7 +36,7 @@ class GridAlgorithm(BaseAlgorithm):
     def __init__(self, max_steps):
         BaseAlgorithm.__init__(self, max_steps, allow_unlimited_steps=False)
 
-    def _iter_spaces(self, vsp: Tuple[HyperValue, ...]) -> Iterator[Tuple[object, ...]]:
+    def _iter_spaces(self, vsp: Tuple[HyperValue, ...], pres: ValueProxyLock) -> Iterator[Tuple[object, ...]]:
         alloc_n, remain_n = 0, self.max_steps * 1.0
         for vitem in vsp:
             space = vitem.space
@@ -65,3 +66,4 @@ class GridAlgorithm(BaseAlgorithm):
         final_alloc = map(lambda x: tuple(x[0].trans(vx) for vx in x[1]), zip(vsp, dim_alloc))
         for tpl in nested_for(*final_alloc):
             yield tuple(tpl)
+            _ = pres.get()
