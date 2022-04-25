@@ -33,8 +33,8 @@ def allocate_fixed(space: FixedSpace) -> Tuple[int, ...]:
 
 
 class GridAlgorithm(BaseAlgorithm):
-    def __init__(self, max_steps):
-        BaseAlgorithm.__init__(self, max_steps, allow_unlimited_steps=False)
+    def __init__(self, max_steps, **kwargs):
+        BaseAlgorithm.__init__(self, max_steps, False)
 
     def _iter_spaces(self, vsp: Tuple[HyperValue, ...], pres: ValueProxyLock) -> Iterator[Tuple[object, ...]]:
         alloc_n, remain_n = 0, self.max_steps * 1.0

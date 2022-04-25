@@ -12,6 +12,7 @@ class SearchRunner:
         self.__func = func
         self.__config = {
             'max_steps': None,
+            'opt_direction': 'nothing',
         }
         self.__algorithm_cls = algo_cls
         self.__end_condition = None
@@ -40,6 +41,7 @@ class SearchRunner:
     def maximize(self, condition):
         if self.__order_condition is None:
             self.__order_condition = (_to_model(condition), __gt__)
+            self.__config['opt_direction'] = 'maximize'
             return self
         else:
             raise SyntaxError('Maximize or minimize condition should be assigned more than once.')
@@ -47,6 +49,7 @@ class SearchRunner:
     def minimize(self, condition):
         if self.__order_condition is None:
             self.__order_condition = (_to_model(condition), __lt__)
+            self.__config['opt_direction'] = 'minimize'
             return self
         else:
             raise SyntaxError('Maximize or minimize condition should be assigned more than once.')

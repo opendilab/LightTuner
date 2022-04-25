@@ -20,8 +20,8 @@ def random_space_value(space: BaseSpace):
 
 
 class RandomAlgorithm(BaseAlgorithm):
-    def __init__(self, max_steps):
-        BaseAlgorithm.__init__(self, max_steps, allow_unlimited_steps=True)
+    def __init__(self, max_steps, **kwargs):
+        BaseAlgorithm.__init__(self, max_steps, True)
 
     @classmethod
     def _random_hyper_value(cls, hv: HyperValue):
