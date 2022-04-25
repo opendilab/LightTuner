@@ -11,7 +11,7 @@ def _random_space_value(space: BaseSpace):
     if isinstance(space, SeparateSpace):
         return random.randint(0, space.count - 1) * space.step + space.start
     elif isinstance(space, ContinuousSpace):
-        return random.random() * (space.rbound - space.lbound) + space.lbound
+        return random.random() * (space.ubound - space.lbound) + space.lbound
     elif isinstance(space, FixedSpace):
         return random.randint(0, space.count - 1)
     else:

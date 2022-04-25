@@ -7,27 +7,27 @@ class ContinuousSpace(BaseSpace):
         Continuous space.
     """
 
-    def __init__(self, l, r):
+    def __init__(self, lower, upper):
         """
         Constructor of :class:`ContinuousSpace`.
 
-        :param l: Left bound.
-        :param r: Right bound.
+        :param lower: Left bound.
+        :param upper: Right bound.
         """
-        self.__l = float(l)
-        self.__r = float(r)
+        self.__lower = float(lower)
+        self.__upper = float(upper)
 
     @property
     def lbound(self) -> float:
-        return self.__l
+        return self.__lower
 
     @property
-    def rbound(self) -> float:
-        return self.__r
+    def ubound(self) -> float:
+        return self.__upper
 
     @property
     def length(self) -> float:
-        return self.__r - self.__l
+        return self.__upper - self.__lower
 
     @property
     def count(self):

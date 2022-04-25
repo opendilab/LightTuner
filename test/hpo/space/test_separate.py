@@ -4,7 +4,7 @@ from ditk.hpo.space import SeparateSpace
 
 
 @pytest.mark.unittest
-class TestHpoSeparateFixed:
+class TestHpoSpaceSeparate:
     def test_separate_space(self):
         space = SeparateSpace(0.4, 2.2, 0.4)
         assert space.start == pytest.approx(0.4)

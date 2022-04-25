@@ -9,9 +9,9 @@ from ..value import HyperValue
 
 def _allocate_continuous(space: ContinuousSpace, n: int) -> Tuple[float, ...]:
     if n == 1:
-        return ((space.lbound + space.rbound) / 2,)
+        return ((space.lbound + space.ubound) / 2,)
     else:
-        return tuple(map(lambda x: (x / (n - 1)) * (space.rbound - space.lbound) + space.lbound, range(n)))
+        return tuple(map(lambda x: (x / (n - 1)) * (space.ubound - space.lbound) + space.lbound, range(n)))
 
 
 def _allocate_separate(space: SeparateSpace, cnt: int) -> Tuple[float, ...]:
@@ -48,6 +48,8 @@ class GridAlgorithm(BaseAlgorithm):
             space = vitem.space
             if isinstance(space, (ContinuousSpace, SeparateSpace)):
                 alloc_length = int(max(round(space.length * remain_n ** (1 / alloc_n)), 1))
+                if space.count is not None:
+                    alloc_length = min(alloc_length, space.count)
                 if isinstance(space, ContinuousSpace):
                     dim_alloc.append(_allocate_continuous(space, alloc_length))
                 else:

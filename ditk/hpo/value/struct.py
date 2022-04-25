@@ -11,8 +11,6 @@ def _raw_struct_values(vs):
         for key, value in sorted(vs.items()):
             vkeys.append(key)
             vvalues.append(_raw_struct_values(value))
-
-
         type_ = type(vs)
 
         def _process_dict(*x):
