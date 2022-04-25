@@ -54,9 +54,6 @@ class SearchRunner:
     def _max_steps(self) -> Optional[int]:
         return self.__config['max_steps']
 
-    def _iter_config(self):
-        return self.__algorithm_cls(**self.__config).iter_config(self.__spaces)
-
     def _is_result_okay(self, retval):
         if self.__end_condition is not None:
             return not not self.__end_condition(retval)
@@ -75,12 +72,12 @@ class SearchRunner:
             return True
 
     def run(self) -> Optional[Tuple[object, object]]:
-        iter_obj = enumerate(self._iter_config(), start=1)
+        iter_obj = self.self.__algorithm_cls(**self.__config).iter_config(self.__spaces)
         if self._max_steps is not None:
             iter_obj = islice(iter_obj, self._max_steps)
 
         current_result = None
-        for step, cfg in iter_obj:
+        for cfg in iter_obj:
             retval = self.__func(cfg)
             if current_result is None or self._is_result_greater(current_result[1], retval):
                 current_result = (cfg, retval)
