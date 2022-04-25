@@ -1,8 +1,9 @@
 from typing import Type
 
-from .base import SearchRunner, BaseAlgorithm
+from .base import BaseAlgorithm
 from .grid import GridAlgorithm
 from .random import RandomAlgorithm
+from .runner import SearchRunner
 
 
 class HpoFunc:
@@ -26,4 +27,7 @@ class HpoFunc:
 
 
 def hpo(func) -> HpoFunc:
-    return HpoFunc(func)
+    if isinstance(func, HpoFunc):
+        return func
+    else:
+        return HpoFunc(func)

@@ -15,7 +15,7 @@ def random_space_value(space: BaseSpace):
     elif isinstance(space, FixedSpace):
         return random.randint(0, space.count - 1)
     else:
-        raise TypeError(f'Unknown space type - {repr(space)}.')
+        raise TypeError(f'Unknown space type - {repr(space)}.')  # pragma: no cover
 
 
 class RandomAlgorithm(BaseAlgorithm):
