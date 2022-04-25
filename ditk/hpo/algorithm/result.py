@@ -31,10 +31,10 @@ def _funclize(func):
 
 class ResultCheckModel:
     def __init__(self, func):
-        self.__func = func
+        self._func = func
 
     def __call__(self, x):
-        return self.__func(x)
+        return self._func(x)
 
     @classmethod
     def _method(cls, mth, *args, **kwargs) -> 'ResultCheckModel':

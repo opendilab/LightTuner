@@ -1,4 +1,6 @@
-from typing import Callable, Type, Optional
+from itertools import islice
+from operator import __gt__, __lt__
+from typing import Callable, Type, Optional, Tuple
 
 from .base import BaseAlgorithm
 from .result import _to_model
@@ -12,6 +14,7 @@ class SearchRunner:
         }
         self.__algorithm_cls = algo_cls
         self.__end_condition = None
+        self.__order_condition = None
         self.__spaces = None
 
     def __getattr__(self, item) -> Callable[[object, ], 'SearchRunner']:
@@ -33,9 +36,19 @@ class SearchRunner:
 
         return self
 
-    def never_stop(self) -> 'SearchRunner':
-        self.__end_condition = None
-        return self
+    def maximize(self, condition):
+        if self.__order_condition is None:
+            self.__order_condition = (_to_model(condition), __gt__)
+            return self
+        else:
+            raise SyntaxError('Maximize or minimize condition should be assigned more than once.')
+
+    def minimize(self, condition):
+        if self.__order_condition is None:
+            self.__order_condition = (_to_model(condition), __lt__)
+            return self
+        else:
+            raise SyntaxError('Maximize or minimize condition should be assigned more than once.')
 
     @property
     def _max_steps(self) -> Optional[int]:
@@ -44,7 +57,7 @@ class SearchRunner:
     def _iter_config(self):
         return self.__algorithm_cls(**self.__config).iter_config(self.__spaces)
 
-    def _ret_can_end(self, retval):
+    def _is_result_okay(self, retval):
         if self.__end_condition is not None:
             return not not self.__end_condition(retval)
         else:
@@ -54,10 +67,25 @@ class SearchRunner:
         self.__spaces = vs
         return self
 
-    def run(self):
-        for step, cfg in enumerate(self._iter_config(), start=1):
+    def _is_result_greater(self, origin, newres):
+        if self.__order_condition is not None:
+            cond, cmp = self.__order_condition
+            return cmp(cond(newres), cond(origin))
+        else:
+            return True
+
+    def run(self) -> Optional[Tuple[object, object]]:
+        iter_obj = enumerate(self._iter_config(), start=1)
+        if self._max_steps is not None:
+            iter_obj = islice(iter_obj, self._max_steps)
+
+        current_result = None
+        for step, cfg in iter_obj:
             retval = self.__func(cfg)
-            if self._max_steps is not None and step >= self._max_steps:
-                return  # max step is reached
-            if self._ret_can_end(retval):
-                return  # condition is meet
+            if current_result is None or self._is_result_greater(current_result[1], retval):
+                current_result = (cfg, retval)
+
+            if self._is_result_okay(retval):
+                break
+
+        return current_result  # max step is reached

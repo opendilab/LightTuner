@@ -1,6 +1,6 @@
 import pytest
 
-from ditk.hpo import hpo
+from ditk.hpo import hpo, R
 from ditk.hpo.algorithm.hpo import HpoFunc
 from .base import get_hpo_func
 
@@ -13,3 +13,17 @@ class TestHpoAlgorithmHpo:
         assert isinstance(opt, HpoFunc)
         assert repr(opt).startswith('<HpoFunc of <function get_hpo_func.<locals>.opt at')
         assert hpo(opt) is opt
+
+    def test_max_min_syntax(self):
+        visited, func = get_hpo_func()
+        with pytest.raises(SyntaxError):
+            func.random() \
+                .max_steps(1000) \
+                .minimize(R['result']) \
+                .minimize(R['result'])
+
+        with pytest.raises(SyntaxError):
+            func.random() \
+                .max_steps(1000) \
+                .minimize(R['result']) \
+                .maximize(R['result'])
