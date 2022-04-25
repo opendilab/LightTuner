@@ -1,11 +1,13 @@
 from functools import wraps
 from operator import eq, lt, le, ne, gt, ge, getitem
 
+from ..utils import is_function
+
 
 def _to_model(v):
     if isinstance(v, ResultCheckModel):
         return v
-    elif callable(v):
+    elif is_function(v):
         return ResultCheckModel(v)
     else:
         return ResultCheckModel(lambda x: v)

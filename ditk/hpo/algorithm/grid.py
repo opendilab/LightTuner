@@ -7,27 +7,27 @@ from ..space import ContinuousSpace, SeparateSpace, FixedSpace
 from ..value import HyperValue
 
 
-def _allocate_continuous(space: ContinuousSpace, n: int) -> Tuple[float, ...]:
+def allocate_continuous(space: ContinuousSpace, n: int) -> Tuple[float, ...]:
     if n == 1:
         return ((space.lbound + space.ubound) / 2,)
     else:
         return tuple(map(lambda x: (x / (n - 1)) * (space.ubound - space.lbound) + space.lbound, range(n)))
 
 
-def _allocate_separate(space: SeparateSpace, cnt: int) -> Tuple[float, ...]:
+def allocate_separate(space: SeparateSpace, cnt: int) -> Tuple[float, ...]:
     def _postprocess(i_):
         return i_ * space.step + space.start
 
     if cnt == 1:
         return (_postprocess((space.count - 1) // 2),)
     elif cnt > space.count:
-        return _allocate_separate(space, space.count)
+        return allocate_separate(space, space.count)
     else:
         unit = (space.count - 1) * 1.0 / (cnt - 1)
         return tuple(map(lambda x: _postprocess(round(x * unit)), range(cnt)))
 
 
-def _allocate_fixed(space: FixedSpace) -> Tuple[int, ...]:
+def allocate_fixed(space: FixedSpace) -> Tuple[int, ...]:
     return tuple(range(space.count))
 
 
@@ -51,14 +51,14 @@ class GridAlgorithm(BaseAlgorithm):
                 if space.count is not None:
                     alloc_length = min(alloc_length, space.count)
                 if isinstance(space, ContinuousSpace):
-                    dim_alloc.append(_allocate_continuous(space, alloc_length))
+                    dim_alloc.append(allocate_continuous(space, alloc_length))
                 else:
-                    dim_alloc.append(_allocate_separate(space, alloc_length))
+                    dim_alloc.append(allocate_separate(space, alloc_length))
 
                 alloc_n -= 1
                 remain_n /= alloc_length / space.length
             elif isinstance(space, FixedSpace):
-                dim_alloc.append(_allocate_fixed(space))
+                dim_alloc.append(allocate_fixed(space))
             else:
                 raise TypeError(f'Unknown space type - {repr(space)}.')
 

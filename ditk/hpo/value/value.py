@@ -1,23 +1,6 @@
-from functools import partial
 from operator import __neg__, __pos__
-from types import FunctionType, BuiltinFunctionType, MethodType, BuiltinMethodType, LambdaType
 
 from ..space import BaseSpace
-
-try:
-    from types import MethodWrapperType, MethodDescriptorType, ClassMethodDescriptorType, WrapperDescriptorType
-except ImportError:
-    WrapperDescriptorType = type(object.__init__)
-    MethodWrapperType = type(object().__str__)
-    MethodDescriptorType = type(str.join)
-    ClassMethodDescriptorType = type(dict.__dict__['fromkeys'])
-
-_FUNC_TYPES = (
-    FunctionType, BuiltinFunctionType, LambdaType,
-    MethodType, BuiltinMethodType, MethodWrapperType,
-    MethodDescriptorType, ClassMethodDescriptorType, WrapperDescriptorType,
-    partial, type,
-)
 
 
 class HyperValue:

@@ -21,6 +21,9 @@ class HpoFunc:
     def grid(self) -> 'SearchRunner':
         return self._search(GridAlgorithm)
 
+    def __repr__(self):
+        return f'<{type(self).__name__} of {repr(self.__func)}>'
+
 
 def hpo(func) -> HpoFunc:
     return HpoFunc(func)

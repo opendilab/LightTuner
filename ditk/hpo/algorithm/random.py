@@ -7,7 +7,7 @@ from ..space import SeparateSpace, ContinuousSpace, FixedSpace, BaseSpace
 from ..value import HyperValue
 
 
-def _random_space_value(space: BaseSpace):
+def random_space_value(space: BaseSpace):
     if isinstance(space, SeparateSpace):
         return random.randint(0, space.count - 1) * space.step + space.start
     elif isinstance(space, ContinuousSpace):
@@ -24,7 +24,7 @@ class RandomAlgorithm(BaseAlgorithm):
 
     @classmethod
     def _random_hyper_value(cls, hv: HyperValue):
-        return hv.trans(_random_space_value(hv.space))
+        return hv.trans(random_space_value(hv.space))
 
     def _iter_spaces(self, vsp: Tuple[HyperValue, ...]) -> Iterator[Tuple[object, ...]]:
         iter_obj = cycle([0]) if self.max_steps is None else range(self.max_steps)
