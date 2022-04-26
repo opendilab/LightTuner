@@ -3,7 +3,7 @@ import os
 
 
 def sblock(s: str) -> str:
-    n = len(s)
+    n = len(s.splitlines())
     nl = len(str(n))
     with io.StringIO() as sf:
         for lineno, line in enumerate(s.splitlines(), start=1):
