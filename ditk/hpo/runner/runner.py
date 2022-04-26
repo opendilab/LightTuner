@@ -38,12 +38,11 @@ class SearchRunner:
             'max_steps': None,
             'opt_direction': None,
         }
-        self.__algorithm_cls = algo_cls
-        self.__end_condition = None
-        self.__order_condition = None
-        self.__rank_cnt = 5
-        self.__rank_list = []
-        self.__spaces = None
+        self.__algorithm_cls = algo_cls  # algorithm class
+        self.__stop_condition = None  # end condition, determine when to stop
+        self.__order_condition = None  # order condition, determine which is the best
+        self.__rank_capacity = 5  # rank list capacity
+        self.__spaces = None  # space for searching
 
     def __getattr__(self, item) -> Callable[[object, ], 'SearchRunner']:
         def _get_config_value(v) -> SearchRunner:
@@ -56,11 +55,11 @@ class SearchRunner:
         self.__config['max_steps'] = n
         return self
 
-    def stop_when(self, end_condition) -> 'SearchRunner':
-        if self.__end_condition is None:
-            self.__end_condition = _to_model(end_condition)
+    def stop_when(self, condition) -> 'SearchRunner':
+        if self.__stop_condition is None:
+            self.__stop_condition = _to_model(condition)
         else:
-            self.__end_condition = self.__end_condition | _to_model(end_condition)
+            self.__stop_condition = self.__stop_condition | _to_model(condition)
 
         return self
 
@@ -82,7 +81,7 @@ class SearchRunner:
 
     def rank(self, n) -> 'SearchRunner':
         if n >= 1:
-            self.__rank_cnt = n
+            self.__rank_capacity = n
             return self
         else:
             raise ValueError(f'Invalid rank list capacity - {repr(n)}.')
@@ -93,8 +92,8 @@ class SearchRunner:
         return self.__config['max_steps']
 
     def _is_result_okay(self, retval):
-        if self.__end_condition is not None:
-            return not not self.__end_condition(retval)
+        if self.__stop_condition is not None:
+            return not not self.__stop_condition(retval)
         else:
             return False
 
@@ -162,7 +161,7 @@ class SearchRunner:
                 ranklist.append((cur_istep, cur_cfg, full_result))
             else:
                 ranklist = ranklist[:ins_pos] + [(cur_istep, cur_cfg, full_result)] + ranklist[ins_pos:]
-            ranklist = ranklist[:self.__rank_cnt]
+            ranklist = ranklist[:self.__rank_capacity]
             table_str = tabulate(
                 [
                     [
@@ -176,10 +175,11 @@ class SearchRunner:
                     'result'
                 ], tablefmt='psql'
             )
-            logger.info(f"Current ranklist ({plural_word(self.__rank_cnt, 'record')} will be shown):{os.linesep}"
+            logger.info(f"Current ranklist ({plural_word(self.__rank_capacity, 'record')} will be shown):{os.linesep}"
                         f"{table_str}")
 
             if self._is_result_okay(full_result):
+                logger.info('Stop condition is meet, search will be ended...')
                 break
 
         if ranklist:
