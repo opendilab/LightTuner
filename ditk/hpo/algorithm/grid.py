@@ -1,9 +1,9 @@
-from typing import Tuple, Iterator
+from typing import Tuple, Iterator, Dict, Type, List, Union
 
 from hbutils.reflection import nested_for
 
 from .base import BaseAlgorithm
-from ..space import ContinuousSpace, SeparateSpace, FixedSpace
+from ..space import ContinuousSpace, SeparateSpace, FixedSpace, BaseSpace
 from ..utils import ValueProxyLock
 from ..value import HyperValue
 
@@ -32,6 +32,13 @@ def allocate_fixed(space: FixedSpace) -> Tuple[int, ...]:
     return tuple(range(space.count))
 
 
+_ORDER_DICT: Dict[Type[BaseSpace], int] = {
+    FixedSpace: 1,
+    SeparateSpace: 2,
+    ContinuousSpace: 3,
+}
+
+
 class GridAlgorithm(BaseAlgorithm):
     # noinspection PyUnusedLocal
     def __init__(self, max_steps, **kwargs):
@@ -41,15 +48,19 @@ class GridAlgorithm(BaseAlgorithm):
         self.__alloc_count = max_steps
 
     def _iter_spaces(self, vsp: Tuple[HyperValue, ...], pres: ValueProxyLock) -> Iterator[Tuple[object, ...]]:
+        ordered = sorted([(_ORDER_DICT[type(sp.space)], i, sp) for i, sp in enumerate(vsp)])
+        ovsp: Tuple[HyperValue, ...] = tuple(sp for _, _, sp in ordered)
+        oord: Tuple[int, ...] = tuple(i for _, i, _ in ordered)
+
         alloc_n, remain_n = 0, self.__alloc_count * 1.0
-        for vitem in vsp:
+        for vitem in ovsp:
             space = vitem.space
             if isinstance(space, (ContinuousSpace, SeparateSpace)):
                 alloc_n += 1
             remain_n /= space.length
 
-        dim_alloc = []
-        for vitem in vsp:
+        dim_alloc: List[Tuple[Union[int, float], ...]] = []
+        for vitem in ovsp:
             space = vitem.space
             if isinstance(space, (ContinuousSpace, SeparateSpace)):
                 alloc_length = int(max(round(space.length * remain_n ** (1 / alloc_n)), 1))
@@ -67,7 +78,11 @@ class GridAlgorithm(BaseAlgorithm):
             else:
                 raise TypeError(f'Unknown space type - {repr(space)}.')
 
-        final_alloc = map(lambda x: tuple(x[0].trans(vx) for vx in x[1]), zip(vsp, dim_alloc))
+        odim_alloc = [None] * len(vsp)
+        for oi, da in zip(oord, dim_alloc):
+            odim_alloc[oi] = da
+
+        final_alloc = map(lambda x: tuple(x[0].trans(vx) for vx in x[1]), zip(vsp, odim_alloc))
         for tpl in nested_for(*final_alloc):
             yield tuple(tpl)
             _ = pres.get()
