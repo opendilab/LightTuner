@@ -36,7 +36,7 @@ class TestHpoAlgorithmRandom:
 
     def test_random_stop_when(self):
         visited, func = get_hpo_func()
-        cfg, res = func.random().stop_when(R['result'].abs() <= 0.5).spaces({
+        cfg, res, metrics = func.random().stop_when(R['result'].abs() <= 0.5).spaces({
             'x': uniform(-2, 8),
             'y': quniform(-1.6, 7.8, 0.2),
         }).run()
@@ -46,7 +46,7 @@ class TestHpoAlgorithmRandom:
 
     def test_random_stop_when_or(self):
         visited, func = get_hpo_func()
-        cfg, res = func.random() \
+        cfg, res, metrics = func.random() \
             .stop_when(R['result'].abs() <= 0.5) \
             .stop_when(R['result'] >= 56.25) \
             .spaces({
@@ -59,7 +59,7 @@ class TestHpoAlgorithmRandom:
 
     def test_random_maximize(self):
         visited, func = get_hpo_func()
-        cfg, res = func.random() \
+        cfg, res, metrics = func.random() \
             .max_steps(1000) \
             .maximize(R['result']) \
             .spaces({
@@ -72,7 +72,7 @@ class TestHpoAlgorithmRandom:
 
     def test_random_minimize(self):
         visited, func = get_hpo_func()
-        cfg, res = func.random() \
+        cfg, res, metrics = func.random() \
             .max_steps(1000) \
             .minimize(R['result']) \
             .spaces({
@@ -82,3 +82,13 @@ class TestHpoAlgorithmRandom:
 
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
         assert res['result'] <= -12
+
+    def test_random_zero(self):
+        visited, func = get_hpo_func()
+        assert func.random() \
+                   .max_steps(0) \
+                   .minimize(R['result']) \
+                   .spaces({
+            'x': uniform(-2, 8),
+            'y': quniform(-1.6, 7.8, 0.2),
+        }).run() is None

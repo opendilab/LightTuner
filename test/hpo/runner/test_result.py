@@ -1,7 +1,7 @@
 import pytest
 from easydict import EasyDict
 
-from ditk.hpo import R
+from ditk.hpo.runner.result import R
 
 
 @pytest.mark.unittest

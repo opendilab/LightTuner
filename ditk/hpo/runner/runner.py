@@ -1,10 +1,15 @@
+import time
 from itertools import islice
 from operator import __gt__, __lt__
-from typing import Callable, Type, Optional, Tuple, Dict
+from typing import Callable, Type, Optional, Tuple, Dict, Any
 
-from .base import BaseAlgorithm
+from .result import R as _OR
 from .result import _to_model
+from ..algorithm import BaseAlgorithm
 from ..utils import ValueProxyLock
+
+R = _OR['return']
+M = _OR['metrics']
 
 
 class SearchRunner:
@@ -81,9 +86,9 @@ class SearchRunner:
             conf, _ = self.__order_condition
             return conf(res)
         else:
-            return res
+            return R(res)
 
-    def run(self) -> Optional[Tuple[object, object]]:
+    def run(self) -> Optional[Tuple[Any, Any, Any]]:
         proxy_lock = ValueProxyLock()
         iter_obj = self.__algorithm_cls(**self.__config).iter_config(self.__spaces, proxy_lock)
         if self._max_steps is not None:
@@ -91,12 +96,26 @@ class SearchRunner:
 
         current_result = None
         for cfg in iter_obj:
+            _before_time = time.time()
             retval = self.__func(cfg)
-            proxy_lock.put(self._get_result_value(retval))
-            if current_result is None or self._is_result_greater(current_result[1], retval):
-                current_result = (cfg, retval)
+            _after_time = time.time()
+            _duration = _after_time - _before_time
 
-            if self._is_result_okay(retval):
+            metrics = {
+                'time': _duration,
+            }
+            fval = {'return': retval, 'metrics': metrics}
+
+            proxy_lock.put(self._get_result_value(fval))
+            if current_result is None or self._is_result_greater(current_result[1], fval):
+                current_result = (cfg, fval)
+
+            if self._is_result_okay(fval):
                 break
 
-        return current_result  # max step is reached
+        if current_result is not None:
+            _cfg, _fval = current_result
+            _return, _metrics = _fval['return'], _fval['metrics']
+            return _cfg, _return, _metrics  # max step is reached
+        else:
+            return None

@@ -1,7 +1,7 @@
 from typing import Tuple
 
 from ditk.hpo import hpo
-from ditk.hpo.algorithm.hpo import HpoFunc
+from ditk.hpo.runner.hpo import HpoFunc
 
 EPS = 1e-8
 

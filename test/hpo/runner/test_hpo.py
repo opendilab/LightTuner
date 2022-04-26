@@ -1,8 +1,8 @@
 import pytest
 
 from ditk.hpo import hpo, R
-from ditk.hpo.algorithm.hpo import HpoFunc
-from .base import get_hpo_func
+from ditk.hpo.runner.hpo import HpoFunc
+from test.hpo.algorithm.base import get_hpo_func
 
 
 @pytest.mark.unittest

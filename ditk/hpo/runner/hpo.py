@@ -1,9 +1,7 @@
 from typing import Type
 
-from .base import BaseAlgorithm
-from .grid import GridAlgorithm
-from .random import RandomAlgorithm
 from .runner import SearchRunner
+from ..algorithm import BaseAlgorithm, GridAlgorithm, RandomAlgorithm
 
 
 class HpoFunc:

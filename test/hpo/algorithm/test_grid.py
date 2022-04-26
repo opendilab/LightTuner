@@ -52,7 +52,7 @@ class TestHpoAlgorithmGrid:
 
     def test_grid_unlimited(self):
         visited, opt = get_hpo_func()
-        cfg, ret = opt.grid() \
+        cfg, ret, metrics = opt.grid() \
             .minimize(R['result']) \
             .spaces(
             {
@@ -75,7 +75,7 @@ class TestHpoAlgorithmGrid:
 
     def test_grid_weak_limited(self):
         visited, opt = get_hpo_func()
-        cfg, ret = opt.grid() \
+        cfg, ret, metrics = opt.grid() \
             .max_steps(10000) \
             .minimize(R['result']) \
             .spaces(
@@ -99,7 +99,7 @@ class TestHpoAlgorithmGrid:
 
     def test_grid_limited_1(self):
         visited, opt = get_hpo_func()
-        cfg, ret = opt.grid() \
+        cfg, ret, metrics = opt.grid() \
             .max_steps(10000) \
             .minimize(R['result']) \
             .spaces(
@@ -122,7 +122,7 @@ class TestHpoAlgorithmGrid:
 
     def test_grid_limited_2(self):
         visited, opt = get_hpo_func()
-        cfg, ret = opt.grid() \
+        cfg, ret, metrics = opt.grid() \
             .max_steps(10000) \
             .minimize(R['result']) \
             .spaces(
@@ -145,7 +145,7 @@ class TestHpoAlgorithmGrid:
 
     def test_grid_limited_3(self):
         visited, opt = get_hpo_func()
-        cfg, ret = opt.grid() \
+        cfg, ret, metrics = opt.grid() \
             .max_steps(11) \
             .minimize(R['result']) \
             .spaces(
