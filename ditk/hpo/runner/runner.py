@@ -42,6 +42,7 @@ class SearchRunner:
         self.__stop_condition = None  # end condition, determine when to stop
         self.__order_condition = None  # order condition, determine which is the best
         self.__rank_capacity = 5  # rank list capacity
+        self.__rank_concerns = []
         self.__spaces = None  # space for searching
 
     def __getattr__(self, item) -> Callable[[object, ], 'SearchRunner']:
@@ -86,6 +87,10 @@ class SearchRunner:
         else:
             raise ValueError(f'Invalid rank list capacity - {repr(n)}.')
 
+    def concern(self, name, cond):
+        self.__rank_concerns.append((name, cond))
+        return self
+
     @property
     def _max_steps(self) -> Optional[int]:
         # noinspection PyTypeChecker
@@ -127,7 +132,7 @@ class SearchRunner:
         logger.info(f'{self.__algorithm_cls.algorithm_name()} initialized.'.capitalize())
 
         ranklist = []
-        for cur_istep, cur_cfg in enumerate(cfg_iter):
+        for cur_istep, cur_cfg in enumerate(cfg_iter, start=1):
             logger.info(f'Start running {inflection.ordinalize(cur_istep)} step...')
             with io.StringIO() as of, io.StringIO() as ef:
                 with redirect_stdout(of), redirect_stderr(ef):
@@ -167,12 +172,14 @@ class SearchRunner:
                     [
                         istep,
                         *(getter(cfg) for _, getter in indeps),
-                        self._get_result_value(fres)
+                        self._get_result_value(fres),
+                        *(getter(fres) for _, getter in self.__rank_concerns),
                     ] for istep, cfg, fres in ranklist],
                 headers=[
-                    'step',
+                    '#',
                     *('.'.join(map(str, pname)) for pname, _ in indeps),
-                    'result'
+                    'target',
+                    *(name for name, _ in self.__rank_concerns)
                 ], tablefmt='psql'
             )
             logger.info(f"Current ranklist ({plural_word(self.__rank_capacity, 'record')} will be shown):{os.linesep}"
