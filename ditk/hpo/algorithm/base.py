@@ -1,6 +1,7 @@
 from enum import IntEnum, unique
 from typing import Iterator, Tuple
 
+import inflection
 from hbutils.model import int_enum_loads
 
 from ..utils import ValueProxyLock
@@ -25,6 +26,10 @@ class BaseAlgorithm:
         sfunc, svalues = struct_values(vs)
         for vargs in self._iter_spaces(svalues, pres):
             yield sfunc(*vargs)
+
+    @classmethod
+    def algorithm_name(cls):
+        return inflection.underscore(cls.__name__).replace('_', ' ')
 
 
 class BaseOptimizeAlgorithm(BaseAlgorithm):

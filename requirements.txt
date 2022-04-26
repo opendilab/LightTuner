@@ -1,3 +1,4 @@
 hbutils>=0.4.7,<1
 rich>=12.2.0
 tabulate>=0.8.9
+inflection>=0.5.1

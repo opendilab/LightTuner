@@ -18,7 +18,7 @@ def random_space_value(space: BaseSpace):
         raise TypeError(f'Unknown space type - {repr(space)}.')  # pragma: no cover
 
 
-class RandomAlgorithm(BaseAlgorithm):
+class RandomSearchAlgorithm(BaseAlgorithm):
     # noinspection PyUnusedLocal
     def __init__(self, **kwargs):
         BaseAlgorithm.__init__(self)

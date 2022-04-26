@@ -40,7 +40,7 @@ _ORDER_DICT: Dict[Type[BaseSpace], int] = {
 }
 
 
-class GridAlgorithm(BaseAlgorithm):
+class GridSearchAlgorithm(BaseAlgorithm):
     # noinspection PyUnusedLocal
     def __init__(self, max_steps, **kwargs):
         BaseAlgorithm.__init__(self)

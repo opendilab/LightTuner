@@ -1,11 +1,15 @@
 import pytest
 
 from ditk.hpo import uniform, quniform, choice, R
+from ditk.hpo.algorithm import RandomSearchAlgorithm
 from .base import get_hpo_func, EPS
 
 
 @pytest.mark.unittest
 class TestHpoAlgorithmRandom:
+    def test_name(self):
+        assert RandomSearchAlgorithm.algorithm_name() == 'random search algorithm'
+
     def test_random_single(self):
         visited, func = get_hpo_func()
         func.random().max_steps(1000).spaces({

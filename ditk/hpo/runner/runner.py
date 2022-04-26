@@ -1,15 +1,34 @@
+import io
+import os
 import time
+from contextlib import redirect_stdout, redirect_stderr
 from itertools import islice
 from operator import __gt__, __lt__
 from typing import Callable, Type, Optional, Tuple, Dict, Any
 
+import inflection
+from hbutils.collection import nested_walk
+from hbutils.string import plural_word
+from tabulate import tabulate
+
+from .log import logger
 from .result import R as _OR
 from .result import _to_model
 from ..algorithm import BaseAlgorithm
-from ..utils import ValueProxyLock
+from ..utils import ValueProxyLock, sblock
+from ..value import HyperValue
 
 R = _OR['return']
 M = _OR['metrics']
+
+
+def _find_hv(vs):
+    for path, obj in nested_walk(vs):
+        if isinstance(obj, HyperValue):
+            r = _OR
+            for pitem in path:
+                r = r[pitem]
+            yield path, r
 
 
 class SearchRunner:
@@ -22,6 +41,8 @@ class SearchRunner:
         self.__algorithm_cls = algo_cls
         self.__end_condition = None
         self.__order_condition = None
+        self.__rank_cnt = 5
+        self.__rank_list = []
         self.__spaces = None
 
     def __getattr__(self, item) -> Callable[[object, ], 'SearchRunner']:
@@ -43,7 +64,7 @@ class SearchRunner:
 
         return self
 
-    def maximize(self, condition):
+    def maximize(self, condition) -> 'SearchRunner':
         if self.__order_condition is None:
             self.__order_condition = (_to_model(condition), __gt__)
             self.__config['opt_direction'] = 'maximize'
@@ -51,13 +72,20 @@ class SearchRunner:
         else:
             raise SyntaxError('Maximize or minimize condition should be assigned more than once.')
 
-    def minimize(self, condition):
+    def minimize(self, condition) -> 'SearchRunner':
         if self.__order_condition is None:
             self.__order_condition = (_to_model(condition), __lt__)
             self.__config['opt_direction'] = 'minimize'
             return self
         else:
             raise SyntaxError('Maximize or minimize condition should be assigned more than once.')
+
+    def rank(self, n) -> 'SearchRunner':
+        if n >= 1:
+            self.__rank_cnt = n
+            return self
+        else:
+            raise ValueError(f'Invalid rank list capacity - {repr(n)}.')
 
     @property
     def _max_steps(self) -> Optional[int]:
@@ -74,7 +102,7 @@ class SearchRunner:
         self.__spaces = vs
         return self
 
-    def _is_result_greater(self, origin, newres):
+    def _is_result_better(self, origin, newres):
         if self.__order_condition is not None:
             cond, cmp = self.__order_condition
             return cmp(cond(newres), cond(origin))
@@ -89,33 +117,74 @@ class SearchRunner:
             return R(res)
 
     def run(self) -> Optional[Tuple[Any, Any, Any]]:
-        proxy_lock = ValueProxyLock()
-        iter_obj = self.__algorithm_cls(**self.__config).iter_config(self.__spaces, proxy_lock)
-        if self._max_steps is not None:
-            iter_obj = islice(iter_obj, self._max_steps)
+        logger.info(f'{self.__algorithm_cls.algorithm_name()} will be used.'.capitalize())
+        passback = ValueProxyLock()
+        cfg_iter = self.__algorithm_cls(**self.__config).iter_config(self.__spaces, passback)
+        indeps = [(pname, getter) for pname, getter in _find_hv(self.__spaces)]
 
-        current_result = None
-        for cfg in iter_obj:
-            _before_time = time.time()
-            retval = self.__func(cfg)
-            _after_time = time.time()
-            _duration = _after_time - _before_time
+        if self._max_steps is not None:
+            cfg_iter = islice(cfg_iter, self._max_steps)
+
+        logger.info(f'{self.__algorithm_cls.algorithm_name()} initialized.'.capitalize())
+
+        ranklist = []
+        for cur_istep, cur_cfg in enumerate(cfg_iter):
+            logger.info(f'Start running {inflection.ordinalize(cur_istep)} step...')
+            with io.StringIO() as of, io.StringIO() as ef:
+                with redirect_stdout(of), redirect_stderr(ef):
+                    _before_time = time.time()
+                    retval = self.__func(cur_cfg)
+                    _after_time = time.time()
+                cur_stdout, cur_stderr = of.getvalue(), ef.getvalue()
+
+            cur_duration = _after_time - _before_time
+            logger.info(f'{inflection.ordinalize(cur_istep)} step completed, '
+                        f'time cost: {"%.3f" % cur_duration} seconds.')
+            if cur_stdout:
+                logger.info(f"Stdout of function {self.__func}:{os.linesep}"
+                            f"{sblock(cur_stdout)}")
+            if cur_stderr:
+                logger.info(f"Stderr of function {self.__func}:{os.linesep}"
+                            f"{sblock(cur_stderr)}")
 
             metrics = {
-                'time': _duration,
+                'time': cur_duration,
             }
-            fval = {'return': retval, 'metrics': metrics}
+            full_result = {'return': retval, 'metrics': metrics}
 
-            proxy_lock.put(self._get_result_value(fval))
-            if current_result is None or self._is_result_greater(current_result[1], fval):
-                current_result = (cfg, fval)
+            passback.put(self._get_result_value(full_result))
+            ins_pos = None
+            for i, (_, _, fres) in enumerate(ranklist):
+                if self._is_result_better(fres, full_result):
+                    ins_pos = i
+                    break
+            if ins_pos is None:
+                ranklist.append((cur_istep, cur_cfg, full_result))
+            else:
+                ranklist = ranklist[:ins_pos] + [(cur_istep, cur_cfg, full_result)] + ranklist[ins_pos:]
+            ranklist = ranklist[:self.__rank_cnt]
+            table_str = tabulate(
+                [
+                    [
+                        istep,
+                        *(getter(cfg) for _, getter in indeps),
+                        self._get_result_value(fres)
+                    ] for istep, cfg, fres in ranklist],
+                headers=[
+                    'step',
+                    *('.'.join(map(str, pname)) for pname, _ in indeps),
+                    'result'
+                ], tablefmt='psql'
+            )
+            logger.info(f"Current ranklist ({plural_word(self.__rank_cnt, 'record')} will be shown):{os.linesep}"
+                        f"{table_str}")
 
-            if self._is_result_okay(fval):
+            if self._is_result_okay(full_result):
                 break
 
-        if current_result is not None:
-            _cfg, _fval = current_result
-            _return, _metrics = _fval['return'], _fval['metrics']
-            return _cfg, _return, _metrics  # max step is reached
+        if ranklist:
+            final_step, final_cfg, final_result = ranklist[0]
+            final_return, final_metrics = final_result['return'], final_result['metrics']
+            return final_cfg, final_return, final_metrics  # max step is reached
         else:
             return None

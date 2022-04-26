@@ -1,11 +1,9 @@
 import pytest
 
 from ditk.hpo import R, randint, quniform, choice, uniform
-from ditk.hpo.algorithm.grid import allocate_continuous, allocate_separate, allocate_fixed
+from ditk.hpo.algorithm.grid import allocate_continuous, allocate_separate, allocate_fixed, GridSearchAlgorithm
 from ditk.hpo.space import ContinuousSpace, SeparateSpace, FixedSpace
-from .base import get_hpo_func
-
-EPS = 1e-8
+from .base import get_hpo_func, EPS
 
 
 # noinspection DuplicatedCode
@@ -45,6 +43,9 @@ class TestHpoAlgorithmGrid:
         assert allocate_separate(space, 11) == pytest.approx((0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2))
         assert allocate_separate(space, 15) == pytest.approx((0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2))
         assert allocate_separate(space, 100) == pytest.approx((0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2))
+
+    def test_name(self):
+        assert GridSearchAlgorithm.algorithm_name() == 'grid search algorithm'
 
     def test_allocate_fixed(self):
         space = FixedSpace(5)
@@ -100,7 +101,7 @@ class TestHpoAlgorithmGrid:
     def test_grid_limited_1(self):
         visited, opt = get_hpo_func()
         cfg, ret, metrics = opt.grid() \
-            .max_steps(10000) \
+            .max_steps(1000) \
             .minimize(R['result']) \
             .spaces(
             {
@@ -110,7 +111,7 @@ class TestHpoAlgorithmGrid:
             }
         ).run()
 
-        assert len(visited) == 9890
+        assert len(visited) == 945
         for item in visited:
             assert -10 <= item['x'] <= 100
             assert -10 - EPS <= item['y'] <= 20 + EPS
@@ -123,7 +124,7 @@ class TestHpoAlgorithmGrid:
     def test_grid_limited_2(self):
         visited, opt = get_hpo_func()
         cfg, ret, metrics = opt.grid() \
-            .max_steps(10000) \
+            .max_steps(1000) \
             .minimize(R['result']) \
             .spaces(
             {
@@ -133,7 +134,7 @@ class TestHpoAlgorithmGrid:
             }
         ).run()
 
-        assert len(visited) == 10000
+        assert len(visited) == 1000
         for item in visited:
             assert -10 <= item['x'] <= 100
             assert -10 - EPS <= item['y'] <= 20 + EPS
