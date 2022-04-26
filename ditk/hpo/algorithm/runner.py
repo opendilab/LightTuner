@@ -1,6 +1,6 @@
 from itertools import islice
 from operator import __gt__, __lt__
-from typing import Callable, Type, Optional, Tuple
+from typing import Callable, Type, Optional, Tuple, Dict
 
 from .base import BaseAlgorithm
 from .result import _to_model
@@ -10,9 +10,9 @@ from ..utils import ValueProxyLock
 class SearchRunner:
     def __init__(self, algo_cls: Type[BaseAlgorithm], func):
         self.__func = func
-        self.__config = {
+        self.__config: Dict[str, object] = {
             'max_steps': None,
-            'opt_direction': 'nothing',
+            'opt_direction': None,
         }
         self.__algorithm_cls = algo_cls
         self.__end_condition = None
@@ -56,6 +56,7 @@ class SearchRunner:
 
     @property
     def _max_steps(self) -> Optional[int]:
+        # noinspection PyTypeChecker
         return self.__config['max_steps']
 
     def _is_result_okay(self, retval):

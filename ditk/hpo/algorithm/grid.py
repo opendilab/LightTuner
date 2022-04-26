@@ -35,14 +35,13 @@ def allocate_fixed(space: FixedSpace) -> Tuple[int, ...]:
 class GridAlgorithm(BaseAlgorithm):
     # noinspection PyUnusedLocal
     def __init__(self, max_steps, **kwargs):
-        BaseAlgorithm.__init__(
-            self,
-            max_steps=max_steps,
-            allow_unlimited_steps=False,
-        )
+        BaseAlgorithm.__init__(self)
+        if max_steps is None:
+            raise ValueError(f'Unlimited steps is not allowed in {repr(self.__class__)}.')
+        self.__alloc_count = max_steps
 
     def _iter_spaces(self, vsp: Tuple[HyperValue, ...], pres: ValueProxyLock) -> Iterator[Tuple[object, ...]]:
-        alloc_n, remain_n = 0, self.max_steps * 1.0
+        alloc_n, remain_n = 0, self.__alloc_count * 1.0
         for vitem in vsp:
             space = vitem.space
             if isinstance(space, (ContinuousSpace, SeparateSpace)):
