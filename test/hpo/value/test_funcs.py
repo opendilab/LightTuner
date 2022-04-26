@@ -1,6 +1,6 @@
 import pytest
 
-from ditk.hpo import uniform, quniform, choice
+from ditk.hpo import uniform, quniform, choice, randint
 from ditk.hpo.space import ContinuousSpace, SeparateSpace, FixedSpace
 
 
@@ -50,3 +50,13 @@ class TestHpoValueFuncs:
             choice([])
         with pytest.raises(TypeError):
             choice({'a', 'b', 'c'})
+
+    def test_randint(self):
+        value = randint(10.1, 20.2)
+        assert isinstance(value.space, SeparateSpace)
+        assert value.space.start == pytest.approx(11.0)
+        assert value.space.end == pytest.approx(20.0)
+        assert value.space.step == pytest.approx(1.0)
+        assert value.trans(11.9) == pytest.approx(11)
+        assert value.trans(10) == pytest.approx(10)
+        assert value.trans(20.2) == pytest.approx(20)

@@ -1,3 +1,4 @@
+import math
 from typing import Tuple, Iterator, Dict, Type, List, Union
 
 from hbutils.reflection import nested_for
@@ -43,14 +44,20 @@ class GridAlgorithm(BaseAlgorithm):
     # noinspection PyUnusedLocal
     def __init__(self, max_steps, **kwargs):
         BaseAlgorithm.__init__(self)
-        if max_steps is None:
-            raise ValueError(f'Unlimited steps is not allowed in {repr(self.__class__)}.')
-        self.__alloc_count = max_steps
+        self.__alloc_count = max_steps if max_steps is not None else math.inf
 
     def _iter_spaces(self, vsp: Tuple[HyperValue, ...], pres: ValueProxyLock) -> Iterator[Tuple[object, ...]]:
-        ordered = sorted([(_ORDER_DICT[type(sp.space)], i, sp) for i, sp in enumerate(vsp)])
+        ordered = sorted([(
+            (
+                _ORDER_DICT[type(sp.space)],
+                sp.space.count if isinstance(sp.space, SeparateSpace) else 0,
+            ), i, sp
+        ) for i, sp in enumerate(vsp)])
         ovsp: Tuple[HyperValue, ...] = tuple(sp for _, _, sp in ordered)
         oord: Tuple[int, ...] = tuple(i for _, i, _ in ordered)
+
+        if math.isinf(self.__alloc_count) and ovsp and isinstance(ovsp[-1].space, ContinuousSpace):
+            raise ValueError('Continuous space is not supported when max step is not assigned.')
 
         alloc_n, remain_n = 0, self.__alloc_count * 1.0
         for vitem in ovsp:
@@ -63,9 +70,11 @@ class GridAlgorithm(BaseAlgorithm):
         for vitem in ovsp:
             space = vitem.space
             if isinstance(space, (ContinuousSpace, SeparateSpace)):
-                alloc_length = int(max(round(space.length * remain_n ** (1 / alloc_n)), 1))
+                alloc_length = max(space.length * remain_n ** (1 / alloc_n), 1)
                 if space.count is not None:
                     alloc_length = min(alloc_length, space.count)
+                alloc_length = int(round(alloc_length))
+
                 if isinstance(space, ContinuousSpace):
                     dim_alloc.append(allocate_continuous(space, alloc_length))
                 else:
@@ -76,7 +85,7 @@ class GridAlgorithm(BaseAlgorithm):
             elif isinstance(space, FixedSpace):
                 dim_alloc.append(allocate_fixed(space))
             else:
-                raise TypeError(f'Unknown space type - {repr(space)}.')
+                raise TypeError(f'Unknown space type - {repr(space)}.')  # pragma: no cover
 
         odim_alloc = [None] * len(vsp)
         for oi, da in zip(oord, dim_alloc):
