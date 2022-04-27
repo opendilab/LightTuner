@@ -214,7 +214,8 @@ class SearchRunner:
                     try_again_str = f'will try again later' if (i + 1) < self.__max_try \
                         else f'max retry limit is reached'
                     logger.info(dedent(f"""
-                        [yellow]Error has occurred[/] - {escape(repr(r_err))}, {try_again_str} ({i + 1}/{self.__max_try})...
+                        [yellow]Error has occurred[/] - {escape(repr(r_err))}, {
+                    try_again_str} ({i + 1}/{self.__max_try})...
                     """).lstrip())
 
             can_break = False
@@ -252,6 +253,7 @@ class SearchRunner:
 
             else:
                 # log the exception
+                # noinspection PyBroadException
                 try:
                     raise r_err
                 except:
