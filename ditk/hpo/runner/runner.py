@@ -152,7 +152,7 @@ class SearchRunner:
     def run(self) -> Optional[Tuple[Any, Any, Any]]:
         # algorithm information
         logger.info(dedent(f"""
-            {self.__algorithm_cls.algorithm_name().capitalize()} will be used, with [bold bright_white on grey30]{
+            {self.__algorithm_cls.algorithm_name().capitalize()} will be used, with [bold bright_white underline]{
         rchain(sorted((name, val) for name, val in self.__config.items()))}[/]
         """).strip())
 
@@ -172,7 +172,7 @@ class SearchRunner:
             cfg_display_values = [(name, getter(cur_cfg)) for name, getter in indeps]
             logger.info(dedent(f"""
                 ======================= {inflection.ordinalize(cur_istep)} step =======================
-                Step initialized, with variables - [bold bright_white on grey30]{rchain(cfg_display_values)}[/].
+                Step initialized, with variables - [bold bright_white underline]{rchain(cfg_display_values)}[/].
             """).strip())
 
             # run the function with several tries
@@ -213,7 +213,7 @@ class SearchRunner:
                     r_err = cur_err
                     try_again_str = f'will try again later' if (i + 1) < self.__max_try \
                         else f'max retry limit is reached'
-                    logger.info(dedent(f"""
+                    logger.warn(dedent(f"""
                         [yellow]Error has occurred[/] - {escape(repr(r_err))}, {
                     try_again_str} ({i + 1}/{self.__max_try})...
                     """).lstrip())
@@ -231,7 +231,7 @@ class SearchRunner:
                 ]
                 logger.info(dedent(f"""
                     Function running [green]completed[/], time cost: {"%.3f" % r_time_cost} seconds,
-                    with concerned results - [bold bright_white on grey30]{rchain(res_display_values)}[/].
+                    with concerned results - [bold bright_white underline]{rchain(res_display_values)}[/].
                 """).strip())
 
                 # maintain the ranklist
