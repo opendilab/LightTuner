@@ -3,7 +3,7 @@ from typing import Iterator, Tuple
 
 from .base import BaseAlgorithm
 from ..space import SeparateSpace, ContinuousSpace, FixedSpace, BaseSpace
-from ..utils import ValueProxyLock
+from ..utils import ValueProxyLock, RunFailed
 from ..value import HyperValue
 
 
@@ -30,4 +30,7 @@ class RandomSearchAlgorithm(BaseAlgorithm):
     def _iter_spaces(self, vsp: Tuple[HyperValue, ...], pres: ValueProxyLock) -> Iterator[Tuple[object, ...]]:
         while True:
             yield tuple(map(self._random_hyper_value, vsp))
-            _ = pres.get()
+            try:
+                _ = pres.get()
+            except RunFailed:
+                pass

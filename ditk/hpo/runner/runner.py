@@ -8,10 +8,11 @@ from typing import Callable, Type, Optional, Tuple, Dict, Any
 
 import inflection
 from hbutils.collection import nested_walk
+from hbutils.scale import time_to_delta_str
 from hbutils.string import plural_word
 from tabulate import tabulate
 
-from .log import logger
+from .log import logger, escape
 from .result import R as _OR
 from .result import _to_model
 from ..algorithm import BaseAlgorithm
@@ -39,6 +40,7 @@ class SearchRunner:
             'opt_direction': None,
         }
         self.__algorithm_cls = algo_cls  # algorithm class
+        self.__max_try = 3
         self.__stop_condition = None  # end condition, determine when to stop
         self.__order_condition = None  # order condition, determine which is the best
         self.__target_name = 'target'
@@ -56,6 +58,13 @@ class SearchRunner:
     def max_steps(self, n: int) -> 'SearchRunner':
         self.__config['max_steps'] = n
         return self
+
+    def max_retries(self, n: int) -> 'SearchRunner':
+        if isinstance(n, int) and n >= 1:
+            self.__max_try = n
+            return self
+        else:
+            raise ValueError(f'Invalid max retry count - {repr(n)}.')
 
     def stop_when(self, condition) -> 'SearchRunner':
         if self.__stop_condition is None:
@@ -145,10 +154,11 @@ class SearchRunner:
         logger.info(dedent(f"""
             {self.__algorithm_cls.algorithm_name().capitalize()} will be used, with [bold bright_white on grey30]{
         rchain(sorted((name, val) for name, val in self.__config.items()))}[/]
-        """).strip(), extra={'markup': True})
+        """).strip())
 
         # initializing algorithm
         passback = ValueProxyLock()
+        search_start_time = time.time()
         cfg_iter = self.__algorithm_cls(**self.__config).iter_config(self.__spaces, passback)
         indeps = [('.'.join(map(str, pname)), getter) for pname, getter in _find_hv(self.__spaces)]
         if self._max_steps is not None:
@@ -161,66 +171,107 @@ class SearchRunner:
             # shown input config
             cfg_display_values = [(name, getter(cur_cfg)) for name, getter in indeps]
             logger.info(dedent(f"""
-                The {inflection.ordinalize(cur_istep)} step initialized, with [bold bright_white on grey30]{rchain(cfg_display_values)}[/]
-                Start running the {inflection.ordinalize(cur_istep)} step...
-            """).strip(), extra={"markup": True})
+                ======================= {inflection.ordinalize(cur_istep)} step =======================
+                Step initialized, with variables - [bold bright_white on grey30]{rchain(cfg_display_values)}[/].
+            """).strip())
 
-            # run the function
-            with io.StringIO() as of, io.StringIO() as ef:
-                with redirect_stdout(of), redirect_stderr(ef):
-                    _before_time = time.time()
-                    retval = self.__func(cur_cfg)
-                    _after_time = time.time()
-                cur_stdout, cur_stderr = of.getvalue(), ef.getvalue()
+            # run the function with several tries
+            r_retval, r_err, r_time_cost = None, None, None
+            for i in range(self.__max_try):
+                # run the function once
+                logger.info(f"Start the {inflection.ordinalize(i + 1)} running try of function {self.__func}...")
+                cur_err = None
+                with io.StringIO() as of, io.StringIO() as ef:
+                    with redirect_stdout(of), redirect_stderr(ef):
+                        _before_time = time.time()
+                        try:
+                            retval = self.__func(cur_cfg)
+                        except BaseException as err:
+                            cur_err = err
+                        finally:
+                            _after_time = time.time()
+                    cur_stdout, cur_stderr = of.getvalue(), ef.getvalue()
+                    r_time_cost = _after_time - _before_time
 
-            # print the captured output
-            if cur_stdout:
-                logger.info(dedent(f"""
-Stdout of function {self.__func}:
-{sblock(cur_stdout)}
-                """).strip())
-            if cur_stderr:
-                logger.info(dedent(f"""
-Stderr of function {self.__func}:
-{sblock(cur_stderr)}
-                """).strip())
+                # print the captured output
+                if cur_stdout:
+                    logger.info(dedent(f"""
+    [blue]Stdout from function[/]:
+    {escape(sblock(cur_stdout))}
+                    """).strip())
+                if cur_stderr:
+                    logger.info(dedent(f"""
+    [red]Stderr from function[/]:
+    {escape(sblock(cur_stderr))}
+                    """).strip())
 
-            # get full data
-            cur_duration = _after_time - _before_time
-            metrics = {
-                'time': cur_duration,
-            }
-            full_result = {'return': retval, 'metrics': metrics}
-
-            # show result information
-            res_display_values = [
-                (self.__target_name, self._get_result_value(full_result)),
-                *((name, getter(full_result)) for name, getter in self.__rank_concerns)
-            ]
-            logger.info(dedent(f"""
-                The {inflection.ordinalize(cur_istep)} step completed, time cost: {"%.3f" % cur_duration} seconds,
-                with [bold bright_white on grey30]{rchain(res_display_values)}[/]
-            """).strip(), extra={'markup': True})
-
-            # maintain and show the ranklist table
-            passback.put(self._get_result_value(full_result))
-            ins_pos = None
-            for i, (_, _, fres) in enumerate(ranklist):
-                if self._is_result_better(fres, full_result):
-                    ins_pos = i
+                # check the error and result
+                if cur_err is None:
+                    r_err, r_retval = None, retval
                     break
-            if ins_pos is None:
-                ranklist.append((cur_istep, cur_cfg, full_result))
+                else:
+                    r_err = cur_err
+                    try_again_str = f'will try again later' if (i + 1) < self.__max_try \
+                        else f'max retry limit is reached'
+                    logger.info(dedent(f"""
+                        [yellow]Error has occurred[/] - {escape(repr(r_err))}, {try_again_str} ({i + 1}/{self.__max_try})...
+                    """).lstrip())
+
+            can_break = False
+            if r_err is None:
+                # get full data
+                metrics = {'time': r_time_cost}
+                full_result = {'return': r_retval, 'metrics': metrics}
+
+                # show result information
+                res_display_values = [
+                    (self.__target_name, self._get_result_value(full_result)),
+                    *((name, getter(full_result)) for name, getter in self.__rank_concerns)
+                ]
+                logger.info(dedent(f"""
+                    Function running [green]completed[/], time cost: {"%.3f" % r_time_cost} seconds,
+                    with concerned results - [bold bright_white on grey30]{rchain(res_display_values)}[/].
+                """).strip())
+
+                # maintain the ranklist
+                passback.put(self._get_result_value(full_result))
+                ins_pos = None
+                for i, (_, _, fres) in enumerate(ranklist):
+                    if self._is_result_better(fres, full_result):
+                        ins_pos = i
+                        break
+                if ins_pos is None:
+                    ranklist.append((cur_istep, cur_cfg, full_result))
+                else:
+                    ranklist = ranklist[:ins_pos] + [(cur_istep, cur_cfg, full_result)] + ranklist[ins_pos:]
+                ranklist = ranklist[:self.__rank_capacity]
+
+                # condition check
+                if self._is_result_okay(full_result):
+                    can_break = True
+
             else:
-                ranklist = ranklist[:ins_pos] + [(cur_istep, cur_cfg, full_result)] + ranklist[ins_pos:]
-            ranklist = ranklist[:self.__rank_capacity]
+                # log the exception
+                try:
+                    raise r_err
+                except:
+                    logger.exception(f'Function running [red]failed[/], '
+                                     f'time cost: {"%.3f" % r_time_cost} seconds, '
+                                     f'this step will be skipped and ignored due to this failure.')
+                passback.fail(r_err)
+
+            # print ranklist and running duration
             logger.info(dedent(f"""
-Current ranklist ({plural_word(self.__rank_capacity, 'record')} will be shown):
-{self._make_rank_table(indeps, ranklist)}
+Current ranklist ({plural_word(self.__rank_capacity, 'best record')} will be shown):
+{escape(self._make_rank_table(indeps, ranklist))}
+            """).strip())
+            logger.info(dedent(f"""
+                This search task has been lasted for {time_to_delta_str(time.time() - search_start_time)}.
+
             """).lstrip())
 
             # condition check
-            if self._is_result_okay(full_result):
+            if can_break:
                 break_by_stop = True
                 break
 

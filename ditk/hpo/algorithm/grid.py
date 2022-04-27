@@ -5,7 +5,7 @@ from hbutils.reflection import nested_for
 
 from .base import BaseAlgorithm
 from ..space import ContinuousSpace, SeparateSpace, FixedSpace, BaseSpace
-from ..utils import ValueProxyLock
+from ..utils import ValueProxyLock, RunFailed
 from ..value import HyperValue
 
 
@@ -94,4 +94,7 @@ class GridSearchAlgorithm(BaseAlgorithm):
         final_alloc = map(lambda x: tuple(x[0].trans(vx) for vx in x[1]), zip(vsp, odim_alloc))
         for tpl in nested_for(*final_alloc):
             yield tuple(tpl)
-            _ = pres.get()
+            try:
+                _ = pres.get()
+            except RunFailed:
+                pass
