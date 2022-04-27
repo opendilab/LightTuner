@@ -17,7 +17,7 @@ class OptimizeDirection(IntEnum):
 
 class BaseAlgorithm:
     def __init__(self, **kwargs):
-        pass
+        self.__args = tuple(sorted(kwargs.items()))
 
     def _iter_spaces(self, vsp: Tuple[HyperValue, ...], pres: ValueProxyLock) -> Iterator[Tuple[object, ...]]:
         raise NotImplementedError  # pragma: no cover
@@ -34,7 +34,7 @@ class BaseAlgorithm:
 
 class BaseOptimizeAlgorithm(BaseAlgorithm):
     def __init__(self, opt_direction, **kwargs):
-        BaseAlgorithm.__init__(self, **kwargs)
+        BaseAlgorithm.__init__(self, opt_direction=opt_direction, **kwargs)
         if opt_direction is None:
             raise ValueError(f'Direction {opt_direction} is not allowed.')
         self.__opt_direction = OptimizeDirection.loads(opt_direction)

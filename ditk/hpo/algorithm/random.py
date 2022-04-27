@@ -21,7 +21,7 @@ def random_space_value(space: BaseSpace):
 class RandomSearchAlgorithm(BaseAlgorithm):
     # noinspection PyUnusedLocal
     def __init__(self, **kwargs):
-        BaseAlgorithm.__init__(self)
+        BaseAlgorithm.__init__(self, **kwargs)
 
     @classmethod
     def _random_hyper_value(cls, hv: HyperValue):

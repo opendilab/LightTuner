@@ -2,11 +2,11 @@ from textwrap import dedent
 
 import pytest
 
-from ditk.hpo.utils import sblock
+from ditk.hpo.utils import sblock, rchain
 
 
 @pytest.mark.unittest
-class TestHpoUtilsBlock:
+class TestHpoUtilsString:
     def test_sblock(self):
         assert sblock(dedent("""
             This is first line
@@ -54,3 +54,6 @@ class TestHpoUtilsBlock:
             14 \u2502 j
             15 \u2502 k
         """).strip()
+
+    def test_rchain(self):
+        assert rchain([('name', 'str'), ('val', 233), ('float', 233.5)]) == "name: 'str', val: 233, float: 233.5"

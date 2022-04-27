@@ -43,7 +43,7 @@ _ORDER_DICT: Dict[Type[BaseSpace], int] = {
 class GridSearchAlgorithm(BaseAlgorithm):
     # noinspection PyUnusedLocal
     def __init__(self, max_steps, **kwargs):
-        BaseAlgorithm.__init__(self)
+        BaseAlgorithm.__init__(self, max_steps=max_steps, **kwargs)
         self.__alloc_count = max_steps if max_steps is not None else math.inf
 
     def _iter_spaces(self, vsp: Tuple[HyperValue, ...], pres: ValueProxyLock) -> Iterator[Tuple[object, ...]]:
