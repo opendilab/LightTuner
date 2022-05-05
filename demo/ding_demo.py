@@ -1,19 +1,20 @@
-import os
-import gym
 import copy
-import numpy as np
-from tensorboardX import SummaryWriter
-from easydict import EasyDict
+import os
 
+import gym
+import numpy as np
 from ding.config import compile_config
-from ding.worker import BaseLearner, SampleSerialCollector, InteractionSerialEvaluator, AdvancedReplayBuffer
 from ding.envs import BaseEnvManager, DingEnvWrapper
-from ding.policy import DQNPolicy
 from ding.model import DQN
-from ding.utils import set_pkg_seed
+from ding.policy import DQNPolicy
 from ding.rl_utils import get_epsilon_greedy_fn
+from ding.utils import set_pkg_seed
+from ding.worker import BaseLearner, SampleSerialCollector, InteractionSerialEvaluator, AdvancedReplayBuffer
 from dizoo.classic_control.cartpole.config.cartpole_dqn_config import cartpole_dqn_config
-from ditk.hpo import hpo, R, M, choice, uniform, randint
+from easydict import EasyDict
+from tensorboardX import SummaryWriter
+
+from ditk.hpo import hpo, R, choice, randint
 
 
 # Get DI-engine form env class
@@ -99,10 +100,10 @@ def main(v):
 if __name__ == "__main__":
     print(
         main.random()
-        .max_steps(10)
-        .minimize(R['envstep'])
-        .concern(R['reward'], 'reward')
-        .spaces(
+            .max_steps(10)
+            .minimize(R['envstep'])
+            .concern(R['reward'], 'reward')
+            .spaces(
             {
                 'learning_rate': choice([1e-3, 5e-3, 1e-4]),
                 'nstep': randint(1, 5)
