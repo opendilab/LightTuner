@@ -35,7 +35,7 @@ def _find_hv(vs):
 class SearchRunner:
     def __init__(self, algo_cls: Type[BaseAlgorithm], func):
         self.__func = func
-        self.__config: Dict[str, object] = {
+        self.__settings: Dict[str, object] = {
             'max_steps': None,
             'opt_direction': None,
         }
@@ -50,13 +50,13 @@ class SearchRunner:
 
     def __getattr__(self, item) -> Callable[[object, ], 'SearchRunner']:
         def _get_config_value(v) -> SearchRunner:
-            self.__config[item] = v
+            self.__settings[item] = v
             return self
 
         return _get_config_value
 
     def max_steps(self, n: int) -> 'SearchRunner':
-        self.__config['max_steps'] = n
+        self.__settings['max_steps'] = n
         return self
 
     def max_retries(self, n: int) -> 'SearchRunner':
@@ -77,7 +77,7 @@ class SearchRunner:
     def maximize(self, condition, name='target') -> 'SearchRunner':
         if self.__order_condition is None:
             self.__order_condition = (_to_model(condition), __gt__)
-            self.__config['opt_direction'] = 'maximize'
+            self.__settings['opt_direction'] = 'maximize'
             self.__target_name = name
             return self
         else:
@@ -86,7 +86,7 @@ class SearchRunner:
     def minimize(self, condition, name='target') -> 'SearchRunner':
         if self.__order_condition is None:
             self.__order_condition = (_to_model(condition), __lt__)
-            self.__config['opt_direction'] = 'minimize'
+            self.__settings['opt_direction'] = 'minimize'
             self.__target_name = name
             return self
         else:
@@ -106,7 +106,7 @@ class SearchRunner:
     @property
     def _max_steps(self) -> Optional[int]:
         # noinspection PyTypeChecker
-        return self.__config['max_steps']
+        return self.__settings['max_steps']
 
     def _is_result_okay(self, retval):
         if self.__stop_condition is not None:
@@ -153,13 +153,13 @@ class SearchRunner:
         # algorithm information
         logger.info(dedent(f"""
             {self.__algorithm_cls.algorithm_name().capitalize()} will be used, with [bold bright_white underline]{
-        rchain(sorted((name, val) for name, val in self.__config.items()))}[/]
+        rchain(sorted((name, val) for name, val in self.__settings.items()))}[/]
         """).strip())
 
         # initializing algorithm
         passback = ValueProxyLock()
         search_start_time = time.time()
-        cfg_iter = self.__algorithm_cls(**self.__config).iter_config(self.__spaces, passback)
+        cfg_iter = self.__algorithm_cls(**self.__settings).iter_config(self.__spaces, passback)
         indeps = [('.'.join(map(str, pname)), getter) for pname, getter in _find_hv(self.__spaces)]
         if self._max_steps is not None:
             cfg_iter = islice(cfg_iter, self._max_steps)
