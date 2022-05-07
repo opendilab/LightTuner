@@ -12,6 +12,14 @@ def _use_rich() -> bool:
 
 
 class TerminalHandler(logging.Handler):
+    """
+    Overview:
+        A handler customized in ``ditk``.
+
+        When ``DISABLE_RICH`` environment variable is set to non-empty, log will be printed to \
+        ordinary ``StreamHandler``, otherwise ``rich.logging.RichHandler`` will be used.
+    """
+
     def __init__(self, use_stdout: bool = False, level: _LogLevelType = logging.NOTSET):
         logging.Handler.__init__(self, level)
         self.use_stdout = not not use_stdout

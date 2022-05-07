@@ -15,10 +15,10 @@ from ..testing import ansi_unescape, tempdir
 @pytest.mark.unittest
 class TestLoggingLog:
     def test_simple_rich(self):
-        logger = get_logger()
-        assert logger.name == 'root'
-
         with LogCapture() as log, OutputCapture(separate=True) as output:
+            logger = get_logger()
+            assert logger.name == 'root'
+
             logger.info('This is info.')
             logger.warning('This is warning.')
             logger.error('This is error.')
