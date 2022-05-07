@@ -21,6 +21,12 @@ class TerminalHandler(logging.Handler):
     """
 
     def __init__(self, use_stdout: bool = False, level: _LogLevelType = logging.NOTSET):
+        """
+        Constructor of :class:`TerminalHandler`.
+
+        :param use_stdout: Use ``sys.stdout`` instead of ``sys.stderr``.
+        :param level: Log level.
+        """
         logging.Handler.__init__(self, level)
         self.use_stdout = not not use_stdout
 

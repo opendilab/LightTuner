@@ -10,26 +10,26 @@ BaseSpace
 ------------------
 
 .. autoclass:: BaseSpace
-    :members: lbound, rbound, length, allocate
+    :members: length, count
 
 
 ContinuousSpace
 ------------------
 
 .. autoclass:: ContinuousSpace
-    :members: __init__, lbound, rbound, length, allocate
+    :members: __init__, lbound, ubound, length, count
 
 
 SeparateSpace
 ------------------
 
 .. autoclass:: SeparateSpace
-    :members: __init__, lbound, rbound, length, allocate
+    :members: __init__, start, end, step, length, count
 
 
 FixedSpace
 ------------------
 
 .. autoclass:: FixedSpace
-    :members: __init__, lbound, rbound, length, allocate
+    :members: __init__, length, count
 

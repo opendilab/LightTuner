@@ -22,6 +22,16 @@ def get_logger(name: Optional[str] = None,
                with_files: List[str] = None,
                level: _LogLevelType = None,
                use_stdout: bool = False) -> logging.Logger:
+    """
+    Overview:
+        Get :class:`logging.Logger` object, with terminal output and file output.
+
+    :param name: Name of logger.
+    :param with_files: The files going to output.
+    :param level: Log level.
+    :param use_stdout: Use ``sys.stdout`` instead of ``sys.stderr``, default is ``False``.
+    :return logger: Logger created.
+    """
     with _LOGGER_LOCK:
         name = name or _DEFAULT_LOGGER_NAME
         with_files = with_files or []
