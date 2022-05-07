@@ -1,36 +1,25 @@
 import logging
 import os
-import sys
-from functools import lru_cache
-from typing import Union
+from logging import LogRecord
 
-from rich.logging import RichHandler
-
+from .base import _LogLevelType
 from .rich import _create_rich_handler
 from .stream import _create_stream_handler
 
-_USE_RICH = not os.environ.get('DISABLE_RICH', '').strip()
+
+def _use_rich() -> bool:
+    return not os.environ.get('DISABLE_RICH', '').strip()
 
 
-@lru_cache()
-def _get_terminal_handler() -> Union[logging.StreamHandler, RichHandler]:
-    if _USE_RICH:
-        return _create_rich_handler()
-    else:
-        return _create_stream_handler()
+class TerminalHandler(logging.Handler):
+    def __init__(self, use_stdout: bool = False, level: _LogLevelType = logging.NOTSET):
+        logging.Handler.__init__(self, level)
+        self.use_stdout = not not use_stdout
+
+    def emit(self, record: LogRecord) -> None:
+        handler = (_create_rich_handler if _use_rich() else _create_stream_handler)(self.use_stdout, self.level)
+        return handler.emit(record)
 
 
-def _is_ordinal_stream_handler(handler: logging.Handler) -> bool:
-    return isinstance(handler, logging.StreamHandler) and (
-            handler.stream is sys.stdout or
-            handler.stream is sys.stderr)
-
-
-def _is_ordinal_rich_handler(handler: logging.Handler) -> bool:
-    return isinstance(handler, RichHandler) and (
-            handler.console.file is sys.stdout or
-            handler.console.file is sys.stderr)
-
-
-def _is_ordinal_terminal_handler(handler: logging.Handler):
-    return _is_ordinal_stream_handler(handler) or _is_ordinal_rich_handler(handler)
+def _is_simple_terminal(handler: logging.Handler) -> bool:
+    return isinstance(handler, TerminalHandler)

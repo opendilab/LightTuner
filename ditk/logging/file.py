@@ -1,10 +1,11 @@
 import logging
 import os
 
-from .base import _to_fmt
+from .base import _LogLevelType
 
 _FILE_FMT = logging.Formatter(
-    fmt='[%(asctime)s][%(filename)15s][line:%(lineno)4d][%(levelname)8s] %(message)s',
+    fmt='[%(asctime)s][%(filename)s:%(lineno)d][%(levelname)s] %(message)s',
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 
@@ -17,8 +18,9 @@ def _create_local_file(filename: str) -> str:
     return filename
 
 
-def _create_file_handler(path: str, mode: str = 'a', fmt: logging.Formatter = None) -> logging.FileHandler:
+def _create_file_handler(path: str, mode: str = 'a', level: _LogLevelType = logging.NOTSET) -> logging.FileHandler:
     logger_file_path = _create_local_file(path)
     handler = logging.FileHandler(logger_file_path, mode)
-    handler.setFormatter(_to_fmt(fmt or _FILE_FMT))
+    handler.setFormatter(_FILE_FMT)
+    handler.setLevel(level)
     return handler
