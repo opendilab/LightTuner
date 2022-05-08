@@ -11,7 +11,7 @@ def _use_rich() -> bool:
     return not os.environ.get('DISABLE_RICH', '').strip()
 
 
-class TerminalHandler(logging.Handler):
+class LoggingTerminalHandler(logging.Handler):
     """
     Overview:
         A handler customized in ``ditk``.
@@ -31,9 +31,15 @@ class TerminalHandler(logging.Handler):
         self.use_stdout = not not use_stdout
 
     def emit(self, record: LogRecord) -> None:
+        """
+        Emit the log record to handler.
+
+        If ``DISABLE_RICH`` environment variable is set to non-empty, this method is equal to \
+        :meth:`logging.StreamHandler.emit`, otherwise equals to :meth:`rich.logging.RichHandler.emit`.
+        """
         handler = (_create_rich_handler if _use_rich() else _create_stream_handler)(self.use_stdout, self.level)
         return handler.emit(record)
 
 
 def _is_simple_terminal(handler: logging.Handler) -> bool:
-    return isinstance(handler, TerminalHandler)
+    return isinstance(handler, LoggingTerminalHandler)

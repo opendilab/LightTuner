@@ -1,2 +1,3 @@
+from .file import LoggingFileHandler
 from .log import get_logger
-from .terminal import TerminalHandler
+from .terminal import LoggingTerminalHandler

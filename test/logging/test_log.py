@@ -6,16 +6,16 @@ from unittest import mock
 
 import pytest
 from rich.logging import RichHandler
-from testfixtures import LogCapture, OutputCapture
+from testfixtures import LogCapture
 
-from ditk.logging import get_logger, TerminalHandler
-from ..testing import ansi_unescape, tempdir
+from ditk.logging import get_logger, LoggingTerminalHandler
+from ..testing import tempdir, capture_output
 
 
 @pytest.mark.unittest
 class TestLoggingLog:
     def test_simple_rich(self):
-        with LogCapture() as log, OutputCapture(separate=True) as output:
+        with LogCapture() as log, capture_output() as output:
             logger = get_logger()
             assert logger.name == 'root'
 
@@ -31,7 +31,7 @@ class TestLoggingLog:
             ('root', 'CRITICAL', 'This is critical.')
         )
 
-        stdout, stderr = ansi_unescape(output.stdout.getvalue()), ansi_unescape(output.stderr.getvalue())
+        stdout, stderr = output.stdout, output.stderr
         assert stdout.strip() == ''
         assert 'INFO     This is info.' in stderr
         assert 'WARNING  This is warning.' in stderr
@@ -42,7 +42,7 @@ class TestLoggingLog:
         logger = get_logger('stream_test')
         assert logger.name == 'stream_test'
 
-        with LogCapture() as log, OutputCapture(separate=True) as output:
+        with LogCapture() as log, capture_output() as output:
             with mock.patch.dict(os.environ, {'DISABLE_RICH': '1'}):
                 logger.info('This is info.')
                 logger.warning('This is warning.')
@@ -57,14 +57,14 @@ class TestLoggingLog:
             ('stream_test', 'CRITICAL', 'This is critical.')
         )
 
-        stdout, stderr = ansi_unescape(output.stdout.getvalue()), ansi_unescape(output.stderr.getvalue())
+        stdout, stderr = output.stdout, output.stderr
         assert '[INFO] This is info.' in stderr
         assert '[WARNING] This is warning.' in stderr
         assert 'ERROR    This is error.' in stderr
         assert 'CRITICAL This is critical.' in stderr
 
     def test_with_basic_stream(self):
-        with LogCapture() as log, OutputCapture(separate=True) as output:
+        with LogCapture() as log, capture_output() as output:
             bl = logging.getLogger('basics_stream')
             hdl = logging.StreamHandler(sys.stdout)
             hdl.setFormatter(logging.Formatter(
@@ -93,7 +93,7 @@ class TestLoggingLog:
             ('basics_stream', 'CRITICAL', 'This is critical.')
         )
 
-        stdout, stderr = ansi_unescape(output.stdout.getvalue()), ansi_unescape(output.stderr.getvalue())
+        stdout, stderr = output.stdout, output.stderr
         assert 'the original will be preserved to avoid any conflicts.' in stdout
         assert '[THIS IS UNITTEST][INFO] This is info.' in stdout
         assert '[THIS IS UNITTEST][WARNING] This is warning.' in stdout
@@ -103,7 +103,7 @@ class TestLoggingLog:
         assert stderr.strip() == ''
 
     def test_with_basic_rich(self):
-        with LogCapture() as log, OutputCapture(separate=True) as output:
+        with LogCapture() as log, capture_output() as output:
             bl = logging.getLogger('basics_rich')
 
             hdl = RichHandler()
@@ -133,7 +133,7 @@ class TestLoggingLog:
             ('basics_rich', 'CRITICAL', 'This is critical.')
         )
 
-        stdout, stderr = ansi_unescape(output.stdout.getvalue()), ansi_unescape(output.stderr.getvalue())
+        stdout, stderr = output.stdout, output.stderr
 
         assert 'WARNING  [THIS IS UNITTEST] Because a terminal handler' in stdout
         assert 'INFO     [THIS IS UNITTEST] This is info.' in stdout
@@ -144,9 +144,9 @@ class TestLoggingLog:
         assert stderr.strip() == ''
 
     def test_with_basic_terminal(self):
-        with LogCapture() as log, OutputCapture(separate=True) as output:
+        with LogCapture() as log, capture_output() as output:
             bl = logging.getLogger('basics_terminal')
-            hdl = TerminalHandler(use_stdout=True)
+            hdl = LoggingTerminalHandler(use_stdout=True)
             hdl.setFormatter(logging.Formatter(
                 fmt='[THIS IS UNITTEST] %(message)s',
                 datefmt="%m-%d %H:%M:%S",
@@ -162,8 +162,7 @@ class TestLoggingLog:
             logger.critical('This is critical.')
 
         log.check(
-            ('basics_terminal',
-             'WARNING',
+            ('basics_terminal', 'WARNING',
              'Because a terminal handler is detected in the global configuration, no more '
              'terminal handlers will be added, and the original will be preserved to '
              'avoid any conflicts.'),
@@ -173,7 +172,7 @@ class TestLoggingLog:
             ('basics_terminal', 'CRITICAL', 'This is critical.')
         )
 
-        stdout, stderr = ansi_unescape(output.stdout.getvalue()), ansi_unescape(output.stderr.getvalue())
+        stdout, stderr = output.stdout, output.stderr
 
         assert 'WARNING  Because a terminal handler' in stdout
         assert 'INFO     This is info.' in stdout
@@ -184,40 +183,53 @@ class TestLoggingLog:
         assert stderr.strip() == ''
 
     def test_with_duplicate(self):
-        with LogCapture() as log, OutputCapture(separate=True) as output:
-            _ = get_logger('duplicate')
+        with tempdir():
+            with LogCapture() as log, capture_output() as output:
+                _ = get_logger('duplicate')
 
-            logger = get_logger('duplicate', with_files=['log_file_1.txt'], use_stdout=True)
-            assert logger.name == 'duplicate'
+                logger = get_logger('duplicate', with_files=['log_file_1.txt'], use_stdout=True)
+                assert logger.name == 'duplicate'
 
-            logger.info('This is info.')
-            logger.warning('This is warning.')
-            logger.error('This is error.')
-            logger.critical('This is critical.')
+                logger.info('This is info.')
+                logger.warning('This is warning.')
+                logger.error('This is error.')
+                logger.critical('This is critical.')
 
-        log.check(
-            ('duplicate',
-             'WARNING',
-             "Logger 'duplicate' has already exist, extra arguments (with_files: "
-             "['log_file_1.txt'], level: None) will be ignored."),
-            ('duplicate', 'INFO', 'This is info.'),
-            ('duplicate', 'WARNING', 'This is warning.'),
-            ('duplicate', 'ERROR', 'This is error.'),
-            ('duplicate', 'CRITICAL', 'This is critical.')
-        )
+            log.check(
+                ('duplicate', 'WARNING',
+                 'Because a terminal handler is detected in the global configuration, no more '
+                 'terminal handlers will be added, and the original will be preserved to '
+                 'avoid any conflicts.'),
+                ('duplicate', 'WARNING',
+                 'The original terminal handler is using sys.stderr, but this will be changed '
+                 "to sys.stdout due to the setting of 'use_stdout': True."),
+                ('duplicate', 'INFO', 'This is info.'),
+                ('duplicate', 'WARNING', 'This is warning.'),
+                ('duplicate', 'ERROR', 'This is error.'),
+                ('duplicate', 'CRITICAL', 'This is critical.')
+            )
 
-        stdout, stderr = ansi_unescape(output.stdout.getvalue()), ansi_unescape(output.stderr.getvalue())
-        assert stdout.strip() == ''
+            stdout, stderr = output.stdout, output.stderr
+            assert 'WARNING  Because a terminal handler is' in stdout
+            assert 'WARNING  The original terminal handler' in stdout
+            assert 'INFO     This is info.' in stdout
+            assert 'WARNING  This is warning.' in stdout
+            assert 'ERROR    This is error.' in stdout
+            assert 'CRITICAL This is critical.' in stdout
 
-        assert 'WARNING  Logger \'duplicate\' has already' in stderr
-        assert 'INFO     This is info.' in stderr
-        assert 'WARNING  This is warning.' in stderr
-        assert 'ERROR    This is error.' in stderr
-        assert 'CRITICAL This is critical.' in stderr
+            assert stderr.strip() == ''
+
+            log_file_1 = pathlib.Path('log_file_1.txt').read_text()
+            assert '[WARNING] Because a terminal handler is' in log_file_1
+            assert '[WARNING] The original terminal handler is' in log_file_1
+            assert '[INFO] This is info.' in log_file_1
+            assert '[WARNING] This is warning.' in log_file_1
+            assert '[ERROR] This is error.' in log_file_1
+            assert '[CRITICAL] This is critical.' in log_file_1
 
     def test_with_files(self):
         with tempdir():
-            with LogCapture() as log, OutputCapture(separate=True) as output:
+            with LogCapture() as log, capture_output() as output:
                 logger = get_logger('with_files', with_files=['log_file_1.txt', 'log_file_2.txt'])
                 assert logger.name == 'with_files'
 
@@ -233,7 +245,7 @@ class TestLoggingLog:
                 ('with_files', 'CRITICAL', 'This is critical.')
             )
 
-            stdout, stderr = ansi_unescape(output.stdout.getvalue()), ansi_unescape(output.stderr.getvalue())
+            stdout, stderr = output.stdout, output.stderr
             assert stdout.strip() == ''
             assert 'INFO     This is info.' in stderr
             assert 'WARNING  This is warning.' in stderr

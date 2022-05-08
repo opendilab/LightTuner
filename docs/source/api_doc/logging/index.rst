@@ -7,11 +7,18 @@ ditk.logging
 
 
 
-TerminalHandler
+LoggingTerminalHandler
 -------------------------
 
-.. autoclass:: TerminalHandler
+.. autoclass:: LoggingTerminalHandler
     :members: __init__, emit
+
+
+LoggingFileHandler
+-------------------------
+
+.. autoclass:: LoggingFileHandler
+    :members: __init__, file_path, emit
 
 
 get_logger
