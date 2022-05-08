@@ -10,7 +10,7 @@ _STREAM_FMT = logging.Formatter(
 )
 
 
-def _create_stream_handler(use_stdout: bool = False, level: _LogLevelType = logging.NOTSET):
+def _create_stream_handler(use_stdout: bool = False, level: _LogLevelType = logging.NOTSET) -> StreamHandler:
     handler = StreamHandler(sys.stdout if use_stdout else sys.stderr)
     handler.setFormatter(_STREAM_FMT)
     handler.setLevel(level)
