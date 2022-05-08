@@ -263,3 +263,127 @@ class TestLoggingLog:
             assert '[WARNING] This is warning.' in log_file_2
             assert '[ERROR] This is error.' in log_file_2
             assert '[CRITICAL] This is critical.' in log_file_2
+
+    def test_new_level(self):
+        _ = get_logger('new_level')
+
+        with LogCapture() as log, capture_output() as output:
+            logger = get_logger('new_level', level=logging.WARNING)
+            assert logger.name == 'new_level'
+
+            logger.info('This is info.')
+            logger.warning('This is warning.')
+            logger.error('This is error.')
+            logger.critical('This is critical.')
+
+        log.check(
+            ('new_level', 'WARNING',
+             'Because a terminal handler is detected in the global configuration, no more '
+             'terminal handlers will be added, and the original will be preserved to '
+             'avoid any conflicts.'),
+            ('new_level', 'WARNING', 'This is warning.'),
+            ('new_level', 'ERROR', 'This is error.'),
+            ('new_level', 'CRITICAL', 'This is critical.')
+        )
+
+        stdout, stderr = output.stdout, output.stderr
+        assert stdout.strip() == ''
+        assert 'WARNING  Because a terminal handler is' in stderr
+        assert 'INFO     This is info.' not in stderr
+        assert 'WARNING  This is warning.' in stderr
+        assert 'ERROR    This is error.' in stderr
+        assert 'CRITICAL This is critical.' in stderr
+
+    def test_new_use_stdout(self):
+        _ = get_logger('new_use_stdout')
+
+        with LogCapture() as log, capture_output() as output:
+            logger = get_logger('new_use_stdout', use_stdout=True)
+            assert logger.name == 'new_use_stdout'
+
+            logger.info('This is info.')
+            logger.warning('This is warning.')
+            logger.error('This is error.')
+            logger.critical('This is critical.')
+
+        log.check(
+            ('new_use_stdout', 'WARNING',
+             'Because a terminal handler is detected in the global configuration, no more '
+             'terminal handlers will be added, and the original will be preserved to '
+             'avoid any conflicts.'),
+            ('new_use_stdout', 'WARNING',
+             'The original terminal handler is using sys.stderr, but this will be changed '
+             "to sys.stdout due to the setting of 'use_stdout': True."),
+            ('new_use_stdout', 'INFO', 'This is info.'),
+            ('new_use_stdout', 'WARNING', 'This is warning.'),
+            ('new_use_stdout', 'ERROR', 'This is error.'),
+            ('new_use_stdout', 'CRITICAL', 'This is critical.')
+        )
+
+        stdout, stderr = output.stdout, output.stderr
+        assert 'WARNING  Because a terminal handler is' in stdout
+        assert 'INFO     This is info.' in stdout
+        assert 'WARNING  This is warning.' in stdout
+        assert 'ERROR    This is error.' in stdout
+        assert 'CRITICAL This is critical.' in stdout
+        assert stderr.strip() == ''
+
+    def test_new_files(self):
+        with tempdir():
+            _ = get_logger('new_files', with_files=['log_file_1.txt', 'log_file_2.txt'])
+
+            with LogCapture() as log, capture_output() as output:
+                logger = get_logger('new_files', with_files=['log_file_1.txt', 'log_file_3.txt'])
+                assert logger.name == 'new_files'
+
+                logger.info('This is info.')
+                logger.warning('This is warning.')
+                logger.error('This is error.')
+                logger.critical('This is critical.')
+
+            log.check(
+                ('new_files', 'WARNING',
+                 'Because a terminal handler is detected in the global configuration, no more '
+                 'terminal handlers will be added, and the original will be preserved to '
+                 'avoid any conflicts.'),
+                ('new_files', 'WARNING',
+                 "File 'log_file_1.txt' has already been added to this logger, so this "
+                 'configuration will be ignored.'),
+                ('new_files', 'INFO', 'This is info.'),
+                ('new_files', 'WARNING', 'This is warning.'),
+                ('new_files', 'ERROR', 'This is error.'),
+                ('new_files', 'CRITICAL', 'This is critical.')
+            )
+
+            stdout, stderr = output.stdout, output.stderr
+            assert stdout.strip() == ''
+            assert 'WARNING  Because a terminal handler' in stderr
+            assert "WARNING  File 'log_file_1.txt' has" in stderr
+            assert 'INFO     This is info.' in stderr
+            assert 'WARNING  This is warning.' in stderr
+            assert 'ERROR    This is error.' in stderr
+            assert 'CRITICAL This is critical.' in stderr
+
+            log_file_1 = pathlib.Path('log_file_1.txt').read_text()
+            assert '[WARNING] Because a terminal handler' in log_file_1
+            assert "[WARNING] File 'log_file_1.txt' has" in log_file_1
+            assert '[INFO] This is info.' in log_file_1
+            assert '[WARNING] This is warning.' in log_file_1
+            assert '[ERROR] This is error.' in log_file_1
+            assert '[CRITICAL] This is critical.' in log_file_1
+
+            log_file_2 = pathlib.Path('log_file_1.txt').read_text()
+            assert '[WARNING] Because a terminal handler' in log_file_2
+            assert "[WARNING] File 'log_file_1.txt' has" in log_file_2
+            assert '[INFO] This is info.' in log_file_2
+            assert '[WARNING] This is warning.' in log_file_2
+            assert '[ERROR] This is error.' in log_file_2
+            assert '[CRITICAL] This is critical.' in log_file_2
+
+            log_file_3 = pathlib.Path('log_file_1.txt').read_text()
+            assert '[WARNING] Because a terminal handler' in log_file_3
+            assert "[WARNING] File 'log_file_1.txt' has" in log_file_3
+            assert '[INFO] This is info.' in log_file_3
+            assert '[WARNING] This is warning.' in log_file_3
+            assert '[ERROR] This is error.' in log_file_3
+            assert '[CRITICAL] This is critical.' in log_file_3
