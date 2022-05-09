@@ -3,13 +3,7 @@ from typing import List, Optional
 
 from .base import _LogLevelType
 from .file import _create_file_handler, LoggingFileHandler, _normpath
-from .rich import _is_simple_rich
-from .stream import _is_simple_stream
-from .terminal import _is_simple_terminal, LoggingTerminalHandler
-
-
-def _is_simple_handler(handler: logging.Handler) -> bool:
-    return _is_simple_stream(handler) or _is_simple_rich(handler) or _is_simple_terminal(handler)
+from .terminal import LoggingTerminalHandler, _is_simple_handler
 
 
 def get_logger(name: Optional[str] = None,
@@ -35,23 +29,29 @@ def get_logger(name: Optional[str] = None,
 
     has_simple_handler = False
     terminal_handler: Optional[LoggingTerminalHandler] = None
+    th_logger: Optional[logging.Logger] = None
     file_handlers: List[LoggingFileHandler] = []
-    for handler in logger.handlers:
-        if _is_simple_handler(handler):
-            has_simple_handler = True
-        if isinstance(handler, LoggingFileHandler):
-            file_handlers.append(handler)
-        if isinstance(handler, LoggingTerminalHandler):
-            terminal_handler = handler
+    _current_logger = logger
+    while _current_logger:
+        for handler in _current_logger.handlers:
+            if _is_simple_handler(handler):
+                has_simple_handler = True
+                th_logger = _current_logger
+            if isinstance(handler, LoggingFileHandler):
+                file_handlers.append(handler)
+            if isinstance(handler, LoggingTerminalHandler):
+                terminal_handler = handler
+
+        _current_logger = _current_logger.parent
 
     if not has_simple_handler:
-        terminal_handler = LoggingTerminalHandler(bool(use_stdout))
+        terminal_handler = LoggingTerminalHandler(bool(use_stdout), logger=logger)
         logger.addHandler(terminal_handler)
     else:
         to_be_logged.append(
-            (logging.WARNING, "Because a terminal handler is detected in the global configuration, "
-                              "no more terminal handlers will be added, and the original will be preserved "
-                              "to avoid any conflicts.")
+            (logging.WARNING, f"Because a terminal handler is detected in {repr(th_logger)}, "
+                              f"no more terminal handlers will be added, and the original will be preserved "
+                              f"to avoid any conflicts.")
         )
         if terminal_handler and use_stdout is not None \
                 and bool(use_stdout) != bool(terminal_handler.use_stdout):

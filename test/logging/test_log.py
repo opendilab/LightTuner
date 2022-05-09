@@ -84,7 +84,7 @@ class TestLoggingLog:
         log.check(
             ('basics_stream',
              'WARNING',
-             'Because a terminal handler is detected in the global configuration, no more '
+             'Because a terminal handler is detected in <Logger basics_stream (Level 1)>, no more '
              'terminal handlers will be added, and the original will be preserved to '
              'avoid any conflicts.'),
             ('basics_stream', 'INFO', 'This is info.'),
@@ -124,7 +124,7 @@ class TestLoggingLog:
         log.check(
             ('basics_rich',
              'WARNING',
-             'Because a terminal handler is detected in the global configuration, no more '
+             'Because a terminal handler is detected in <Logger basics_rich (Level 1)>, no more '
              'terminal handlers will be added, and the original will be preserved to '
              'avoid any conflicts.'),
             ('basics_rich', 'INFO', 'This is info.'),
@@ -163,7 +163,7 @@ class TestLoggingLog:
 
         log.check(
             ('basics_terminal', 'WARNING',
-             'Because a terminal handler is detected in the global configuration, no more '
+             'Because a terminal handler is detected in <Logger basics_terminal (Level 1)>, no more '
              'terminal handlers will be added, and the original will be preserved to '
              'avoid any conflicts.'),
             ('basics_terminal', 'INFO', 'This is info.'),
@@ -197,7 +197,7 @@ class TestLoggingLog:
 
             log.check(
                 ('duplicate', 'WARNING',
-                 'Because a terminal handler is detected in the global configuration, no more '
+                 'Because a terminal handler is detected in <Logger duplicate (Level 1)>, no more '
                  'terminal handlers will be added, and the original will be preserved to '
                  'avoid any conflicts.'),
                 ('duplicate', 'WARNING',
@@ -278,7 +278,7 @@ class TestLoggingLog:
 
         log.check(
             ('new_level', 'WARNING',
-             'Because a terminal handler is detected in the global configuration, no more '
+             'Because a terminal handler is detected in <Logger new_level (WARNING)>, no more '
              'terminal handlers will be added, and the original will be preserved to '
              'avoid any conflicts.'),
             ('new_level', 'WARNING', 'This is warning.'),
@@ -308,7 +308,7 @@ class TestLoggingLog:
 
         log.check(
             ('new_use_stdout', 'WARNING',
-             'Because a terminal handler is detected in the global configuration, no more '
+             'Because a terminal handler is detected in <Logger new_use_stdout (Level 1)>, no more '
              'terminal handlers will be added, and the original will be preserved to '
              'avoid any conflicts.'),
             ('new_use_stdout', 'WARNING',
@@ -343,7 +343,7 @@ class TestLoggingLog:
 
             log.check(
                 ('new_files', 'WARNING',
-                 'Because a terminal handler is detected in the global configuration, no more '
+                 'Because a terminal handler is detected in <Logger new_files (Level 1)>, no more '
                  'terminal handlers will be added, and the original will be preserved to '
                  'avoid any conflicts.'),
                 ('new_files', 'WARNING',
