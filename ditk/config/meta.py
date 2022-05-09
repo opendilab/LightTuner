@@ -7,7 +7,7 @@ Overview:
 __TITLE__ = "DI-toolkit"
 
 #: Version of this project.
-__VERSION__ = "0.0.1"
+__VERSION__ = "0.0.2"
 
 #: Short description of the project, will be included in ``setup.py``.
 __DESCRIPTION__ = 'A simple tool for automatic parameter tuning.'
