@@ -5,11 +5,11 @@ import sys
 from unittest import mock
 
 import pytest
+from hbutils.testing import capture_output, isolated_directory
 from rich.logging import RichHandler
 from testfixtures import LogCapture
 
 from ditk.logging import get_logger, LoggingTerminalHandler
-from ..testing import tempdir, capture_output
 
 
 @pytest.mark.unittest
@@ -183,7 +183,7 @@ class TestLoggingLog:
         assert stderr.strip() == ''
 
     def test_with_duplicate(self):
-        with tempdir():
+        with isolated_directory():
             with LogCapture() as log, capture_output() as output:
                 _ = get_logger('duplicate')
 
@@ -228,7 +228,7 @@ class TestLoggingLog:
             assert '[CRITICAL] This is critical.' in log_file_1
 
     def test_with_files(self):
-        with tempdir():
+        with isolated_directory():
             with LogCapture() as log, capture_output() as output:
                 logger = get_logger('with_files', with_files=['log_file_1.txt', 'log_file_2.txt'])
                 assert logger.name == 'with_files'
@@ -329,7 +329,7 @@ class TestLoggingLog:
         assert stderr.strip() == ''
 
     def test_new_files(self):
-        with tempdir():
+        with isolated_directory():
             _ = get_logger('new_files', with_files=['log_file_1.txt', 'log_file_2.txt'])
 
             with LogCapture() as log, capture_output() as output:
