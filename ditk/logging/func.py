@@ -1,30 +1,9 @@
-import logging
-from functools import lru_cache
-
-from .base import _LogLevelType
-from .log import get_logger
+from .log import try_init_root as _root
 
 __all__ = [
-    'CRITICAL', 'FATAL', 'ERROR',
-    'WARNING', 'WARN', 'INFO', 'DEBUG', 'NOTSET',
     'critical', 'fatal', 'error', 'exception',
     'warning', 'warn', 'info', 'debug', 'log',
-    'set_level',
 ]
-
-CRITICAL = logging.CRITICAL
-FATAL = logging.FATAL
-ERROR = logging.ERROR
-WARNING = logging.WARNING
-WARN = logging.WARN
-INFO = logging.INFO
-DEBUG = logging.DEBUG
-NOTSET = logging.NOTSET
-
-
-@lru_cache()
-def _root():
-    return get_logger()
 
 
 def critical(msg, *args, **kwargs):
@@ -95,11 +74,3 @@ def log(level, msg, *args, **kwargs):
     with a pre-defined format.
     """
     _root().log(level, msg, *args, **kwargs)
-
-
-def set_level(level: _LogLevelType):
-    """
-    Overview:
-        Set level of the root log.
-    """
-    _root().setLevel(level)

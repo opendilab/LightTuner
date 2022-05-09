@@ -1,6 +1,5 @@
 import logging
 import shutil
-import sys
 from functools import lru_cache
 
 from rich.console import Console
@@ -39,9 +38,3 @@ def _create_rich_handler(use_stdout: bool = False, level: _LogLevelType = loggin
     )
     handler.setFormatter(_RICH_FMT)
     return handler
-
-
-def _is_simple_rich(handler: logging.Handler) -> bool:
-    return isinstance(handler, RichHandler) and (
-            handler.console.file is sys.stdout or
-            handler.console.file is sys.stderr)

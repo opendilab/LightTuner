@@ -1,4 +1,6 @@
+from .explicit import *
 from .file import LoggingFileHandler
 from .func import *
-from .log import get_logger
+from .inherit import *
+from .log import getLogger, try_init_root
 from .terminal import LoggingTerminalHandler

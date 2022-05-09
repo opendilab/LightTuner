@@ -15,9 +15,3 @@ def _create_stream_handler(use_stdout: bool = False, level: _LogLevelType = logg
     handler.setFormatter(_STREAM_FMT)
     handler.setLevel(level)
     return handler
-
-
-def _is_simple_stream(handler: logging.Handler) -> bool:
-    return isinstance(handler, logging.StreamHandler) and (
-            handler.stream is sys.stdout or
-            handler.stream is sys.stderr)
