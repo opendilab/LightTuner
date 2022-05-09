@@ -97,16 +97,6 @@ build_package:
     - tags
     - /^dev/.*$/
 
-deploy_gitlab:
-  stage: deploy
-  dependencies:
-    - build_package
-  script:
-    - pip install gitlab-release
-    - gitlab-release dist/*
-  only:
-    - tags
-
 deploy_pypi:
   stage: deploy
   dependencies:
