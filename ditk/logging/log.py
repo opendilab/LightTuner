@@ -28,6 +28,7 @@ def getLogger(name: Optional[str] = None,
         Get :class:`logging.Logger` object, with terminal output and file output.
 
     :param name: Name of logger.
+    :param level: Logging level of the loggers.
     :param with_files: The files going to output.
     :return logger: Logger created.
     """

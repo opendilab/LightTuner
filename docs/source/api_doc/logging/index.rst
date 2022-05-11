@@ -21,9 +21,16 @@ LoggingFileHandler
     :members: __init__, file_path, emit
 
 
-get_logger
+try_init_root
 -------------------------
 
-.. autofunction:: get_logger
+.. autofunction:: try_init_root
+
+
+getLogger
+-------------------------
+
+.. autofunction:: getLogger
+
 
 
