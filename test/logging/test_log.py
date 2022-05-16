@@ -34,6 +34,45 @@ class TestLoggingLog:
         assert 'CRITICAL This is critical.' in stderr
 
     @init_handlers([])
+    def test_simple_rich_with_style(self):
+        try_init_root(logging.DEBUG)
+        with capture_output() as output:
+            logger = getLogger()
+            assert logger.name == 'root'
+
+            logger.info('[yellow]This is info[/].')
+            logger.warning('[red]This is warning[/].')
+            logger.error('[green]This is error[/].')
+            logger.critical('[yellow]This is critical[/].')
+
+        stdout, stderr = output.stdout, output.stderr
+        assert stdout.strip() == ''
+        assert 'INFO     This is info.' in stderr
+        assert 'WARNING  This is warning.' in stderr
+        assert 'ERROR    This is error.' in stderr
+        assert 'CRITICAL This is critical.' in stderr
+
+    @init_handlers([])
+    def test_simple_rich_with_style_disable_rich(self):
+        try_init_root(logging.DEBUG)
+        with capture_output() as output:
+            logger = getLogger()
+            assert logger.name == 'root'
+
+            with mock.patch.dict(os.environ, {'DISABLE_RICH': '1'}):
+                logger.info('[yellow]This is info[/].')
+                logger.warning('[red]This is warning[/].')
+                logger.error('[green]This is error[/].')
+                logger.critical('[yellow]This is critical[/].')
+
+        stdout, stderr = output.stdout, output.stderr
+        assert stdout.strip() == ''
+        assert '[INFO] This is info.' in stderr
+        assert '[WARNING] This is warning.' in stderr
+        assert '[ERROR] This is error.' in stderr
+        assert '[CRITICAL] This is critical.' in stderr
+
+    @init_handlers([])
     def test_stream(self):
         try_init_root(logging.DEBUG)
         with capture_output() as output:
