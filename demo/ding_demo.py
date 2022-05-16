@@ -14,7 +14,8 @@ from dizoo.classic_control.cartpole.config.cartpole_dqn_config import cartpole_d
 from easydict import EasyDict
 from tensorboardX import SummaryWriter
 
-from ditk.hpo import hpo, R, choice, randint
+from ditk import logging
+from ditk.hpo import hpo, R, choice, randint, M
 
 
 # Get DI-engine form env class
@@ -98,15 +99,15 @@ def main(v):
 
 
 if __name__ == "__main__":
-    print(
-        main.random()
-            .max_steps(10)
-            .minimize(R['envstep'])
-            .concern(R['reward'], 'reward')
-            .spaces(
-            {
-                'learning_rate': choice([1e-3, 5e-3, 1e-4]),
-                'nstep': randint(1, 5)
-            }
-        ).run()
-    )
+    logging.try_init_root(logging.INFO)
+    print(main.random()
+          .max_steps(10)
+          .minimize(R['envstep'])
+          .concern(R['reward'], 'reward')
+          .concern(M['time'], 'time_cost')
+          .spaces(
+        {
+            'learning_rate': choice([1e-3, 5e-3, 1e-4]),
+            'nstep': randint(1, 5)
+        }
+    ).run())

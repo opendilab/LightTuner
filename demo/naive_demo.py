@@ -1,7 +1,7 @@
 import random
-import sys
 import time
 
+from ditk import logging
 from ditk.hpo import hpo, R, M, choice, uniform, randint
 
 
@@ -9,8 +9,8 @@ from ditk.hpo import hpo, R, M, choice, uniform, randint
 def opt_func(v):  # this function is still usable after decorating
     x, y = v['x'], v['y']
     time.sleep(0.1)
-    print("This [u]time's[/] config:", v)  # stdout will be captured
-    print("This is print line in stderr", file=sys.stderr)  # stderr will be captured
+    logging.info(f"This [u]time's[/] config: {v}")  # stdout will be captured
+    logging.warning("This is print line in stderr")  # stderr will be captured
     if random.random() < 0.5:  # randomly raise exception
         raise ValueError('Fxxk this shxt')  # retry is supported
 
@@ -21,6 +21,7 @@ def opt_func(v):  # this function is still usable after decorating
 
 
 if __name__ == '__main__':
+    logging.try_init_root(logging.INFO)
     print(opt_func.random()  # random algorithm
           .max_steps(30)  # max steps
           .minimize(R['result'])  # the maximize/minimize target you need to optimize,
