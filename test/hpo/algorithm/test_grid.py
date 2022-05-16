@@ -4,11 +4,13 @@ from ditk.hpo import R, randint, quniform, choice, uniform
 from ditk.hpo.algorithm.grid import allocate_continuous, allocate_separate, allocate_fixed, GridSearchAlgorithm
 from ditk.hpo.space import ContinuousSpace, SeparateSpace, FixedSpace
 from .base import get_hpo_func, EPS
+from ...testing import init_handlers
 
 
 # noinspection DuplicatedCode
 @pytest.mark.unittest
 class TestHpoAlgorithmGrid:
+    @init_handlers([])
     def test_allocate_continuous(self):
         space = ContinuousSpace(0.4, 2.2)
         assert allocate_continuous(space, 0) == pytest.approx(())
@@ -27,6 +29,7 @@ class TestHpoAlgorithmGrid:
         assert allocate_continuous(space, 11) == pytest.approx(
             (0.4, 0.58, 0.76, 0.94, 1.12, 1.3, 1.48, 1.66, 1.84, 2.02, 2.2))
 
+    @init_handlers([])
     def test_allocate_separate(self):
         space = SeparateSpace(0.4, 2.2, 0.2)
         assert allocate_separate(space, 0) == pytest.approx(())
@@ -44,13 +47,16 @@ class TestHpoAlgorithmGrid:
         assert allocate_separate(space, 15) == pytest.approx((0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2))
         assert allocate_separate(space, 100) == pytest.approx((0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2))
 
+    @init_handlers([])
     def test_name(self):
         assert GridSearchAlgorithm.algorithm_name() == 'grid search algorithm'
 
+    @init_handlers([])
     def test_allocate_fixed(self):
         space = FixedSpace(5)
         assert allocate_fixed(space) == (0, 1, 2, 3, 4)
 
+    @init_handlers([])
     def test_grid_unlimited(self):
         visited, opt = get_hpo_func()
         cfg, ret, metrics = opt.grid() \
@@ -74,6 +80,7 @@ class TestHpoAlgorithmGrid:
         assert cfg['x'] + cfg['y'] == pytest.approx(ret['sum'])
         assert ret['result'] <= -1000
 
+    @init_handlers([])
     def test_grid_weak_limited(self):
         visited, opt = get_hpo_func()
         cfg, ret, metrics = opt.grid() \
@@ -98,6 +105,7 @@ class TestHpoAlgorithmGrid:
         assert cfg['x'] + cfg['y'] == pytest.approx(ret['sum'])
         assert ret['result'] <= -1000
 
+    @init_handlers([])
     def test_grid_limited_1(self):
         visited, opt = get_hpo_func()
         cfg, ret, metrics = opt.grid() \
@@ -121,6 +129,7 @@ class TestHpoAlgorithmGrid:
         assert cfg['x'] + cfg['y'] == pytest.approx(ret['sum'])
         assert ret['result'] <= -1000
 
+    @init_handlers([])
     def test_grid_limited_2(self):
         visited, opt = get_hpo_func()
         cfg, ret, metrics = opt.grid() \
@@ -144,6 +153,7 @@ class TestHpoAlgorithmGrid:
         assert cfg['x'] + cfg['y'] == pytest.approx(ret['sum'])
         assert ret['result'] <= -1000
 
+    @init_handlers([])
     def test_grid_limited_3(self):
         visited, opt = get_hpo_func()
         cfg, ret, metrics = opt.grid() \
@@ -167,6 +177,7 @@ class TestHpoAlgorithmGrid:
         assert cfg['x'] + cfg['y'] == pytest.approx(ret['sum'])
         assert ret['result'] <= -1000
 
+    @init_handlers([])
     def test_error_unlimited(self):
         visited, opt = get_hpo_func()
         with pytest.raises(ValueError):

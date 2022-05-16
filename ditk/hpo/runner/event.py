@@ -1,57 +1,69 @@
-from enum import IntEnum, auto
-from typing import Type, Dict, Any, Callable, Tuple, List, Optional
+from typing import Type, Dict, Any, Callable, Tuple, List
+
+from hbutils.model import AutoIntEnum
 
 from ..algorithm import BaseAlgorithm
 
 
-class RunnerStatus(IntEnum):
-    INIT = auto()  # init(algo_cls, settings, func)
-    INIT_OK = auto()  # init_ok(input_concerns, result_concerns)
+# noinspection PyArgumentList
+class RunnerStatus(AutoIntEnum):
+    def __init__(self, func_name: str):
+        self.func_name = func_name
 
-    STEP = auto()  # step(step_id, input_config)
-    STEP_OK = auto()  # step_ok(retval)
-    STEP_FAIL = auto()  # step_fail(error)
-    STEP_FINAL = auto()  # step_final(ranklist)
+    INIT = 'init'  # init(algo_cls, settings, func, spaces, concerns)
+    INIT_OK = 'init_ok'  # init_ok(input_concerns, result_concerns)
 
-    TRY = auto()  # try(try_id, max_try)
-    TRY_COMPLETE = auto()  # try_complete(stdout, stderr, metrics)
-    TRY_OK = auto()  # try_ok(retval)
-    TRY_FAIL = auto()  # try_fail(error)
+    RUN_START = 'run_start'  # run_start()
+    RUN_COMPLETE = 'run_complete'  # run_complete(is_cond_meet)
 
-    RUN_COMPLETE = auto()  # run_complete(is_cond_meet)
+    STEP = 'step'  # step(step_id, input_config)
+    STEP_OK = 'step_ok'  # step_ok(retval, metrics)
+    STEP_FAIL = 'step_fail'  # step_fail(error, metrics)
+    STEP_FINAL = 'step_final'  # step_final(ranklist)
+
+    TRY = 'try_'  # try(try_id, max_try)
+    TRY_COMPLETE = 'try_complete'  # try_complete(metrics)
+    TRY_OK = 'try_ok'  # try_ok(retval)
+    TRY_FAIL = 'try_fail'  # try_fail(error)
 
 
 class RunnerEventSet:
+    # init stage
     def init(self, algo_cls: Type[BaseAlgorithm], settings: Dict[str, Any], func: Callable):
         pass  # pragma: no cover
 
-    def init_ok(self, input_concerns: Dict[Tuple[Any, ...], Callable],
-                result_concerns: Dict[str, Callable]):
+    def init_ok(self, spaces: Any, concerns: List[Tuple[str, Callable]]):
         pass  # pragma: no cover
 
+    # running stage
+    def run_start(self):
+        pass  # pragma: no cover
+
+    def run_complete(self, is_cond_meet: bool):
+        pass  # pragma: no cover
+
+    # step stage
     def step(self, step_id: int, input_config: Any):
         pass  # pragma: no cover
 
-    def step_ok(self, retval: Any, metrics: Any):
+    def step_ok(self, retval: Any, metrics: Dict[str, Any]):
         pass  # pragma: no cover
 
-    def step_fail(self, error: Exception):
+    def step_fail(self, error: Exception, metrics: Dict[str, Any]):
         pass  # pragma: no cover
 
     def step_final(self, ranklist: List[Tuple[int, Any, Any]]):
         pass  # pragma: no cover
 
+    # try stage
     def try_(self, try_id: int, max_try: int):
         pass  # pragma: no cover
 
-    def try_complete(self, stdout: Optional[str], stderr: Optional[str], metrics: Dict[str, Any]):
+    def try_complete(self, metrics: Dict[str, Any]):
         pass  # pragma: no cover
 
     def try_ok(self, retval: Any):
         pass  # pragma: no cover
 
     def try_fail(self, error: Exception):
-        pass  # pragma: no cover
-
-    def run_complete(self, is_cond_meet: bool):
         pass  # pragma: no cover

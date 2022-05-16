@@ -1,35 +1,17 @@
-import io
 import time
-from contextlib import redirect_stdout, redirect_stderr
 from itertools import islice
 from operator import __gt__, __lt__
-from textwrap import dedent
 from typing import Callable, Type, Optional, Tuple, Dict, Any
 
-import inflection
-from hbutils.collection import nested_walk
-from hbutils.scale import time_to_delta_str
-from hbutils.string import plural_word
-from tabulate import tabulate
-
-from .log import logger, escape
+from .event import RunnerStatus, RunnerEventSet
+from .log import LoggingEventSet
 from .result import R as _OR
 from .result import _to_model
 from ..algorithm import BaseAlgorithm
-from ..utils import ValueProxyLock, sblock, rchain
-from ..value import HyperValue
+from ..utils import EventModel, ValueProxyLock
 
 R = _OR['return']
 M = _OR['metrics']
-
-
-def _find_hv(vs):
-    for path, obj in nested_walk(vs):
-        if isinstance(obj, HyperValue):
-            r = _OR
-            for pitem in path:
-                r = r[pitem]
-            yield path, r
 
 
 class SearchRunner:
@@ -47,6 +29,15 @@ class SearchRunner:
         self.__rank_capacity = 5  # rank list capacity
         self.__rank_concerns = []
         self.__spaces = None  # space for searching
+
+        self.__events = EventModel(RunnerStatus)
+        self.add_event_set(LoggingEventSet(None))
+
+    def add_event_set(self, e: RunnerEventSet):
+        prefix = f'{type(e).__name__}_{hex(id(e))}'
+        for _, member in RunnerStatus.__members__.items():
+            func_name = member.func_name
+            self.__events.bind(member, getattr(e, func_name), f'{prefix}_{func_name}')
 
     def __getattr__(self, item) -> Callable[[object, ], 'SearchRunner']:
         def _get_config_value(v) -> SearchRunner:
@@ -132,107 +123,69 @@ class SearchRunner:
         else:
             return R(res)
 
-    def _make_rank_table(self, indeps, ranklist):
-        return tabulate(
-            [
-                [
-                    istep,
-                    *(getter(cfg) for _, getter in indeps),
-                    self._get_result_value(fres),
-                    *(getter(fres) for _, getter in self.__rank_concerns),
-                ] for istep, cfg, fres in ranklist],
-            headers=[
-                '#',
-                *(name for name, _ in indeps),
-                self.__target_name,
-                *(name for name, _ in self.__rank_concerns)
-            ], tablefmt='psql'
-        )
-
     def run(self) -> Optional[Tuple[Any, Any, Any]]:
         # algorithm information
-        logger.info(dedent(f"""
-            {self.__algorithm_cls.algorithm_name().capitalize()} will be used, with [bold bright_white underline]{
-        rchain(sorted((name, val) for name, val in self.__settings.items()))}[/]
-        """).strip())
+        self.__events.trigger(
+            RunnerStatus.INIT,
+            self.__algorithm_cls,
+            self.__settings,
+            self.__func,
+        )
 
         # initializing algorithm
         passback = ValueProxyLock()
         search_start_time = time.time()
         cfg_iter = self.__algorithm_cls(**self.__settings).iter_config(self.__spaces, passback)
-        indeps = [('.'.join(map(str, pname)), getter) for pname, getter in _find_hv(self.__spaces)]
         if self._max_steps is not None:
             cfg_iter = islice(cfg_iter, self._max_steps)
-        logger.info(f'{self.__algorithm_cls.algorithm_name()} initialized.'.capitalize())
+        self.__events.trigger(
+            RunnerStatus.INIT_OK,
+            self.__spaces,
+            [
+                (self.__target_name, self._get_result_value),
+                *self.__rank_concerns,
+            ]
+        )
 
         # run the search
         ranklist, break_by_stop = [], False
+        self.__events.trigger(RunnerStatus.RUN_START)
         for cur_istep, cur_cfg in enumerate(cfg_iter, start=1):
             # shown input config
-            cfg_display_values = [(name, getter(cur_cfg)) for name, getter in indeps]
-            logger.info(dedent(f"""
-                ======================= {inflection.ordinalize(cur_istep)} step =======================
-                Step initialized, with variables - [bold bright_white underline]{rchain(cfg_display_values)}[/].
-            """).strip())
+            self.__events.trigger(RunnerStatus.STEP, cur_istep, cur_cfg)
 
             # run the function with several tries
             r_retval, r_err, r_time_cost = None, None, None
             for i in range(self.__max_try):
                 # run the function once
-                logger.info(f"Start the {inflection.ordinalize(i + 1)} running try of function {self.__func}...")
-                cur_err = None
-                with io.StringIO() as of, io.StringIO() as ef:
-                    with redirect_stdout(of), redirect_stderr(ef):
-                        _before_time = time.time()
-                        try:
-                            retval = self.__func(cur_cfg)
-                        except BaseException as err:
-                            cur_err = err
-                        finally:
-                            _after_time = time.time()
-                    cur_stdout, cur_stderr = of.getvalue(), ef.getvalue()
-                    r_time_cost = _after_time - _before_time
+                self.__events.trigger(RunnerStatus.TRY, i, self.__max_try)
 
-                # print the captured output
-                if cur_stdout:
-                    logger.info(dedent(f"""
-    [blue]Stdout from function[/]:
-    {escape(sblock(cur_stdout))}
-                    """).strip())
-                if cur_stderr:
-                    logger.info(dedent(f"""
-    [red]Stderr from function[/]:
-    {escape(sblock(cur_stderr))}
-                    """).strip())
+                _before_time = time.time()
+                try:
+                    retval, cur_err = self.__func(cur_cfg), None
+                except BaseException as err:
+                    retval, cur_err = None, err
+                finally:
+                    _after_time = time.time()
+                r_time_cost = _after_time - _before_time
+                r_metrics = {'time': r_time_cost}
+                self.__events.trigger(RunnerStatus.TRY_COMPLETE, r_metrics)
 
                 # check the error and result
                 if cur_err is None:
+                    self.__events.trigger(RunnerStatus.TRY_OK, retval)
                     r_err, r_retval = None, retval
                     break
                 else:
+                    self.__events.trigger(RunnerStatus.TRY_FAIL, cur_err)
                     r_err = cur_err
-                    try_again_str = f'will try again later' if (i + 1) < self.__max_try \
-                        else f'max retry limit is reached'
-                    logger.warn(dedent(f"""
-                        [yellow]Error has occurred[/] - {escape(repr(r_err))}, {
-                    try_again_str} ({i + 1}/{self.__max_try})...
-                    """).lstrip())
 
             can_break = False
+            metrics = {'time': r_time_cost}
             if r_err is None:
                 # get full data
-                metrics = {'time': r_time_cost}
                 full_result = {'return': r_retval, 'metrics': metrics}
-
-                # show result information
-                res_display_values = [
-                    (self.__target_name, self._get_result_value(full_result)),
-                    *((name, getter(full_result)) for name, getter in self.__rank_concerns)
-                ]
-                logger.info(dedent(f"""
-                    Function running [green]completed[/], time cost: {"%.3f" % r_time_cost} seconds,
-                    with concerned results - [bold bright_white underline]{rchain(res_display_values)}[/].
-                """).strip())
+                self.__events.trigger(RunnerStatus.STEP_OK, r_retval, metrics)
 
                 # maintain the ranklist
                 passback.put(self._get_result_value(full_result))
@@ -253,24 +206,11 @@ class SearchRunner:
 
             else:
                 # log the exception
-                # noinspection PyBroadException
-                try:
-                    raise r_err
-                except:
-                    logger.exception(f'Function running [red]failed[/], '
-                                     f'time cost: {"%.3f" % r_time_cost} seconds, '
-                                     f'this step will be skipped and ignored due to this failure.')
+                self.__events.trigger(RunnerStatus.STEP_FAIL, r_err, metrics)
                 passback.fail(r_err)
 
             # print ranklist and running duration
-            logger.info(dedent(f"""
-Current ranklist ({plural_word(self.__rank_capacity, 'best record')} will be shown):
-{escape(self._make_rank_table(indeps, ranklist))}
-            """).strip())
-            logger.info(dedent(f"""
-                This search task has been lasted for {time_to_delta_str(time.time() - search_start_time)}.
-
-            """).lstrip())
+            self.__events.trigger(RunnerStatus.STEP_FINAL, ranklist)
 
             # condition check
             if can_break:
@@ -278,10 +218,7 @@ Current ranklist ({plural_word(self.__rank_capacity, 'best record')} will be sho
                 break
 
         # ending information
-        if break_by_stop:
-            logger.info('Stop condition is meet, search will be ended...')
-        else:
-            logger.info('Iteration is over, search will be ended...')
+        self.__events.trigger(RunnerStatus.RUN_COMPLETE, break_by_stop)
 
         # return
         if ranklist:
