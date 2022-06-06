@@ -3,7 +3,7 @@ from threading import Thread
 
 import pytest
 
-from ditk.hpo.utils import ValueProxyLock, RunFailed
+from ditk.hpo.utils import ValueProxyLock, RunFailed, func_interact
 
 
 @pytest.mark.unittest
@@ -52,3 +52,36 @@ class TestHpoUtilsLock:
         err = result.args[0]
         assert isinstance(err, ValueError)
         assert err.args == ('233', 233)
+
+    def test_func_interact(self):
+        _call, _execute = func_interact()
+        _vs = [2, 3, 5, 7, -1]
+        _vr = []
+
+        def _thread_func():
+            for item in _vs:
+                try:
+                    _result = _call(item)
+                except ValueError as err:
+                    _vr.append((False, err.args[0]))
+                else:
+                    _vr.append((True, _result))
+            _call.end()
+
+        t = Thread(target=_thread_func)
+        t.start()
+
+        for v in _execute:
+            if v < 2:
+                _execute.fail(ValueError(v))
+            else:
+                _execute.put(v ** 2 + 5)
+
+        t.join()
+        assert _vr == [
+            (True, 9),
+            (True, 14),
+            (True, 30),
+            (True, 54),
+            (False, -1)
+        ]
