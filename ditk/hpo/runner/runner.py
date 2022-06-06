@@ -134,7 +134,6 @@ class SearchRunner:
 
         # initializing algorithm
         passback = ValueProxyLock()
-        search_start_time = time.time()
         cfg_iter = self.__algorithm_cls(**self.__settings).iter_config(self.__spaces, passback)
         if self._max_steps is not None:
             cfg_iter = islice(cfg_iter, self._max_steps)
