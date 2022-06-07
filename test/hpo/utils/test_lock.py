@@ -1,4 +1,5 @@
 import time
+from contextlib import closing
 from threading import Thread
 
 import pytest
@@ -59,14 +60,14 @@ class TestHpoUtilsLock:
         _vr = []
 
         def _thread_func():
-            for item in _vs:
-                try:
-                    _result = _call(item)
-                except ValueError as err:
-                    _vr.append((False, err.args[0]))
-                else:
-                    _vr.append((True, _result))
-            _call.end()
+            with closing(_call):
+                for item in _vs:
+                    try:
+                        _result = _call(item)
+                    except ValueError as err:
+                        _vr.append((False, err.args[0]))
+                    else:
+                        _vr.append((True, _result))
 
         t = Thread(target=_thread_func)
         t.start()
@@ -85,3 +86,6 @@ class TestHpoUtilsLock:
             (True, 54),
             (False, -1)
         ]
+
+        with pytest.raises(BrokenPipeError):
+            _call(233)

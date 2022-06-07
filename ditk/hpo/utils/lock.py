@@ -34,7 +34,7 @@ class ValueProxyLock:
 
 
 class _CallEnd:
-    def end(self):
+    def close(self):
         raise NotImplementedError  # pragma: no cover
 
     def __call__(self, v):
@@ -57,15 +57,26 @@ def func_interact() -> Tuple[_CallEnd, _ExecuteEnd]:
     _get = ValueProxyLock()
 
     class _FuncCallEnd(_CallEnd):
-        def end(self):
-            _send.fail(StopIteration)
+        def __init__(self):
+            self.__is_ended = False
+
+        def __del__(self):
+            self.close()  # pragma: no cover
+
+        def close(self):
+            if not self.__is_ended:
+                _send.fail(StopIteration)
+                self.__is_ended = True
 
         def __call__(self, v):
-            _send.put(v)
-            try:
-                return _get.get()
-            except RunFailed as err:
-                raise err.args[0]
+            if not self.__is_ended:
+                _send.put(v)
+                try:
+                    return _get.get()
+                except RunFailed as err:
+                    raise err.args[0]
+            else:
+                raise BrokenPipeError(self, v)
 
     class _FuncExecuteEnd(_ExecuteEnd):
         def __iter__(self):
