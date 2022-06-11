@@ -34,3 +34,7 @@ def init_handlers(handlers=None):
         return _new_func
 
     return _decorator
+
+
+def no_handlers():
+    return init_handlers([logging.NullHandler()])

@@ -1,7 +1,7 @@
 from typing import Type
 
 from .runner import SearchRunner
-from ..algorithm import BaseAlgorithm, GridSearchAlgorithm, RandomSearchAlgorithm
+from ..algorithm import BaseAlgorithm, GridSearchAlgorithm, RandomSearchAlgorithm, BayesSearchAlgorithm
 
 
 class HpoFunc:
@@ -19,6 +19,9 @@ class HpoFunc:
 
     def grid(self) -> 'SearchRunner':
         return self._search(GridSearchAlgorithm)
+
+    def bayes(self) -> 'SearchRunner':
+        return self._search(BayesSearchAlgorithm)
 
     def __repr__(self):
         return f'<{type(self).__name__} of {repr(self.__func)}>'

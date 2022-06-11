@@ -1,4 +1,7 @@
-hbutils>=0.5.0,<1
+hbutils>=0.6.11,<1
 rich>=12.2.0
 tabulate>=0.8.9
 inflection>=0.5.1
+numpy>=1.18.0
+scipy>=0.14.0
+scikit-learn>=0.18.0
