@@ -20,7 +20,7 @@ M = _OR['metrics']
 
 
 class SearchRunner:
-    def __init__(self, algo_cls: Type[BaseAlgorithm], func):
+    def __init__(self, algo_cls: Type[BaseAlgorithm], func, silent: bool = False):
         self.__func = func
         try:
             _ = self._settings
@@ -38,7 +38,8 @@ class SearchRunner:
         self.__spaces = None  # space for searching
 
         self.__events = EventModel(RunnerStatus)
-        self.add_event_set(LoggingEventSet(None))
+        if not silent:
+            self.add_event_set(LoggingEventSet(None))
 
     def add_event_set(self, e: RunnerEventSet):
         prefix = f'{type(e).__name__}_{hex(id(e))}'

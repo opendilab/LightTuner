@@ -29,7 +29,6 @@ class TestHpoAlgorithmRandom:
         with pytest.raises(TypeError):
             _make_random('234')
 
-    @no_handlers()
     def test_name(self):
         assert RandomSearchAlgorithm.algorithm_name() == 'random search algorithm'
 
@@ -46,10 +45,21 @@ class TestHpoAlgorithmRandom:
             assert -2 <= item['x'] <= 8
             assert item['y'] == pytest.approx(2.5)
 
-    @no_handlers()
+    def test_random_silent(self):
+        visited, func = get_hpo_func()
+        func.random(silent=True).max_steps(1000).spaces({
+            'x': uniform(-2, 8),
+            'y': 2.5,
+        }).run()
+
+        assert len(visited) == 1000
+        for item in visited:
+            assert -2 <= item['x'] <= 8
+            assert item['y'] == pytest.approx(2.5)
+
     def test_random_all(self):
         visited, func = get_hpo_func()
-        func.random().max_steps(1000).spaces({
+        func.random(silent=True).max_steps(1000).spaces({
             'x': uniform(-2, 8),
             'y': quniform(-1.6, 7.8, 0.2),
             'z': choice(['a', 'b', 'c'])
@@ -63,10 +73,9 @@ class TestHpoAlgorithmRandom:
             assert abs(round(index) - index) == pytest.approx(0.0)
             assert item['z'] in {'a', 'b', 'c'}
 
-    @no_handlers()
     def test_random_stop_when(self):
         visited, func = get_hpo_func()
-        cfg, res, metrics = func.random().stop_when(R['result'].abs() <= 0.5).spaces({
+        cfg, res, metrics = func.random(silent=True).stop_when(R['result'].abs() <= 0.5).spaces({
             'x': uniform(-2, 8),
             'y': quniform(-1.6, 7.8, 0.2),
         }).run()
@@ -74,10 +83,9 @@ class TestHpoAlgorithmRandom:
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
         assert abs(res['result']) <= 0.5
 
-    @no_handlers()
     def test_random_stop_when_or(self):
         visited, func = get_hpo_func()
-        cfg, res, metrics = func.random() \
+        cfg, res, metrics = func.random(silent=True) \
             .stop_when(R['result'].abs() <= 0.5) \
             .stop_when(R['result'] >= 56.25) \
             .spaces({
@@ -88,10 +96,9 @@ class TestHpoAlgorithmRandom:
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
         assert (abs(res['result']) <= 0.5) or (res['result'] >= 56.25)
 
-    @no_handlers()
     def test_random_maximize(self):
         visited, func = get_hpo_func()
-        cfg, res, metrics = func.random() \
+        cfg, res, metrics = func.random(silent=True) \
             .max_steps(1000) \
             .maximize(R['result']) \
             .spaces({
@@ -102,10 +109,9 @@ class TestHpoAlgorithmRandom:
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
         assert res['result'] >= 55
 
-    @no_handlers()
     def test_random_minimize(self):
         visited, func = get_hpo_func()
-        cfg, res, metrics = func.random() \
+        cfg, res, metrics = func.random(silent=True) \
             .max_steps(1000) \
             .minimize(R['result']) \
             .spaces({
@@ -116,10 +122,9 @@ class TestHpoAlgorithmRandom:
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
         assert res['result'] <= -12
 
-    @no_handlers()
     def test_random_zero(self):
         visited, func = get_hpo_func()
-        assert func.random() \
+        assert func.random(silent=True) \
                    .max_steps(0) \
                    .minimize(R['result']) \
                    .spaces({
@@ -128,7 +133,6 @@ class TestHpoAlgorithmRandom:
         }).run() is None
 
     @pytest.mark.flaky(reruns=3)
-    @no_handlers()
     def test_random_with_error(self):
         @hpo
         def opt_func(v):
@@ -141,7 +145,7 @@ class TestHpoAlgorithmRandom:
                 'sum': x + y,
             }
 
-        cfg, res, metrics = opt_func.random() \
+        cfg, res, metrics = opt_func.random(silent=True) \
             .max_steps(1000) \
             .maximize(R['result']) \
             .concern(M['time'], 'time_cost') \
@@ -156,10 +160,9 @@ class TestHpoAlgorithmRandom:
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
         assert res['result'] >= 3000
 
-    @no_handlers()
     def test_random_minimize_with_seed(self):
         visited, func = get_hpo_func()
-        cfg, res, metrics = func.random() \
+        cfg, res, metrics = func.random(silent=True) \
             .max_steps(1000) \
             .minimize(R['result']) \
             .seed(12) \
@@ -173,7 +176,7 @@ class TestHpoAlgorithmRandom:
         result1 = res['result']
 
         for _ in range(5):
-            cfg, res, metrics = func.random() \
+            cfg, res, metrics = func.random(silent=True) \
                 .max_steps(1000) \
                 .minimize(R['result']) \
                 .seed(12) \
