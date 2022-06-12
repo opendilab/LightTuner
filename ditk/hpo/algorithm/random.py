@@ -1,4 +1,5 @@
 import random
+from random import _inst as _RANDOM_INST
 from typing import Iterator, Tuple
 
 from .base import BaseAlgorithm
@@ -7,25 +8,36 @@ from ..utils import ValueProxyLock, RunFailed
 from ..value import HyperValue
 
 
-def random_space_value(space: BaseSpace):
+def random_space_value(space: BaseSpace, rnd: random.Random):
     if isinstance(space, SeparateSpace):
-        return random.randint(0, space.count - 1) * space.step + space.start
+        return rnd.randint(0, space.count - 1) * space.step + space.start
     elif isinstance(space, ContinuousSpace):
-        return random.random() * (space.ubound - space.lbound) + space.lbound
+        return rnd.random() * (space.ubound - space.lbound) + space.lbound
     elif isinstance(space, FixedSpace):
-        return random.randint(0, space.count - 1)
+        return rnd.randint(0, space.count - 1)
     else:
         raise TypeError(f'Unknown space type - {repr(space)}.')  # pragma: no cover
 
 
+def _make_random(seed) -> random.Random:
+    if isinstance(seed, random.Random):
+        return seed
+    elif isinstance(seed, int):
+        return random.Random(seed)
+    elif seed is None:
+        return _RANDOM_INST
+    else:
+        raise TypeError(f"Unknown type of random seed - {seed!r}.")  # pragma: no cover
+
+
 class RandomSearchAlgorithm(BaseAlgorithm):
     # noinspection PyUnusedLocal
-    def __init__(self, **kwargs):
+    def __init__(self, seed=None, **kwargs):
         BaseAlgorithm.__init__(self, **kwargs)
+        self._random = _make_random(seed)
 
-    @classmethod
-    def _random_hyper_value(cls, hv: HyperValue):
-        return hv.trans(random_space_value(hv.space))
+    def _random_hyper_value(self, hv: HyperValue):
+        return hv.trans(random_space_value(hv.space, self._random))
 
     def _iter_spaces(self, vsp: Tuple[HyperValue, ...], pres: ValueProxyLock) -> Iterator[Tuple[object, ...]]:
         while True:

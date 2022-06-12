@@ -1,15 +1,34 @@
 import random
+from random import _inst as _RANDOM_INST
 
 import pytest
 
 from ditk.hpo import uniform, quniform, choice, R, hpo, M
 from ditk.hpo.algorithm import RandomSearchAlgorithm
+from ditk.hpo.algorithm.random import _make_random
 from .base import get_hpo_func, EPS
 from ...testing import no_handlers
 
 
 @pytest.mark.unittest
 class TestHpoAlgorithmRandom:
+    def test_make_random(self):
+        r1 = random.Random(233)
+        assert _make_random(r1) is r1
+
+        _first = None
+        for _ in range(20):
+            r2 = _make_random(24)
+            now = tuple(map(lambda x: r2.randint(0, 100), range(20)))
+            if _first is None:
+                _first = now
+            else:
+                assert _first == now, 'Random not stable.'
+
+        assert _make_random(None) is _RANDOM_INST
+        with pytest.raises(TypeError):
+            _make_random('234')
+
     @no_handlers()
     def test_name(self):
         assert RandomSearchAlgorithm.algorithm_name() == 'random search algorithm'
