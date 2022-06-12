@@ -1,11 +1,13 @@
 import math
+from functools import partial
 
 from .value import HyperValue
 from ..space import ContinuousSpace, SeparateSpace, FixedSpace
+from ..utils import l2normal
 
 __all__ = [
     'uniform', 'quniform',
-    'choice', 'randint',
+    'choice', 'randint', 'randn',
 ]
 
 
@@ -38,3 +40,7 @@ def choice(chs) -> HyperValue:
 
 def randint(start, end) -> HyperValue:
     return quniform(math.ceil(start), math.floor(end), 1.0) >> int
+
+
+def randn(mu=0.0, sigma=1.0):
+    return uniform(0.0, 1.0) >> partial(l2normal, mu=mu, sigma=sigma)
