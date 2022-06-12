@@ -3,7 +3,7 @@ from typing import Tuple, Iterator, Dict, Type, List, Union
 
 from hbutils.reflection import nested_for
 
-from .base import BaseAlgorithm
+from .base import BaseAlgorithm, AlgorithmConfigure
 from ..space import ContinuousSpace, SeparateSpace, FixedSpace, BaseSpace
 from ..utils import ValueProxyLock, RunFailed
 from ..value import HyperValue
@@ -38,6 +38,10 @@ _ORDER_DICT: Dict[Type[BaseSpace], int] = {
     SeparateSpace: 2,
     ContinuousSpace: 3,
 }
+
+
+class GridConfigure(AlgorithmConfigure):
+    pass
 
 
 class GridSearchAlgorithm(BaseAlgorithm):

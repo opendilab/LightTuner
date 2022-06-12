@@ -1,1 +1,1 @@
-from .algorithm import BayesSearchAlgorithm
+from .algorithm import BayesSearchAlgorithm, BayesConfigure

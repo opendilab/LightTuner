@@ -9,7 +9,7 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 
 from .utils import acq_max, UtilityFunction, ensure_rng
-from ..base import BaseOptimizeAlgorithm, OptimizeDirection
+from ..base import BaseOptimizeAlgorithm, OptimizeDirection, AlgorithmConfigure
 from ...space import ContinuousSpace, SeparateSpace, FixedSpace
 from ...utils import ValueProxyLock, RunFailed
 from ...value import HyperValue
@@ -33,6 +33,32 @@ def hyper_to_bound(hv: HyperValue) -> Tuple[Tuple[float, float], Callable]:
         raise TypeError(f'Fixed space is not supported in bayesian optimization, but {hv!r} found.')
     else:
         raise TypeError(f'Unknown space type - {space!r}.')  # pragma: no cover
+
+
+class BayesConfigure(AlgorithmConfigure):
+    def seed(self, s: Optional[int] = None):
+        self._settings['seed'] = s
+        return self
+
+    def init_steps(self, steps: int):
+        self._settings['init_steps'] = steps
+        return self
+
+    def set_utils(self, acq=..., kappa=..., kappa_decay=..., kappa_decay_delay=..., xi=...):
+        new_values = {
+            key: value for key, value in
+            dict(acq=acq, kappa=kappa, kappa_decay=kappa_decay,
+                 kappa_decay_delay=kappa_decay_delay, xi=xi)
+            if value is not Ellipsis
+        }
+        self._settings.update(new_values)
+        return self
+
+    def set_gp_params(self, **gp_params):
+        gps = self._settings.get('gp_params', None) or {}
+        gps.update(gp_params)
+        self._settings['gp_params'] = gps
+        return self
 
 
 class BayesSearchAlgorithm(BaseOptimizeAlgorithm):

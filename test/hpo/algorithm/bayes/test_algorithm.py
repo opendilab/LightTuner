@@ -141,3 +141,46 @@ class TestHpoAlgorithmBayesAlgorithm:
 
         assert res['result'] >= 2900
         assert res['result'] == pytest.approx(cfg['x'] * cfg['y'])
+
+    @no_handlers()
+    def test_bayes_single_maximize_with_seed(self):
+        @hpo
+        def funcx(v):
+            x, y = v['x'], v['y']
+
+            return {
+                'result': x * y,
+                'sum': x + y,
+            }
+
+        cfg, res, metrics = funcx.bayes() \
+            .max_steps(30) \
+            .maximize(R['result']) \
+            .concern(M['time'], 'time_cost') \
+            .concern(R['sum'], 'sum') \
+            .seed(12) \
+            .spaces(
+            {
+                'x': uniform(-55, 125),  # continuous space
+                'y': quniform(-60, 20, 10),  # integer based space
+            }).run()
+
+        assert res['result'] >= 2900
+        assert res['result'] == pytest.approx(cfg['x'] * cfg['y'])
+        result1 = res['result']
+
+        for _ in range(2):
+            cfg, res, metrics = funcx.bayes() \
+                .max_steps(30) \
+                .maximize(R['result']) \
+                .concern(M['time'], 'time_cost') \
+                .concern(R['sum'], 'sum') \
+                .seed(12) \
+                .spaces(
+                {
+                    'x': uniform(-55, 125),  # continuous space
+                    'y': quniform(-60, 20, 10),  # integer based space
+                }).run()
+
+            assert res['result'] == pytest.approx(result1)
+            assert res['result'] == pytest.approx(cfg['x'] * cfg['y'])

@@ -1,5 +1,5 @@
 from enum import IntEnum, unique
-from typing import Iterator, Tuple
+from typing import Iterator, Tuple, Optional
 
 import inflection
 from hbutils.model import int_enum_loads
@@ -36,7 +36,7 @@ class BaseOptimizeAlgorithm(BaseAlgorithm):
     def __init__(self, opt_direction, **kwargs):
         BaseAlgorithm.__init__(self, opt_direction=opt_direction, **kwargs)
         if opt_direction is None:
-            raise ValueError(f'Direction {opt_direction} is not allowed.')
+            raise ValueError(f'Direction {opt_direction} is not allowed.')  # pragma: no cover
         self.__opt_direction = OptimizeDirection.loads(opt_direction)
 
     @property
@@ -45,3 +45,8 @@ class BaseOptimizeAlgorithm(BaseAlgorithm):
 
     def _iter_spaces(self, vsp: Tuple[HyperValue, ...], pres: ValueProxyLock) -> Iterator[Tuple[object, ...]]:
         raise NotImplementedError  # pragma: no cover
+
+
+class AlgorithmConfigure:
+    def __init__(self, settings: Optional[dict] = None):
+        self._settings = dict(settings or {})

@@ -1,8 +1,8 @@
 import random
 from random import _inst as _RANDOM_INST
-from typing import Iterator, Tuple
+from typing import Iterator, Tuple, Optional
 
-from .base import BaseAlgorithm
+from .base import BaseAlgorithm, AlgorithmConfigure
 from ..space import SeparateSpace, ContinuousSpace, FixedSpace, BaseSpace
 from ..utils import ValueProxyLock, RunFailed
 from ..value import HyperValue
@@ -28,6 +28,12 @@ def _make_random(seed) -> random.Random:
         return _RANDOM_INST
     else:
         raise TypeError(f"Unknown type of random seed - {seed!r}.")  # pragma: no cover
+
+
+class RandomConfigure(AlgorithmConfigure):
+    def seed(self, s: Optional[int] = None):
+        self._settings['seed'] = s
+        return self
 
 
 class RandomSearchAlgorithm(BaseAlgorithm):

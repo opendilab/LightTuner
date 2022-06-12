@@ -22,10 +22,12 @@ M = _OR['metrics']
 class SearchRunner:
     def __init__(self, algo_cls: Type[BaseAlgorithm], func):
         self.__func = func
-        self.__settings: Dict[str, object] = {
-            'max_steps': None,
-            'opt_direction': None,
-        }
+        try:
+            _ = self._settings
+        except AttributeError:
+            self._settings: Dict[str, object] = {}  # pragma: no cover
+        self._settings.update({'max_steps': None, 'opt_direction': None})
+
         self.__algorithm_cls = algo_cls  # algorithm class
         self.__max_try = 3
         self.__stop_condition = None  # end condition, determine when to stop
@@ -46,13 +48,13 @@ class SearchRunner:
 
     def __getattr__(self, item) -> Callable[[object, ], 'SearchRunner']:
         def _get_config_value(v) -> SearchRunner:
-            self.__settings[item] = v
+            self._settings[item] = v
             return self
 
         return _get_config_value
 
     def max_steps(self, n: int) -> 'SearchRunner':
-        self.__settings['max_steps'] = n
+        self._settings['max_steps'] = n
         return self
 
     def max_retries(self, n: int) -> 'SearchRunner':
@@ -73,7 +75,7 @@ class SearchRunner:
     def maximize(self, condition, name='target') -> 'SearchRunner':
         if self.__order_condition is None:
             self.__order_condition = (_to_model(condition), __gt__)
-            self.__settings['opt_direction'] = 'maximize'
+            self._settings['opt_direction'] = 'maximize'
             self.__target_name = name
             return self
         else:
@@ -82,7 +84,7 @@ class SearchRunner:
     def minimize(self, condition, name='target') -> 'SearchRunner':
         if self.__order_condition is None:
             self.__order_condition = (_to_model(condition), __lt__)
-            self.__settings['opt_direction'] = 'minimize'
+            self._settings['opt_direction'] = 'minimize'
             self.__target_name = name
             return self
         else:
@@ -102,7 +104,7 @@ class SearchRunner:
     @property
     def _max_steps(self) -> Optional[int]:
         # noinspection PyTypeChecker
-        return self.__settings['max_steps']
+        return self._settings['max_steps']
 
     def _is_result_okay(self, retval):
         if self.__stop_condition is not None:
@@ -133,13 +135,13 @@ class SearchRunner:
         self.__events.trigger(
             RunnerStatus.INIT,
             self.__algorithm_cls,
-            self.__settings,
+            self._settings,
             self.__func,
         )
 
         # initializing algorithm
         passback = ValueProxyLock()
-        cfg_iter = self.__algorithm_cls(**self.__settings).iter_config(self.__spaces, passback)
+        cfg_iter = self.__algorithm_cls(**self._settings).iter_config(self.__spaces, passback)
         if self._max_steps is not None:
             cfg_iter = islice(cfg_iter, self._max_steps)
         self.__events.trigger(

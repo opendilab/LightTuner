@@ -1,4 +1,4 @@
-from .base import BaseAlgorithm, BaseOptimizeAlgorithm
-from .bayes import BayesSearchAlgorithm
-from .grid import GridSearchAlgorithm
-from .random import RandomSearchAlgorithm
+from .base import BaseAlgorithm, BaseOptimizeAlgorithm, AlgorithmConfigure
+from .bayes import BayesSearchAlgorithm, BayesConfigure
+from .grid import GridSearchAlgorithm, GridConfigure
+from .random import RandomSearchAlgorithm, RandomConfigure

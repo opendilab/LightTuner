@@ -155,3 +155,32 @@ class TestHpoAlgorithmRandom:
 
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
         assert res['result'] >= 3000
+
+    @no_handlers()
+    def test_random_minimize_with_seed(self):
+        visited, func = get_hpo_func()
+        cfg, res, metrics = func.random() \
+            .max_steps(1000) \
+            .minimize(R['result']) \
+            .seed(12) \
+            .spaces({
+            'x': uniform(-2, 8),
+            'y': quniform(-1.6, 7.8, 0.2),
+        }).run()
+
+        assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
+        assert res['result'] <= -12
+        result1 = res['result']
+
+        for _ in range(5):
+            cfg, res, metrics = func.random() \
+                .max_steps(1000) \
+                .minimize(R['result']) \
+                .seed(12) \
+                .spaces({
+                'x': uniform(-2, 8),
+                'y': quniform(-1.6, 7.8, 0.2),
+            }).run()
+
+            assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
+            assert res['result'] == pytest.approx(result1)
