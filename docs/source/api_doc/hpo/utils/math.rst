@@ -6,12 +6,6 @@ ditk.hpo.utils.math
 .. automodule:: ditk.hpo.utils.math
 
 
-erfinv
-----------------------------
-
-.. autofunction:: erfinv
-
-
 l2normal
 ----------------------------
 
