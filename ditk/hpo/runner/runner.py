@@ -10,6 +10,11 @@ from .result import _to_model
 from ..algorithm import BaseAlgorithm
 from ..utils import EventModel, ValueProxyLock
 
+
+class SkipSample(BaseException):
+    pass
+
+
 R = _OR['return']
 M = _OR['metrics']
 
@@ -154,16 +159,18 @@ class SearchRunner:
             self.__events.trigger(RunnerStatus.STEP, cur_istep, cur_cfg)
 
             # run the function with several tries
-            r_retval, r_err, r_time_cost = None, None, None
+            r_retval, r_err, r_skip, r_time_cost = None, None, None, None
             for i in range(self.__max_try):
                 # run the function once
                 self.__events.trigger(RunnerStatus.TRY, i, self.__max_try)
 
                 _before_time = time.time()
                 try:
-                    retval, cur_err = self.__func(cur_cfg), None
+                    retval, cur_err, need_skip = self.__func(cur_cfg), None, False
+                except SkipSample as err:
+                    retval, cur_err, need_skip = None, err, True
                 except BaseException as err:
-                    retval, cur_err = None, err
+                    retval, cur_err, need_skip = None, err, False
                 finally:
                     _after_time = time.time()
                 r_time_cost = _after_time - _before_time
@@ -171,41 +178,52 @@ class SearchRunner:
                 self.__events.trigger(RunnerStatus.TRY_COMPLETE, r_metrics)
 
                 # check the error and result
-                if cur_err is None:
-                    self.__events.trigger(RunnerStatus.TRY_OK, retval)
-                    r_err, r_retval = None, retval
-                    break
+                if not need_skip:
+                    if cur_err is None:
+                        self.__events.trigger(RunnerStatus.TRY_OK, retval)
+                        r_err, r_retval, r_skip = None, retval, False
+                        break
+                    else:
+                        self.__events.trigger(RunnerStatus.TRY_FAIL, cur_err)
+                        r_err, r_skip = cur_err, False
                 else:
-                    self.__events.trigger(RunnerStatus.TRY_FAIL, cur_err)
-                    r_err = cur_err
+                    self.__events.trigger(RunnerStatus.TRY_SKIP, cur_err.args)
+                    r_err, r_skip = cur_err, True
+                    break
 
             can_break = False
             metrics = {'time': r_time_cost}
-            if r_err is None:
-                # get full data
-                full_result = {'return': r_retval, 'metrics': metrics}
-                self.__events.trigger(RunnerStatus.STEP_OK, r_retval, metrics)
+            if not r_skip:
+                if r_err is None:
+                    # get full data
+                    full_result = {'return': r_retval, 'metrics': metrics}
+                    self.__events.trigger(RunnerStatus.STEP_OK, r_retval, metrics)
 
-                # maintain the ranklist
-                passback.put(self._get_result_value(full_result))
-                ins_pos = None
-                for i, (_, _, fres) in enumerate(ranklist):
-                    if self._is_result_better(fres, full_result):
-                        ins_pos = i
-                        break
-                if ins_pos is None:
-                    ranklist.append((cur_istep, cur_cfg, full_result))
+                    # maintain the ranklist
+                    passback.put(self._get_result_value(full_result))
+                    ins_pos = None
+                    for i, (_, _, fres) in enumerate(ranklist):
+                        if self._is_result_better(fres, full_result):
+                            ins_pos = i
+                            break
+                    if ins_pos is None:
+                        ranklist.append((cur_istep, cur_cfg, full_result))
+                    else:
+                        ranklist = ranklist[:ins_pos] + [(cur_istep, cur_cfg, full_result)] + ranklist[ins_pos:]
+                    ranklist = ranklist[:self.__rank_capacity]
+
+                    # condition check
+                    if self._is_result_okay(full_result):
+                        can_break = True
+
                 else:
-                    ranklist = ranklist[:ins_pos] + [(cur_istep, cur_cfg, full_result)] + ranklist[ins_pos:]
-                ranklist = ranklist[:self.__rank_capacity]
-
-                # condition check
-                if self._is_result_okay(full_result):
-                    can_break = True
+                    # log the exception
+                    self.__events.trigger(RunnerStatus.STEP_FAIL, r_err, metrics)
+                    passback.fail(r_err)
 
             else:
-                # log the exception
-                self.__events.trigger(RunnerStatus.STEP_FAIL, r_err, metrics)
+                # log the skipped information
+                self.__events.trigger(RunnerStatus.STEP_SKIP, r_err.args, metrics)
                 passback.fail(r_err)
 
             # print ranklist and running duration

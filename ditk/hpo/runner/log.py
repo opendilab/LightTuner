@@ -92,6 +92,13 @@ class LoggingEventSet(RunnerEventSet):
                                    f'time cost: {"%.3f" % r_time_cost} seconds, '
                                    f'this step will be skipped and ignored due to this failure.')
 
+    def step_skip(self, args: Tuple[Any, ...], metrics: Dict[str, Any]):
+        r_time_cost = metrics['time']
+        self._logger.info(dedent(f"""
+            Sample [yellow]skipped[/], time cost: {"%.3f" % r_time_cost} seconds,
+            with arguments: [bold bright_white underline]{args!r}[/].
+        """).strip())
+
     def step_final(self, ranklist: List[Tuple[int, Any, Any]]):
         self._logger.info(dedent(f"""
 Current ranklist ({plural_word(len(ranklist), 'best record')}):
@@ -111,6 +118,9 @@ Current ranklist ({plural_word(len(ranklist), 'best record')}):
         pass
 
     def try_ok(self, retval: Any):
+        pass
+
+    def try_skip(self, args: Tuple[Any, ...]):
         pass
 
     def try_fail(self, error: Exception):

@@ -1,6 +1,6 @@
 import math
 
-from .erfinv import erfinv
+from scipy.special import erfinv
 
 v_2_m1 = math.sqrt(2)
 

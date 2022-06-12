@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from ditk.hpo import choice, hpo, R, quniform, uniform, M
+from ditk.hpo import choice, hpo, R, quniform, uniform, M, SkipSample
 from ditk.hpo.algorithm.bayes.algorithm import hyper_to_bound
 from ditk.hpo.space import ContinuousSpace, SeparateSpace
 from ditk.hpo.value import HyperValue
@@ -102,6 +102,34 @@ class TestHpoAlgorithmBayesAlgorithm:
         cfg, res, metrics = opt_func.bayes() \
             .max_steps(30) \
             .init_steps(0) \
+            .maximize(R['result']) \
+            .concern(M['time'], 'time_cost') \
+            .concern(R['sum'], 'sum') \
+            .spaces(
+            {
+                'x': uniform(-55, 125),  # continuous space
+                'y': quniform(-60, 20, 10),  # integer based space
+            }).run()
+
+        assert res['result'] >= 2900
+        assert res['result'] == pytest.approx(cfg['x'] * cfg['y'])
+
+    @pytest.mark.flaky(reruns=3)
+    @no_handlers()
+    def test_bayes_single_maximize_with_skip(self):
+        @hpo
+        def funcx(v):
+            x, y = v['x'], v['y']
+            if random.random() < 0.15:
+                raise SkipSample('Fxxk this shxt', 2, 3)  # without retry
+
+            return {
+                'result': x * y,
+                'sum': x + y,
+            }
+
+        cfg, res, metrics = funcx.bayes() \
+            .max_steps(30) \
             .maximize(R['result']) \
             .concern(M['time'], 'time_cost') \
             .concern(R['sum'], 'sum') \

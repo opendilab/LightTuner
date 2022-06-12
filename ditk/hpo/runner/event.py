@@ -19,12 +19,14 @@ class RunnerStatus(AutoIntEnum):
     STEP = 'step'  # step(step_id, input_config)
     STEP_OK = 'step_ok'  # step_ok(retval, metrics)
     STEP_FAIL = 'step_fail'  # step_fail(error, metrics)
+    STEP_SKIP = 'step_skip'  # step_skip(error, args)
     STEP_FINAL = 'step_final'  # step_final(ranklist)
 
     TRY = 'try_'  # try(try_id, max_try)
     TRY_COMPLETE = 'try_complete'  # try_complete(metrics)
     TRY_OK = 'try_ok'  # try_ok(retval)
     TRY_FAIL = 'try_fail'  # try_fail(error)
+    TRY_SKIP = 'try_skip'  # try_skip(args)
 
 
 class RunnerEventSet:
@@ -52,6 +54,9 @@ class RunnerEventSet:
     def step_fail(self, error: Exception, metrics: Dict[str, Any]):
         pass  # pragma: no cover
 
+    def step_skip(self, args: Tuple[Any, ...], metrics: Dict[str, Any]):
+        pass  # pragma: no cover
+
     def step_final(self, ranklist: List[Tuple[int, Any, Any]]):
         pass  # pragma: no cover
 
@@ -63,6 +68,9 @@ class RunnerEventSet:
         pass  # pragma: no cover
 
     def try_ok(self, retval: Any):
+        pass  # pragma: no cover
+
+    def try_skip(self, args: Tuple[Any, ...]):
         pass  # pragma: no cover
 
     def try_fail(self, error: Exception):
