@@ -5,8 +5,8 @@ from typing import Callable, Type, Optional, Tuple, Dict, Any
 
 from .event import RunnerStatus, RunnerEventSet
 from .log import LoggingEventSet
-from .result import R as _OR
-from .result import _to_model
+from .result import R as _OR, _to_expr
+from .result import _to_callable
 from ..algorithm import BaseAlgorithm
 from ..utils import EventModel, ValueProxyLock
 
@@ -67,15 +67,15 @@ class SearchRunner:
 
     def stop_when(self, condition) -> 'SearchRunner':
         if self.__stop_condition is None:
-            self.__stop_condition = _to_model(condition)
+            self.__stop_condition = _to_expr(condition)
         else:
-            self.__stop_condition = self.__stop_condition | _to_model(condition)
+            self.__stop_condition = self.__stop_condition | _to_expr(condition)
 
         return self
 
     def maximize(self, condition, name='target') -> 'SearchRunner':
         if self.__order_condition is None:
-            self.__order_condition = (_to_model(condition), __gt__)
+            self.__order_condition = (_to_expr(condition), __gt__)
             self._settings['opt_direction'] = 'maximize'
             self.__target_name = name
             return self
@@ -84,7 +84,7 @@ class SearchRunner:
 
     def minimize(self, condition, name='target') -> 'SearchRunner':
         if self.__order_condition is None:
-            self.__order_condition = (_to_model(condition), __lt__)
+            self.__order_condition = (_to_expr(condition), __lt__)
             self._settings['opt_direction'] = 'minimize'
             self.__target_name = name
             return self
@@ -109,7 +109,7 @@ class SearchRunner:
 
     def _is_result_okay(self, retval):
         if self.__stop_condition is not None:
-            return not not self.__stop_condition(retval)
+            return not not _to_callable(self.__stop_condition)(retval)
         else:
             return False
 
@@ -119,15 +119,16 @@ class SearchRunner:
 
     def _is_result_better(self, origin, newres):
         if self.__order_condition is not None:
-            cond, cmp = self.__order_condition
+            _e_cond, cmp = self.__order_condition
+            cond = _to_callable(_e_cond)
             return cmp(cond(newres), cond(origin))
         else:
             return True
 
     def _get_result_value(self, res):
         if self.__order_condition is not None:
-            conf, _ = self.__order_condition
-            return conf(res)
+            _e_cond, _ = self.__order_condition
+            return _to_callable(_e_cond)(res)
         else:
             return R(res)
 
