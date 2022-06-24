@@ -3,7 +3,7 @@ import pytest
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern
 
-from ditk.hpo.algorithm.bayes.utils import UtilityFunction, acq_max, ensure_rng
+from ditk.hpo.old_algorithm.bayes.utils import UtilityFunction, acq_max, ensure_rng
 
 
 def get_globals():

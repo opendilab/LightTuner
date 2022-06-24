@@ -4,8 +4,8 @@ from random import _inst as _RANDOM_INST
 import pytest
 
 from ditk.hpo import uniform, quniform, choice, R, hpo, M
-from ditk.hpo.algorithm import RandomSearchAlgorithm
-from ditk.hpo.algorithm.random import _make_random
+from ditk.hpo.old_algorithm import RandomSearchAlgorithm
+from ditk.hpo.old_algorithm.random import _make_random
 from .base import get_hpo_func, EPS
 from ...testing import no_handlers
 

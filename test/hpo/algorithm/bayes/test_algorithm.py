@@ -3,7 +3,7 @@ import random
 import pytest
 
 from ditk.hpo import choice, hpo, R, quniform, uniform, M, SkipSample
-from ditk.hpo.algorithm.bayes.algorithm import hyper_to_bound
+from ditk.hpo.old_algorithm.bayes.algorithm import hyper_to_bound
 from ditk.hpo.space import ContinuousSpace, SeparateSpace
 from ditk.hpo.value import HyperValue
 from ....testing import no_handlers

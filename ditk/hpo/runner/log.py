@@ -10,7 +10,7 @@ from tabulate import tabulate
 
 from .event import RunnerEventSet
 from .result import R as _OR
-from ..algorithm import BaseAlgorithm
+from ..old_algorithm import BaseAlgorithm
 from ..utils import rchain
 from ..value import HyperValue
 from ...logging import getLogger, try_init_root

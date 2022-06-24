@@ -7,7 +7,7 @@ from .event import RunnerStatus, RunnerEventSet
 from .log import LoggingEventSet
 from .result import R as _OR, _to_expr
 from .result import _to_callable
-from ..algorithm import BaseAlgorithm
+from ..old_algorithm import BaseAlgorithm
 from ..utils import EventModel, ValueProxyLock
 
 
@@ -28,7 +28,7 @@ class SearchRunner:
             self._settings: Dict[str, object] = {}  # pragma: no cover
         self._settings.update({'max_steps': None, 'opt_direction': None})
 
-        self.__algorithm_cls = algo_cls  # algorithm class
+        self.__algorithm_cls = algo_cls  # old_algorithm class
         self.__max_try = 3
         self.__stop_condition = None  # end condition, determine when to stop
         self.__order_condition = None  # order condition, determine which is the best
@@ -133,7 +133,7 @@ class SearchRunner:
             return R(res)
 
     def run(self) -> Optional[Tuple[Any, Any, Any]]:
-        # algorithm information
+        # old_algorithm information
         self.__events.trigger(
             RunnerStatus.INIT,
             self.__algorithm_cls,
@@ -141,7 +141,7 @@ class SearchRunner:
             self.__func,
         )
 
-        # initializing algorithm
+        # initializing old_algorithm
         passback = ValueProxyLock()
         cfg_iter = self.__algorithm_cls(**self._settings).iter_config(self.__spaces, passback)
         if self._max_steps is not None:

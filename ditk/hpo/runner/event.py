@@ -2,7 +2,7 @@ from typing import Type, Dict, Any, Callable, Tuple, List
 
 from hbutils.model import AutoIntEnum
 
-from ..algorithm import BaseAlgorithm
+from ..old_algorithm import BaseAlgorithm
 
 
 # noinspection PyArgumentList

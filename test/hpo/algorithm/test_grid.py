@@ -3,7 +3,7 @@ import random
 import pytest
 
 from ditk.hpo import R, randint, quniform, choice, uniform, hpo, M
-from ditk.hpo.algorithm.grid import allocate_continuous, allocate_separate, allocate_fixed, GridSearchAlgorithm
+from ditk.hpo.old_algorithm.grid import allocate_continuous, allocate_separate, allocate_fixed, GridSearchAlgorithm
 from ditk.hpo.space import ContinuousSpace, SeparateSpace, FixedSpace
 from .base import get_hpo_func, EPS
 from ...testing import no_handlers
