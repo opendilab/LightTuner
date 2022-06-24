@@ -71,10 +71,11 @@ class ThreadService(metaclass=ABCMeta):
 
     def send(self, task: _TaskType, fn_callback: Optional[_TaskCallBackType] = None,
              *, timeout: Optional[float] = None):
-        _busy = None
+        _busy_err = None
         _call_time, _is_tried, _is_sent = time.time(), False, False
         while not _is_tried or timeout is None or _call_time + timeout > time.time():
             _is_tried = True
+            _is_busy = False
             with self.__state_lock:
                 if self.__state == ServiceState.PENDING:
                     raise RuntimeError(f'Service is {self.__state.name.lower()}.')
@@ -83,8 +84,7 @@ class ThreadService(metaclass=ABCMeta):
                         self.__check_recv_busy()
                         self._check_recv(task)
                     except ServiceBusy as err:
-                        _busy = err
-                        time.sleep(0.05)
+                        _is_busy, _busy_err = True, err
                     else:
                         self.__running_count += 1
                         self.__exec_pool.submit(self.__actual_exec, task, fn_callback)
@@ -94,8 +94,11 @@ class ThreadService(metaclass=ABCMeta):
                     raise ServiceNoLongerAccept(f'Service is {self.__state.name.lower()}, '
                                                 f'tasks will be no longer accepted.')
 
-        if not _is_sent and _busy is not None:
-            raise _busy
+            if _is_busy:  # do not jam the lock, move the sleep out of above
+                time.sleep(0.05)
+
+        if not _is_sent and _busy_err is not None:
+            raise _busy_err
 
     def __shutdown(self, already_closing: Event):
         self.__state = ServiceState.CLOSING
