@@ -4,8 +4,8 @@ from typing import Tuple
 
 import pytest
 
-from ditk.hpo.utils import ThreadService, Result
-from ditk.hpo.utils.service import ServiceState, ServiceNoLongerAccept, ServiceBusy
+from ditk.hpo.utils import ThreadService, Result, ServiceNoLongerAccept, ServiceBusy
+from ditk.hpo.utils.service import ServiceState
 
 
 @pytest.mark.unittest
@@ -26,6 +26,9 @@ class TestHpoUtilsService:
 
         class _LocalThreadService(ThreadService):
             def _check_recv(self, task):
+                pass
+
+            def _before_exec(self, task: MyTask):
                 pass
 
             def _exec(self, task: MyTask) -> object:
@@ -94,6 +97,9 @@ class TestHpoUtilsService:
     def test_busy_and_error(self):
         class _LocalThreadService(ThreadService):
             def _check_recv(self, task):
+                pass
+
+            def _before_exec(self, task: int):
                 pass
 
             def _exec(self, task: int) -> object:

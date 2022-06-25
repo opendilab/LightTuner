@@ -122,12 +122,16 @@ class ThreadService(metaclass=ABCMeta):
     # execution part
     def __actual_exec(self, task: _TaskType, fn_callback: Optional[_TaskCallBackType]):
         try:
+            self._before_exec(task)
+
             try:
                 _retval = self._exec(task)
             except BaseException as err:
                 _result = Result(False, None, err)
             else:
                 _result = Result(True, _retval, None)
+
+            self._after_exec(task, _result)
 
         finally:
             with self.__state_lock:
@@ -139,9 +143,12 @@ class ThreadService(metaclass=ABCMeta):
                 fn_callback(*args, **kwargs)
             self.__event_pool.submit(self._after_callback, task, _result)
 
-        self._after_exec(task, _result)
         self.__callback_pool.submit(_actual_callback, task, _result)
         self.__event_pool.submit(self._after_sentback, task, _result)
+
+    @abstractmethod
+    def _before_exec(self, task: _TaskType):
+        raise NotImplementedError  # pragma: no cover
 
     @abstractmethod
     def _exec(self, task: _TaskType) -> object:
