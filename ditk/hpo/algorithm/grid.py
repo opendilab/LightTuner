@@ -5,7 +5,7 @@ from hbutils.reflection import nested_for
 
 from .base import BaseAlgorithm, BaseConfigure, BaseSession
 from ..space import ContinuousSpace, SeparateSpace, FixedSpace, BaseSpace
-from ..utils import ThreadService, Result
+from ..utils import ThreadService
 from ..value import HyperValue
 
 
@@ -57,9 +57,10 @@ class GridSession(BaseSession):
         BaseSession.__init__(self, space, service)
         self.__algorithm = algorithm
 
-    def _return(self, task: Tuple[int, Any, Any], result: Result):
+    def _return_on_success(self, task: Tuple[int, Any, Any], retval: Any):
         # just do nothing at all
         # _task_id, _config, _attachment = task
+        print(task, retval.value)
         pass
 
     def _run(self, vsp: Tuple[HyperValue, ...]):

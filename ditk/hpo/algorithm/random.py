@@ -4,7 +4,7 @@ from typing import Optional, Tuple, Any
 
 from .base import BaseConfigure, BaseAlgorithm, BaseSession
 from ..space import BaseSpace, SeparateSpace, ContinuousSpace, FixedSpace
-from ..utils import Result, ThreadService, ServiceNoLongerAccept
+from ..utils import ThreadService, ServiceNoLongerAccept
 from ..value import HyperValue
 
 
@@ -53,9 +53,7 @@ class RandomSession(BaseSession):
     def _random_hyper_value(self, hv: HyperValue):
         return hv.trans(random_space_value(hv.space, self.__algorithm.random))
 
-    def _return(self, task: Tuple[int, Any, Any], result: Result):
-        # just do nothing at all
-        # _task_id, _config, _attachment = task
+    def _return_on_success(self, task: Tuple[int, Any, Any], retval: Any):
         pass
 
     def _run(self, vsp: Tuple[HyperValue, ...]):

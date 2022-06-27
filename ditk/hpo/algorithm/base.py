@@ -47,17 +47,27 @@ class BaseSession:
         self.__max_id = 0
         self.__sfunc, self.__svalues = struct_values(space)
 
+    def __actual_return(self, task: Tuple[int, Any, Any], result: Result):
+        self._return(task, result)
+        if result.ok:
+            self._return_on_success(task, result.retval)
+        else:
+            self._return_on_failed(task, result.error)
+
     def _return(self, task: Tuple[int, Any, Any], result: Result):
+        pass
+
+    def _return_on_success(self, task: Tuple[int, Any, Any], retval: Any):
         raise NotImplementedError  # pragma: no cover
+
+    def _return_on_failed(self, task: Tuple[int, Any, Any], error: Exception):
+        pass
 
     def put(self, task: Tuple[Any, Any], *, timeout: Optional[float] = None):
         with self.__state_lock:
             if self.__state == SessionState.RUNNING:
                 self.__max_id += 1
-                self.__service.send(
-                    (self.__max_id, *task),
-                    self._return, timeout=timeout
-                )
+                self.__service.send((self.__max_id, *task), self.__actual_return, timeout=timeout)
             else:
                 raise RuntimeError(f'Algorithm session is {self.__state.name}, sample putting is disabled.')
 

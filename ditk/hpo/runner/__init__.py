@@ -1,2 +1,2 @@
 from .hpo import hpo
-from .runner import R, M, SkipSample
+from .old_runner import R, M, SkipSample

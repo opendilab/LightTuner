@@ -1,6 +1,6 @@
 from typing import Type
 
-from .runner import SearchRunner
+from .old_runner import SearchRunner
 from ..old_algorithm import BaseAlgorithm, GridSearchAlgorithm, RandomSearchAlgorithm, BayesSearchAlgorithm, \
     RandomConfigure, GridConfigure, BayesConfigure
 
