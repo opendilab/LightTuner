@@ -1,3 +1,4 @@
+from collections import namedtuple
 from enum import IntEnum, unique
 from threading import Thread, Lock
 from typing import Optional, Tuple, Any
@@ -37,6 +38,9 @@ class SessionState(IntEnum):
     DEAD = 3
 
 
+Task = namedtuple('Task', ('task_id', 'config', 'attachment'))
+
+
 class BaseSession:
     def __init__(self, space, service: ThreadService):
         self.__service = service
@@ -47,33 +51,36 @@ class BaseSession:
         self.__max_id = 0
         self.__sfunc, self.__svalues = struct_values(space)
 
-    def __actual_return(self, task: Tuple[int, Any, Any], result: Result):
+    def __actual_return(self, task: Task, result: Result):
         self._return(task, result)
         if result.ok:
             self._return_on_success(task, result.retval)
         else:
             self._return_on_failed(task, result.error)
 
-    def _return(self, task: Tuple[int, Any, Any], result: Result):
+    def _return(self, task: Task, result: Result):
         pass
 
-    def _return_on_success(self, task: Tuple[int, Any, Any], retval: Any):
+    def _return_on_success(self, task: Task, retval: Any):
         raise NotImplementedError  # pragma: no cover
 
-    def _return_on_failed(self, task: Tuple[int, Any, Any], error: Exception):
+    def _return_on_failed(self, task: Task, error: Exception):
         pass
 
-    def put(self, task: Tuple[Any, Any], *, timeout: Optional[float] = None):
+    def put(self, config, attachment: Optional[Tuple[Any, ...]] = None, *, timeout: Optional[float] = None):
         with self.__state_lock:
             if self.__state == SessionState.RUNNING:
                 self.__max_id += 1
-                self.__service.send((self.__max_id, *task), self.__actual_return, timeout=timeout)
+                self.__service.send(
+                    Task(self.__max_id, config, attachment),
+                    self.__actual_return, timeout=timeout
+                )
             else:
                 raise RuntimeError(f'Algorithm session is {self.__state.name}, sample putting is disabled.')
 
-    def _put_via_space(self, vp: Tuple[Any, ...], attached: Optional[Tuple[Any, ...]] = None,
+    def _put_via_space(self, vp: Tuple[Any, ...], attachment: Optional[Tuple[Any, ...]] = None,
                        *, timeout: Optional[float] = None):
-        self.put((self.__sfunc(*vp), attached), timeout=timeout)
+        self.put(self.__sfunc(*vp), attachment, timeout=timeout)
 
     def _run(self, vsp: Tuple[HyperValue, ...]):
         raise NotImplementedError  # pragma: no cover

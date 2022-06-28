@@ -3,9 +3,9 @@ from typing import Tuple, Dict, Type, List, Union, Any
 
 from hbutils.reflection import nested_for
 
-from .base import BaseAlgorithm, BaseConfigure, BaseSession
+from .base import BaseAlgorithm, BaseConfigure, BaseSession, Task
 from ..space import ContinuousSpace, SeparateSpace, FixedSpace, BaseSpace
-from ..utils import ThreadService
+from ..utils import ThreadService, ServiceNoLongerAccept
 from ..value import HyperValue
 
 
@@ -57,10 +57,9 @@ class GridSession(BaseSession):
         BaseSession.__init__(self, space, service)
         self.__algorithm = algorithm
 
-    def _return_on_success(self, task: Tuple[int, Any, Any], retval: Any):
+    def _return_on_success(self, task: Task, retval: Any):
         # just do nothing at all
         # _task_id, _config, _attachment = task
-        print(task, retval.value)
         pass
 
     def _run(self, vsp: Tuple[HyperValue, ...]):
@@ -114,4 +113,7 @@ class GridSession(BaseSession):
 
         final_alloc = map(lambda x: tuple(x[0].trans(vx) for vx in x[1]), zip(vsp, odim_alloc))
         for tpl in nested_for(*final_alloc):
-            self._put_via_space(tuple(tpl))
+            try:
+                self._put_via_space(tuple(tpl))
+            except ServiceNoLongerAccept:
+                break

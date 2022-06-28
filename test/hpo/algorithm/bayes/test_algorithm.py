@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from ditk.hpo import choice, hpo, R, quniform, uniform, M, SkipSample
+from ditk.hpo import choice, hpo, R, quniform, uniform, M, Skip
 from ditk.hpo.old_algorithm.bayes.algorithm import hyper_to_bound
 from ditk.hpo.space import ContinuousSpace, SeparateSpace
 from ditk.hpo.value import HyperValue
@@ -135,7 +135,7 @@ class TestHpoAlgorithmBayesAlgorithm:
         def funcx(v):
             x, y = v['x'], v['y']
             if random.random() < 0.15:
-                raise SkipSample('Fxxk this shxt', 2, 3)  # without retry
+                raise Skip('Fxxk this shxt', 2, 3)  # without retry
 
             return {
                 'result': x * y,

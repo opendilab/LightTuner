@@ -1,0 +1,2 @@
+class Skip(BaseException):
+    pass

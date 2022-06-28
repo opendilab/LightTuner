@@ -1,3 +1,5 @@
+from typing import Callable, Any
+
 from hbutils.expression import GeneralExpression, efunc, raw
 
 from ..utils import is_function
@@ -20,7 +22,7 @@ class _ResultExpression(GeneralExpression):
 R = _ResultExpression()
 
 
-def _to_expr(e):
+def _to_expr(e) -> _ResultExpression:
     if isinstance(e, _ResultExpression):
         return e
     elif is_function(e):
@@ -29,5 +31,5 @@ def _to_expr(e):
         return _ResultExpression(lambda x: e)
 
 
-def _to_callable(e):
+def _to_callable(e) -> Callable[[Any, ], Any]:
     return efunc(_to_expr(e))
