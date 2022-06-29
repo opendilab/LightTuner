@@ -37,33 +37,59 @@ class ServiceNoLongerAccept(BaseException):
 
 class ThreadService(metaclass=ABCMeta):
     def __init__(self, max_workers=None):
-        self.__max_workers = max_workers or os.cpu_count()
-        self.__exec_pool: Optional[ThreadPoolExecutor] = None
-        self.__callback_pool: Optional[ThreadPoolExecutor] = None
-        self.__event_pool: Optional[ThreadPoolExecutor] = None
+        self._max_workers = max_workers or os.cpu_count()
+        self._exec_pool: Optional[ThreadPoolExecutor] = None
+        self._callback_pool: Optional[ThreadPoolExecutor] = None
+        self._event_pool: Optional[ThreadPoolExecutor] = None
 
-        self.__state = ServiceState.PENDING
-        self.__state_lock = Lock()
-        self.__running_count: Optional[int] = None
-        self.__close_thread: Optional[Thread] = None
+        self._state = ServiceState.PENDING
+        self._state_lock = Lock()
+        self._running_count: Optional[int] = None
+        self._close_thread: Optional[Thread] = None
+        self._close_event = Event()
+
+        self._error_lock = Lock()
+        self._error: Optional[BaseException] = None
 
     @property
     def state(self) -> ServiceState:
-        return self.__state
+        return self._state
+
+    @property
+    def error(self) -> Optional[BaseException]:
+        with self._error_lock:
+            return self._error
+
+    def _shutdown_due_to_error(self, err: BaseException):
+        with self._error_lock:
+            if self._error is None:
+                self._error = err
+                self.shutdown(wait=False)
+
+    def _error_wrap(self, method):
+        @wraps(method)
+        def _new_method(*args, **kwargs):
+            try:
+                return method(*args, **kwargs)
+            except BaseException as err:
+                self._shutdown_due_to_error(err)
+                raise err
+
+        return _new_method
 
     def start(self):
-        with self.__state_lock:
-            if self.__state == ServiceState.PENDING:
-                self.__exec_pool = ThreadPoolExecutor(max_workers=self.__max_workers)
-                self.__callback_pool = ThreadPoolExecutor()
-                self.__event_pool = ThreadPoolExecutor()
-                self.__state = ServiceState.RUNNING
-                self.__running_count = 0
+        with self._state_lock:
+            if self._state == ServiceState.PENDING:
+                self._exec_pool = ThreadPoolExecutor(max_workers=self._max_workers)
+                self._callback_pool = ThreadPoolExecutor()
+                self._event_pool = ThreadPoolExecutor()
+                self._state = ServiceState.RUNNING
+                self._running_count = 0
 
     def __check_recv_busy(self):
-        if self.__running_count >= self.__max_workers:
-            raise ServiceBusy(f'{plural_word(self.__running_count, "running task")}, '
-                              f'max workers limits ({self.__max_workers}) has already exceeded.')
+        if self._running_count >= self._max_workers:
+            raise ServiceBusy(f'{plural_word(self._running_count, "running task")}, '
+                              f'max workers limits ({self._max_workers}) has already exceeded.')
 
     @abstractmethod
     def _check_recv(self, task: _TaskType):
@@ -76,22 +102,22 @@ class ThreadService(metaclass=ABCMeta):
         while not _is_tried or timeout is None or _call_time + timeout > time.time():
             _is_tried = True
             _is_busy = False
-            with self.__state_lock:
-                if self.__state == ServiceState.PENDING:
-                    raise RuntimeError(f'Service is {self.__state.name.lower()}.')
-                elif self.__state == ServiceState.RUNNING:
+            with self._state_lock:
+                if self._state == ServiceState.PENDING:
+                    raise RuntimeError(f'Service is {self._state.name.lower()}.')
+                elif self._state == ServiceState.RUNNING:
                     try:
                         self.__check_recv_busy()
                         self._check_recv(task)
                     except ServiceBusy as err:
                         _is_busy, _busy_err = True, err
                     else:
-                        self.__running_count += 1
-                        self.__exec_pool.submit(self.__actual_exec, task, fn_callback)
+                        self._running_count += 1
+                        self._exec_pool.submit(self._error_wrap(self.__actual_exec), task, fn_callback)
                         _is_sent = True
                         break
                 else:
-                    raise ServiceNoLongerAccept(f'Service is {self.__state.name.lower()}, '
+                    raise ServiceNoLongerAccept(f'Service is {self._state.name.lower()}, '
                                                 f'tasks will be no longer accepted.')
 
             if _is_busy:  # do not jam the lock, move the sleep out of above
@@ -101,23 +127,24 @@ class ThreadService(metaclass=ABCMeta):
             raise _busy_err
 
     def __shutdown(self, already_closing: Event):
-        self.__state = ServiceState.CLOSING
+        self._state = ServiceState.CLOSING
         already_closing.set()
-        self.__exec_pool.shutdown(True)
-        self.__callback_pool.shutdown(True)
-        self.__event_pool.shutdown(True)
-        self.__state = ServiceState.DEAD
+        self._exec_pool.shutdown(True)
+        self._callback_pool.shutdown(True)
+        self._event_pool.shutdown(True)
+        self._state = ServiceState.DEAD
+        self._close_event.set()
 
     def shutdown(self, wait: bool = False):
-        with self.__state_lock:
-            if self.__close_thread is None:
+        with self._state_lock:
+            if self._close_thread is None:
                 _already_closing = Event()
-                self.__close_thread = Thread(target=self.__shutdown, args=(_already_closing,))
-                self.__close_thread.start()
+                self._close_thread = Thread(target=self.__shutdown, args=(_already_closing,))
+                self._close_thread.start()
                 _already_closing.wait()
 
         if wait:
-            self.__close_thread.join()
+            self._close_thread.join()
 
     # execution part
     def __actual_exec(self, task: _TaskType, fn_callback: Optional[_TaskCallBackType]):
@@ -134,17 +161,17 @@ class ThreadService(metaclass=ABCMeta):
             self._after_exec(task, _result)
 
         finally:
-            with self.__state_lock:
-                self.__running_count -= 1
+            with self._state_lock:
+                self._running_count -= 1
 
         @wraps(fn_callback)
         def _actual_callback(*args, **kwargs):
             if fn_callback is not None:
                 fn_callback(*args, **kwargs)
-            self.__event_pool.submit(self._after_callback, task, _result)
+            self._event_pool.submit(self._error_wrap(self._after_callback), task, _result)
 
-        self.__callback_pool.submit(_actual_callback, task, _result)
-        self.__event_pool.submit(self._after_sentback, task, _result)
+        self._callback_pool.submit(self._error_wrap(_actual_callback), task, _result)
+        self._event_pool.submit(self._error_wrap(self._after_sentback), task, _result)
 
     @abstractmethod
     def _before_exec(self, task: _TaskType):
