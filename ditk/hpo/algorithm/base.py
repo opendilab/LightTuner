@@ -23,6 +23,9 @@ class BaseConfigure:
 
 
 class BaseAlgorithm:
+    def __init__(self, **kwargs):
+        pass
+
     def get_session(self, space, service: ThreadService):
         raise NotImplementedError  # pragma: no cover
 
@@ -95,8 +98,6 @@ class BaseSession:
             self._run()
         except BaseException as err:
             self.__error = err
-        else:
-            self.__error = None
         finally:
             self.__service.shutdown()
             with self.__state_lock:

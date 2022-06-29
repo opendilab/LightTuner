@@ -156,6 +156,7 @@ class TestHpoAlgorithmRandomActual:
         visited, func = get_hpo_func()
         cfg, res, metrics = func.random(silent=True) \
             .max_steps(1000) \
+            .max_workers(20) \
             .minimize(R['result']) \
             .seed(12) \
             .spaces(
@@ -172,6 +173,7 @@ class TestHpoAlgorithmRandomActual:
         for _ in range(5):
             cfg, res, metrics = func.random(silent=True) \
                 .max_steps(1000) \
+                .max_workers(20) \
                 .minimize(R['result']) \
                 .seed(12) \
                 .spaces(
@@ -183,3 +185,20 @@ class TestHpoAlgorithmRandomActual:
 
             assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
             assert res['result'] == pytest.approx(result1)
+
+    def test_ran_out(self):
+        visited, func = get_hpo_func()
+        cfg, res, metrics = func.random() \
+            .maximize(R['result']) \
+            .max_workers(20) \
+            .max_steps(10000) \
+            .spaces(
+            {
+                'x': quniform(-2.5, 2.5, 0.1),
+                'y': quniform(-2.5, 2.5, 0.1),
+            }
+        ).run()
+
+        assert res['result'] == pytest.approx(cfg['x'] * cfg['y'])
+        assert res['result'] == pytest.approx(6.25)
+        assert len(visited) == 2601

@@ -1,6 +1,6 @@
 import os
 import time
-from functools import reduce, wraps
+from functools import reduce
 from threading import Lock
 from typing import Tuple, Any, Type, Dict, Callable, Optional, Iterator
 
@@ -183,20 +183,7 @@ class ParallelSearchRunner:
         )
 
         _is_cond_meet = False  # if this running is stopped by condition or not
-        _error_meet = None  # if any unexpected error is occurred
         _this: ParallelSearchRunner = self
-
-        def _meth_err_wrapper(f):  # wrap the methods in order to show the unexpected errors
-            @wraps(f)
-            def _new_func(self, *args, **kwargs):
-                nonlocal _error_meet
-                try:
-                    return f(self, *args, **kwargs)
-                except BaseException as err:
-                    _error_meet = err
-                    self.shutdown(False)
-
-            return _new_func
 
         class AlgorithmRunnerService(ThreadService):
             def __init__(self):
@@ -205,7 +192,6 @@ class ParallelSearchRunner:
             def _check_recv(self, task: Task):
                 pass  # all task should be approved
 
-            @_meth_err_wrapper
             def _before_exec(self, task: Task):
                 _events.trigger(RunnerStatus.STEP, task)
 
@@ -241,13 +227,11 @@ class ParallelSearchRunner:
 
                 raise RunFailed(task, r_err, r_metrics)
 
-            @_meth_err_wrapper
             def _after_exec(self, task: Task, result: Result):
-                pass  # do nothing here
+                if not result and not isinstance(result.error, (RunFailed, RunSkipped)):
+                    raise result.error  # unexpected error is met, should notify the user
 
-            @_meth_err_wrapper
             def _after_sentback(self, task: Task, result: Result):
-
                 if result.ok:
                     _events.trigger(RunnerStatus.STEP_OK, task, result.retval)
                     with _rank_lock:
@@ -260,12 +244,11 @@ class ParallelSearchRunner:
                         _events.trigger(RunnerStatus.STEP_FAIL, task, result.error)
                     elif isinstance(error, RunSkipped):
                         _events.trigger(RunnerStatus.STEP_SKIP, task, result.error)
-                    else:
+                    else:  # strange error, it should be already raised on _after_exec
                         raise RuntimeError('Unexpected error occurred, please notify the developers.')
 
                 _events.trigger(RunnerStatus.STEP_FINAL, task, _ranklist)
 
-            @_meth_err_wrapper
             def _after_callback(self, task: Task, result: Result):
                 nonlocal _is_cond_meet
                 if result.ok and _this._is_result_okay(result.retval):
@@ -285,10 +268,8 @@ class ParallelSearchRunner:
             session.join()
             service.shutdown(True)
 
-        if _error_meet:
-            raise _error_meet
-        elif session.error:
-            raise session.error
+        if session.error or service.error:
+            raise session.error or service.error
         else:
             _events.trigger(RunnerStatus.RUN_COMPLETE, _is_cond_meet)
             if len(_ranklist) > 0:

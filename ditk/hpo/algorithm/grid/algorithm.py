@@ -22,6 +22,7 @@ class GridConfigure(BaseConfigure):
 
 class GridAlgorithm(BaseAlgorithm):
     def __init__(self, max_steps, **kwargs):
+        BaseAlgorithm.__init__(self, max_steps=max_steps, **kwargs)
         self.max_steps = max_steps
 
     def get_session(self, space, service: ThreadService) -> 'GridSession':
@@ -83,8 +84,11 @@ class GridSession(BaseSession):
             else:
                 raise TypeError(f'Unknown space type - {repr(space)}.')  # pragma: no cover
 
-        odim_alloc = [v for _, v in sorted(zip(self._order_map, dim_alloc))]
-        final_alloc = map(lambda x: tuple(x[0].trans(vx) for vx in x[1]), zip(self.vsp, odim_alloc))
+        odim_alloc = [v for _, v in sorted(zip(self._order_map, dim_alloc))]  # reorder the values
+        final_alloc = [
+            tuple(hv.trans(item) for item in v)
+            for hv, v in zip(self.vsp, odim_alloc)
+        ]
         for tpl in nested_for(*final_alloc):
             try:
                 self._put_via_space(tuple(tpl))

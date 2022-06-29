@@ -190,3 +190,19 @@ class TestHpoAlgorithmGridActual:
 
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
         assert res['result'] >= 3000
+
+    def test_grid_stop_when_or(self):
+        visited, func = get_hpo_func()
+        cfg, res, metrics = func.grid() \
+            .maximize(R['result']) \
+            .stop_when(R['sum'] <= -4.9) \
+            .stop_when(R['sum'] >= 4.9) \
+            .spaces(
+            {
+                'x': quniform(-2.5, 2.5, 1.0),
+                'y': quniform(-2.5, 2.5, 1.0),
+            }
+        ).run()
+
+        assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
+        assert res['sum'] <= -4.9 or res['sum'] >= 4.9
