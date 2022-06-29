@@ -3,7 +3,7 @@ import random
 import pytest
 
 from ditk.hpo import R, randint, quniform, choice, uniform, hpo, M
-from ditk.hpo.old_algorithm.grid import allocate_continuous, allocate_separate, allocate_fixed, GridSearchAlgorithm
+from ditk.hpo.algorithm.grid import allocate_continuous, allocate_separate, allocate_fixed, GridAlgorithm
 from ditk.hpo.space import ContinuousSpace, SeparateSpace, FixedSpace
 from .base import get_hpo_func, EPS
 from ...testing import no_handlers
@@ -49,7 +49,7 @@ class TestHpoAlgorithmGrid:
         assert allocate_separate(space, 100) == pytest.approx((0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0, 2.2))
 
     def test_name(self):
-        assert GridSearchAlgorithm.algorithm_name() == 'grid search algorithm'
+        assert GridAlgorithm.algorithm_name() == 'grid algorithm'
 
     def test_allocate_fixed(self):
         space = FixedSpace(5)

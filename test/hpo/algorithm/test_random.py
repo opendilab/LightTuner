@@ -4,12 +4,13 @@ from random import _inst as _RANDOM_INST
 import pytest
 
 from ditk.hpo import uniform, quniform, choice, R, hpo, M
-from ditk.hpo.old_algorithm import RandomSearchAlgorithm
-from ditk.hpo.old_algorithm.random import _make_random
+from ditk.hpo.algorithm import RandomAlgorithm
+from ditk.hpo.algorithm.random import _make_random
 from .base import get_hpo_func, EPS
 from ...testing import no_handlers
 
 
+# noinspection DuplicatedCode
 @pytest.mark.unittest
 class TestHpoAlgorithmRandom:
     def test_make_random(self):
@@ -30,12 +31,12 @@ class TestHpoAlgorithmRandom:
             _make_random('234')
 
     def test_name(self):
-        assert RandomSearchAlgorithm.algorithm_name() == 'random search algorithm'
+        assert RandomAlgorithm.algorithm_name() == 'random algorithm'
 
     @no_handlers()
     def test_random_single(self):
         visited, func = get_hpo_func()
-        func.random().max_steps(1000).spaces({
+        func.random().max_steps(1000).maximize(R['result']).spaces({
             'x': uniform(-2, 8),
             'y': 2.5,
         }).run()
@@ -47,7 +48,7 @@ class TestHpoAlgorithmRandom:
 
     def test_random_silent(self):
         visited, func = get_hpo_func()
-        func.random(silent=True).max_steps(1000).spaces({
+        func.random(silent=True).max_steps(1000).maximize(R['result']).spaces({
             'x': uniform(-2, 8),
             'y': 2.5,
         }).run()
@@ -59,7 +60,7 @@ class TestHpoAlgorithmRandom:
 
     def test_random_all(self):
         visited, func = get_hpo_func()
-        func.random(silent=True).max_steps(1000).spaces({
+        func.random(silent=True).max_steps(1000).maximize(R['result']).spaces({
             'x': uniform(-2, 8),
             'y': quniform(-1.6, 7.8, 0.2),
             'z': choice(['a', 'b', 'c'])
@@ -75,36 +76,46 @@ class TestHpoAlgorithmRandom:
 
     def test_random_stop_when(self):
         visited, func = get_hpo_func()
-        cfg, res, metrics = func.random(silent=True).stop_when(R['result'].abs() <= 0.5).spaces({
-            'x': uniform(-2, 8),
-            'y': quniform(-1.6, 7.8, 0.2),
-        }).run()
+        cfg, res, metrics = func.random() \
+            .minimize(R['result'].abs()) \
+            .stop_when(R['result'].abs() <= 0.5) \
+            .spaces(
+            {
+                'x': uniform(0.15, 4),
+                'y': quniform(1.8, 3.8, 0.2),
+            }
+        ).run()
 
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
         assert abs(res['result']) <= 0.5
 
     def test_random_stop_when_or(self):
         visited, func = get_hpo_func()
-        cfg, res, metrics = func.random(silent=True) \
-            .stop_when(R['result'].abs() <= 0.5) \
-            .stop_when(R['result'] >= 56.25) \
-            .spaces({
-            'x': uniform(-2, 8),
-            'y': quniform(-1.6, 7.8, 0.2),
-        }).run()
+        cfg, res, metrics = func.random() \
+            .maximize(R['result']) \
+            .stop_when(R['sum'] <= -5.0) \
+            .stop_when(R['sum'] >= 5.0) \
+            .spaces(
+            {
+                'x': uniform(-2, 2),
+                'y': quniform(-3.2, 3.2, 0.1),
+            }
+        ).run()
 
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
-        assert (abs(res['result']) <= 0.5) or (res['result'] >= 56.25)
+        assert (abs(res['sum']) <= -5.0) or (res['sum'] >= 5.0)
 
     def test_random_maximize(self):
         visited, func = get_hpo_func()
         cfg, res, metrics = func.random(silent=True) \
             .max_steps(1000) \
             .maximize(R['result']) \
-            .spaces({
-            'x': uniform(-2, 8),
-            'y': quniform(-1.6, 7.8, 0.2),
-        }).run()
+            .spaces(
+            {
+                'x': uniform(-2, 8),
+                'y': quniform(-1.6, 7.8, 0.2),
+            }
+        ).run()
 
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
         assert res['result'] >= 55
@@ -114,10 +125,12 @@ class TestHpoAlgorithmRandom:
         cfg, res, metrics = func.random(silent=True) \
             .max_steps(1000) \
             .minimize(R['result']) \
-            .spaces({
-            'x': uniform(-2, 8),
-            'y': quniform(-1.6, 7.8, 0.2),
-        }).run()
+            .spaces(
+            {
+                'x': uniform(-2, 8),
+                'y': quniform(-1.6, 7.8, 0.2),
+            }
+        ).run()
 
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
         assert res['result'] <= -12
@@ -127,10 +140,12 @@ class TestHpoAlgorithmRandom:
         assert func.random(silent=True) \
                    .max_steps(0) \
                    .minimize(R['result']) \
-                   .spaces({
-            'x': uniform(-2, 8),
-            'y': quniform(-1.6, 7.8, 0.2),
-        }).run() is None
+                   .spaces(
+            {
+                'x': uniform(-2, 8),
+                'y': quniform(-1.6, 7.8, 0.2),
+            }
+        ).run() is None
 
     @pytest.mark.flaky(reruns=3)
     def test_random_with_error(self):
@@ -166,10 +181,12 @@ class TestHpoAlgorithmRandom:
             .max_steps(1000) \
             .minimize(R['result']) \
             .seed(12) \
-            .spaces({
-            'x': uniform(-2, 8),
-            'y': quniform(-1.6, 7.8, 0.2),
-        }).run()
+            .spaces(
+            {
+                'x': uniform(-2, 8),
+                'y': quniform(-1.6, 7.8, 0.2),
+            }
+        ).run()
 
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
         assert res['result'] <= -12
@@ -180,10 +197,12 @@ class TestHpoAlgorithmRandom:
                 .max_steps(1000) \
                 .minimize(R['result']) \
                 .seed(12) \
-                .spaces({
-                'x': uniform(-2, 8),
-                'y': quniform(-1.6, 7.8, 0.2),
-            }).run()
+                .spaces(
+                {
+                    'x': uniform(-2, 8),
+                    'y': quniform(-1.6, 7.8, 0.2),
+                }
+            ).run()
 
             assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
             assert res['result'] == pytest.approx(result1)
