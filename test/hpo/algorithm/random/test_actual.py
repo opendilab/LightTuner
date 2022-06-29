@@ -1,38 +1,15 @@
 import random
-from random import _inst as _RANDOM_INST
 
 import pytest
 
 from ditk.hpo import uniform, quniform, choice, R, hpo, M
-from ditk.hpo.algorithm import RandomAlgorithm
-from ditk.hpo.algorithm.random import _make_random
-from .base import get_hpo_func, EPS
-from ...testing import no_handlers
+from ..base import get_hpo_func, EPS
+from ....testing import no_handlers
 
 
 # noinspection DuplicatedCode
 @pytest.mark.unittest
-class TestHpoAlgorithmRandom:
-    def test_make_random(self):
-        r1 = random.Random(233)
-        assert _make_random(r1) is r1
-
-        _first = None
-        for _ in range(20):
-            r2 = _make_random(24)
-            now = tuple(map(lambda x: r2.randint(0, 100), range(20)))
-            if _first is None:
-                _first = now
-            else:
-                assert _first == now, 'Random not stable.'
-
-        assert _make_random(None) is _RANDOM_INST
-        with pytest.raises(TypeError):
-            _make_random('234')
-
-    def test_name(self):
-        assert RandomAlgorithm.algorithm_name() == 'random algorithm'
-
+class TestHpoAlgorithmRandomActual:
     @no_handlers()
     def test_random_single(self):
         visited, func = get_hpo_func()
@@ -93,17 +70,17 @@ class TestHpoAlgorithmRandom:
         visited, func = get_hpo_func()
         cfg, res, metrics = func.random() \
             .maximize(R['result']) \
-            .stop_when(R['sum'] <= -5.0) \
-            .stop_when(R['sum'] >= 5.0) \
+            .stop_when(R['sum'] <= -4.9) \
+            .stop_when(R['sum'] >= 4.9) \
             .spaces(
             {
-                'x': uniform(-2, 2),
-                'y': quniform(-3.2, 3.2, 0.1),
+                'x': quniform(-2.5, 2.5, 1.0),
+                'y': quniform(-2.5, 2.5, 1.0),
             }
         ).run()
 
         assert pytest.approx(res['result']) == pytest.approx(cfg['x'] * cfg['y'])
-        assert (abs(res['sum']) <= -5.0) or (res['sum'] >= 5.0)
+        assert res['sum'] <= -4.9 or res['sum'] >= 4.9
 
     def test_random_maximize(self):
         visited, func = get_hpo_func()

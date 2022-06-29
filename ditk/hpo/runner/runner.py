@@ -11,7 +11,7 @@ from .log import LoggingEventSet
 from .model import RunSkipped, RunResult, RunFailed, C
 from .result import _to_expr, _ResultExpression
 from .signal import Skip
-from ..algorithm import BaseAlgorithm, OptimizeDirection, Task
+from ..algorithm import BaseAlgorithm, OptimizeDirection, Task, BaseSession
 from ..utils import ThreadService, Result, EventModel, RankList
 from ..value import HyperValue
 
@@ -274,22 +274,25 @@ class ParallelSearchRunner:
 
         service = AlgorithmRunnerService()
         algorithm = self.__algorithm_cls(**self._settings)
-        session = algorithm.get_session(self.__spaces, service)
+        session: BaseSession = algorithm.get_session(self.__spaces, service)
         _events.trigger(RunnerStatus.INIT_OK, self.__target_name, _params, _rank_concerns)
 
-        service.start()
-        session.start()
-        _events.trigger(RunnerStatus.RUN_START)
+        try:
+            service.start()
+            session.start()
+            _events.trigger(RunnerStatus.RUN_START)
+        finally:
+            session.join()
+            service.shutdown(True)
 
-        session.join()
-        service.shutdown(True)
-
-        if not _error_meet:
+        if _error_meet:
+            raise _error_meet
+        elif session.error:
+            raise session.error
+        else:
             _events.trigger(RunnerStatus.RUN_COMPLETE, _is_cond_meet)
             if len(_ranklist) > 0:
                 _first: RunResult = _ranklist[0]
                 return _first.config, _first.retval, _first.metrics
             else:
                 return None
-        else:
-            raise _error_meet

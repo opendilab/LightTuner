@@ -47,9 +47,14 @@ class BaseSession:
         self.__state = SessionState.PENDING
         self.__state_lock: Lock = Lock()
         self.__thread: Optional[Thread] = Thread(target=self.__actual_run)
+        self.__error: Optional[BaseException] = None
 
         self.__max_id = 0
         self.__sfunc, self.__svalues = struct_values(space)
+
+    @property
+    def vsp(self) -> Tuple[HyperValue, ...]:
+        return self.__svalues
 
     def __actual_return(self, task: Task, result: Result):
         self._return(task, result)
@@ -82,20 +87,28 @@ class BaseSession:
                        *, timeout: Optional[float] = None):
         self.put(self.__sfunc(*vp), attachment, timeout=timeout)
 
-    def _run(self, vsp: Tuple[HyperValue, ...]):
+    def _run(self):
         raise NotImplementedError  # pragma: no cover
 
     def __actual_run(self):
         try:
-            self._run(self.__svalues)
+            self._run()
+        except BaseException as err:
+            self.__error = err
+        else:
+            self.__error = None
         finally:
             self.__service.shutdown()
             with self.__state_lock:
                 self.__state = SessionState.DEAD
 
+    @property
+    def error(self) -> Optional[BaseException]:
+        return self.__error
+
     def start(self):
         with self.__state_lock:
-            if self.__state == SessionState.PENDING:
+            if self.__state == SessionState.PENDING:  # not started, just start it
                 self.__thread.start()
                 self.__state = SessionState.RUNNING
             else:
