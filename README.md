@@ -23,18 +23,17 @@ Here is a simple example
 
 ```python
 import random
-import sys
 import time
 
-from ditk.hpo import hpo, R, M, choice, uniform, randint
+from ditk import logging
+from ditk.hpo import hpo, R, M, uniform, randint
 
 
 @hpo
 def opt_func(v):  # this function is still usable after decorating
     x, y = v['x'], v['y']
-    time.sleep(0.1)
-    print("This [u]time's[/] config:", v)  # stdout will be captured
-    print("This is print line in stderr", file=sys.stderr)  # stderr will be captured
+    time.sleep(5.0)
+    logging.info(f"This time's config: {v!r}")  # log will be captured
     if random.random() < 0.5:  # randomly raise exception
         raise ValueError('Fxxk this shxt')  # retry is supported
 
@@ -45,8 +44,9 @@ def opt_func(v):  # this function is still usable after decorating
 
 
 if __name__ == '__main__':
-    print(opt_func.random()  # random algorithm
-          .max_steps(30)  # max steps
+    logging.try_init_root(logging.DEBUG)
+    print(opt_func.bayes()  # random algorithm
+          .max_steps(50)  # max steps
           .minimize(R['result'])  # the maximize/minimize target you need to optimize,
           .concern(M['time'], 'time_cost')  # extra concerned values (from metrics)
           .concern(R['sum'], 'sum')  # extra concerned values (from return value of function)
@@ -56,7 +56,8 @@ if __name__ == '__main__':
             'x': uniform(-10, 110),  # continuous space
             'y': randint(-10, 20),  # integer based space
             'z': {
-                't': choice(['a', 'b', 'c', 'd', 'e']),  # enumerate space
+                # 't': choice(['a', 'b', 'c', 'd', 'e']),  # enumerate space
+                't': uniform(0, 10),  # enumerate space is not supported in bayesian optimization
             },
         }
     ).run())
