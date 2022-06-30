@@ -1,7 +1,8 @@
 from typing import Type
 
 from .runner import ParallelSearchRunner
-from ..algorithm import RandomAlgorithm, RandomConfigure, GridConfigure, GridAlgorithm, BaseAlgorithm
+from ..algorithm import RandomAlgorithm, RandomConfigure, GridConfigure, GridAlgorithm, BaseAlgorithm, \
+    BayesConfigure, BayesAlgorithm
 
 
 class _RandomRunner(ParallelSearchRunner, RandomConfigure):
@@ -16,10 +17,10 @@ class _GridRunner(ParallelSearchRunner, GridConfigure):
         ParallelSearchRunner.__init__(self, GridAlgorithm, func, silent)
 
 
-# class _BayesRunner(ParallelSearchRunner, BayesConfigure):
-#     def __init__(self, func, silent: bool = False):
-#         BayesConfigure.__init__(self, {})
-#         ParallelSearchRunner.__init__(self, BayesAlgorithm, func, silent)
+class _BayesRunner(ParallelSearchRunner, BayesConfigure):
+    def __init__(self, func, silent: bool = False):
+        BayesConfigure.__init__(self, {})
+        ParallelSearchRunner.__init__(self, BayesAlgorithm, func, silent)
 
 
 class HpoFunc:
@@ -38,8 +39,8 @@ class HpoFunc:
     def grid(self, silent: bool = False) -> _GridRunner:
         return _GridRunner(self.__func, silent)
 
-    # def bayes(self, silent: bool = False) -> _BayesRunner:
-    #     return _BayesRunner(self.__func, silent)
+    def bayes(self, silent: bool = False) -> _BayesRunner:
+        return _BayesRunner(self.__func, silent)
 
     def __repr__(self):
         return f'<{type(self).__name__} of {repr(self.__func)}>'

@@ -41,7 +41,11 @@ class ParallelSearchRunner:
             _ = self._settings
         except AttributeError:
             self._settings: Dict[str, object] = {}  # pragma: no cover
-        self._settings.update({'max_steps': None, 'opt_direction': None})
+        self._settings.update({
+            'max_steps': None,
+            'opt_direction': None,
+            'max_workers': os.cpu_count(),
+        })
         self.__algorithm_cls = algo_cls  # old_algorithm class
 
         # about control
@@ -83,6 +87,7 @@ class ParallelSearchRunner:
     def max_workers(self, n: int) -> 'ParallelSearchRunner':
         if isinstance(n, int) and n >= 1:
             self.__max_workers = n
+            self._settings['max_workers'] = n
             return self
         else:
             raise ValueError(f'Invalid max workers count - {n!r}.')
