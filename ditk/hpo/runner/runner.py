@@ -19,7 +19,7 @@ from ..value import HyperValue
 def _space_exprs(space) -> Iterator[Tuple[str, _ResultExpression]]:
     for path, value in nested_walk(space):
         if isinstance(value, HyperValue):
-            name = '.'.join(path)
+            name = '.'.join(map(str, path))
             expr = reduce(lambda x, y: x[y], path, C)
             yield name, expr
 
@@ -67,18 +67,24 @@ class ParallelSearchRunner:
         if not silent:
             self.add_event_set(LoggingEventSet(None))
 
-    def add_event_set(self, e: RunnerEventSet):
+    def add_event_set(self, e: RunnerEventSet) -> 'ParallelSearchRunner':
         prefix = f'{type(e).__name__}_{hex(id(e))}'
         for _, member in RunnerStatus.__members__.items():
             func_name = member.func_name
             self.__events.bind(member, getattr(e, func_name), f'{prefix}_{func_name}')
 
-    def __getattr__(self, item) -> Callable[[object, ], 'ParallelSearchRunner']:
-        def _get_config_value(v) -> ParallelSearchRunner:
-            self._settings[item] = v
-            return self
+        return self
 
-        return _get_config_value
+    def __getattr__(self, item: str) -> Callable[[object, ], 'ParallelSearchRunner']:
+        if not item.startswith('_'):
+            def _get_config_value(v) -> ParallelSearchRunner:
+                self._settings[item] = v
+                return self
+
+            return _get_config_value
+
+        else:
+            raise AttributeError(f'Attribute {item!r} not found.')
 
     def max_steps(self, n: int) -> 'ParallelSearchRunner':
         self._settings['max_steps'] = n
@@ -135,11 +141,6 @@ class ParallelSearchRunner:
     def concern(self, cond, name):
         self.__rank_concerns.append((name, cond))
         return self
-
-    @property
-    def _max_steps(self) -> Optional[int]:
-        # noinspection PyTypeChecker
-        return self._settings['max_steps']
 
     @property
     def _opt_direction(self) -> Optional[OptimizeDirection]:
@@ -234,7 +235,8 @@ class ParallelSearchRunner:
 
             def _after_exec(self, task: Task, result: Result):
                 if not result and not isinstance(result.error, (RunFailed, RunSkipped)):
-                    raise result.error  # unexpected error is met, should notify the user
+                    # unexpected error is met, should notify the user
+                    raise result.error  # pragma: no cover
 
             def _after_sentback(self, task: Task, result: Result):
                 if result.ok:
@@ -250,7 +252,8 @@ class ParallelSearchRunner:
                     elif isinstance(error, RunSkipped):
                         _events.trigger(RunnerStatus.STEP_SKIP, task, result.error)
                     else:  # strange error, it should be already raised on _after_exec
-                        raise RuntimeError('Unexpected error occurred, please notify the developers.')
+                        raise RuntimeError(
+                            'Unexpected error occurred, please notify the developers.')  # pragma: no cover
 
                 _events.trigger(RunnerStatus.STEP_FINAL, task, _ranklist)
 
