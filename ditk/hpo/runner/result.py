@@ -1,3 +1,4 @@
+import statistics
 from typing import Callable, Any
 
 from hbutils.expression import GeneralExpression, efunc, raw
@@ -17,6 +18,15 @@ class _ResultExpression(GeneralExpression):
 
     def isinstance_(self, obj):
         return self._func(isinstance, self, raw(obj) if isinstance(obj, type) else obj)
+
+    def sum(self):
+        return self._func(sum, self)
+
+    def mean(self):
+        return self._func(lambda x: float(statistics.mean(x)), self)
+
+    def stdev(self):
+        return self._func(statistics.stdev, self)
 
 
 R = _ResultExpression()

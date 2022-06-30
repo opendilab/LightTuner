@@ -54,7 +54,7 @@ class RunResult(_IResultMetrics):
         return _to_callable(r)(self._full_value)
 
     def __repr__(self):
-        return f'<{type(self).__name__} value: {self.value!r}>'
+        return f'<{type(self).__name__} task_id: {self.task_id!r}, value: {self.value!r}>'
 
 
 class RunFailed(Exception, _IResultMetrics):

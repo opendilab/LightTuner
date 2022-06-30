@@ -2,7 +2,7 @@ import pytest
 from easydict import EasyDict
 from hbutils.expression import efunc
 
-from ditk.hpo.runner.result import R
+from ditk.hpo.runner.result import R, _to_expr, _ResultExpression, _to_callable
 
 
 @pytest.mark.unittest
@@ -132,3 +132,56 @@ class TestHpoAlgorithmResult:
         assert r({'a': 2, 'b': 3})
         assert r({'a': 2, 'b': 2})
         assert not r({'a': 1, 'b': 2})
+
+    def test_sum(self):
+        r = efunc(R['a'].sum())
+        assert r({'a': [1, 2, 3, 4, 5], 'b': [2, 3, 5, 7]}) == 15
+        assert r({'a': [2, 3, 5, 7], 'b': [1, 2, 3, 4, 5]}) == 17
+
+    def test_mean(self):
+        r = efunc(R['a'].mean())
+        assert r({'a': [1, 2, 3, 4, 5], 'b': [2, 3, 5, 7]}) == pytest.approx(3.0)
+        assert r({'a': [2, 3, 5, 7], 'b': [1, 2, 3, 4, 5]}) == pytest.approx(4.25)
+
+    def test_stdev(self):
+        r = efunc(R['a'].stdev())
+        assert r({'a': [1, 2, 3, 4, 5], 'b': [2, 3, 5, 7]}) == pytest.approx(1.5811388300841898)
+        assert r({'a': [2, 3, 5, 7], 'b': [1, 2, 3, 4, 5]}) == pytest.approx(2.217355782608345)
+
+    def test_to_expr(self):
+        r1 = R
+        assert _to_expr(r1) is r1
+        assert efunc(r1)({'a': 1}) == {'a': 1}
+
+        r2 = R['a']
+        assert _to_expr(r2) is r2
+        assert efunc(r2)({'a': 1}) == 1
+
+        def r3(x):
+            return x + 1
+
+        assert isinstance(_to_expr(r3), _ResultExpression)
+        assert efunc(_to_expr(r3))(1) == 2
+
+        r4 = 233
+        assert isinstance(_to_expr(r4), _ResultExpression)
+        assert efunc(_to_expr(r4))(1) == 233
+
+    def test_to_callable(self):
+        r1 = R
+        assert callable(_to_callable(r1))
+        assert _to_callable(r1)({'a': 1}) == {'a': 1}
+
+        r2 = R['a']
+        assert callable(_to_callable(r2))
+        assert _to_callable(r2)({'a': 1}) == 1
+
+        def r3(x):
+            return x + 1
+
+        assert callable(_to_callable(r3))
+        assert _to_callable(r3)(1) == 2
+
+        r4 = 233
+        assert callable(_to_callable(r4))
+        assert _to_callable(r4)(1) == 233
