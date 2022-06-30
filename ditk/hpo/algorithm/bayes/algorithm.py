@@ -14,10 +14,6 @@ from ...utils import ThreadService, ServiceNoLongerAccept
 
 
 class BayesConfigure(BaseConfigure):
-    def seed(self, s: Optional[int] = None):
-        self._settings['seed'] = s
-        return self
-
     def init_steps(self, steps: int):
         self._settings['init_steps'] = steps
         return self
@@ -42,9 +38,9 @@ class BayesConfigure(BaseConfigure):
 class BayesAlgorithm(BaseAlgorithm):
     # noinspection PyUnusedLocal
     def __init__(self, opt_direction: OptimizeDirection, seed: Optional[int] = None,
-                 max_steps: Optional[int] = None, init_steps: int = 5, fit_steps=None,
+                 max_steps: Optional[int] = None, init_steps: int = 5,
                  acq='ucb', kappa=2.576, kappa_decay=1, kappa_decay_delay=0, xi=0.0,
-                 gp_params: Optional[Dict] = None, max_workers=None, **kwargs):
+                 gp_params: Optional[Dict] = None, **kwargs):
         BaseAlgorithm.__init__(self, **kwargs)
         self.opt_direction = OptimizeDirection.loads(opt_direction)
         self.random_seed = seed

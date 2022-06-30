@@ -116,3 +116,19 @@ class TestHpoAlgorithmBayesAlgorithm:
 
         assert res['result'] >= 2900
         assert res['result'] == pytest.approx(cfg['x'] * cfg['y'])
+
+    def test_bayes_single_maximize_with_condition(self):
+        cfg, res, metrics = opt_func.bayes(silent=True) \
+            .init_steps(10) \
+            .maximize(R['result']) \
+            .concern(M['time'], 'time_cost') \
+            .concern(R['sum'], 'sum') \
+            .stop_when(R['result'] >= 2900) \
+            .spaces(
+            {
+                'x': uniform(-55, 125),  # continuous space
+                'y': quniform(-60, 20, 10),  # integer based space
+            }).run()
+
+        assert res['result'] >= 2900
+        assert res['result'] == pytest.approx(cfg['x'] * cfg['y'])
