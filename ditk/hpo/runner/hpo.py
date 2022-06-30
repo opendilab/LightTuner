@@ -43,7 +43,7 @@ class HpoFunc:
         return _BayesRunner(self.__func, silent)
 
     def __repr__(self):
-        return f'<{type(self).__name__} of {repr(self.__func)}>'
+        return f'<{type(self).__name__} of {self.__func!r}>'
 
 
 def hpo(func) -> HpoFunc:
