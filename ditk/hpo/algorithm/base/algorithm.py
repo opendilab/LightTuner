@@ -1,20 +1,12 @@
-from collections import namedtuple
 from enum import IntEnum, unique
 from threading import Thread, Lock
 from typing import Optional, Tuple, Any
 
 import inflection
-from hbutils.model import int_enum_loads
 
-from ..utils import ThreadService, Result
-from ..value import struct_values, HyperValue
-
-
-@int_enum_loads(name_preprocess=str.upper)
-@unique
-class OptimizeDirection(IntEnum):
-    MAXIMIZE = 1
-    MINIMIZE = 2
+from .model import Task
+from ...utils import ThreadService, Result
+from ...value import struct_values, HyperValue
 
 
 class BaseConfigure:
@@ -31,7 +23,7 @@ class BaseAlgorithm:
 
     @classmethod
     def algorithm_name(cls):
-        return inflection.underscore(cls.__name__).replace('_', ' ')
+        return inflection.underscore(cls.__name__).replace('_', ' ').strip()
 
 
 @unique
@@ -39,9 +31,6 @@ class SessionState(IntEnum):
     PENDING = 1
     RUNNING = 2
     DEAD = 3
-
-
-Task = namedtuple('Task', ('task_id', 'config', 'attachment'))
 
 
 class BaseSession:
@@ -59,6 +48,11 @@ class BaseSession:
     def vsp(self) -> Tuple[HyperValue, ...]:
         return self.__svalues
 
+    @property
+    def state(self) -> SessionState:
+        with self.__state_lock:
+            return self.__state
+
     def __actual_return(self, task: Task, result: Result):
         self._return(task, result)
         if result.ok:
@@ -73,7 +67,7 @@ class BaseSession:
         raise NotImplementedError  # pragma: no cover
 
     def _return_on_failed(self, task: Task, error: Exception):
-        pass
+        pass  # pragma: no cover
 
     def put(self, config, attachment: Optional[Tuple[Any, ...]] = None, *, timeout: Optional[float] = None):
         with self.__state_lock:
