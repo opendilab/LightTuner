@@ -1,21 +1,18 @@
 import os
 from ditk import logging
-from ditk.scheduler import run_scheduler, run_scheduler_k8s
-from ditk.hpo import R, randint, quniform, choice, uniform
+from ditk.scheduler import run_scheduler_k8s
+from ditk.hpo import R, choice, uniform
 from ditk.hpo import hpo
 
 
 def demo():
 
     scheduler = run_scheduler_k8s(
-        task_config_template_path=os.path.join(
-            os.path.dirname(__file__), "../template/cartpole_dqn_config.py"),
-        k8s_dijob_yaml_file_path=os.path.join(
-            os.path.dirname(__file__),
-            "../template/cartpole_dijob_with_empty_configmap.yml"),
+        task_config_template_path=os.path.join(os.path.dirname(__file__), "../template/cartpole_dqn_config.py"),
+        k8s_dijob_yaml_file_path=os.path.join(os.path.dirname(__file__), "../template/cartpole_dijob_with_empty_configmap.yml"),
     )
 
-    hpo_info = {'policy': {'other': {'eps': {'start': uniform(0.5, 1)}}}}
+    hpo_info = {'policy': {'discount_factor':  uniform(0.95, 1)}}
 
     opt = hpo(scheduler.get_hpo_callable())
     cfg, ret, metrics = opt.grid() \
@@ -32,12 +29,8 @@ def demo():
 def demo_lunarlander():
 
     scheduler = run_scheduler_k8s(
-        task_config_template_path=os.path.join(
-            os.path.dirname(__file__),
-            "../template/lunarlander_dqn_config.py"),
-        k8s_dijob_yaml_file_path=os.path.join(
-            os.path.dirname(__file__),
-            "../template/lunarlander_dijob_with_empty_configmap.yml"),
+        task_config_template_path=os.path.join(os.path.dirname(__file__), "../template/lunarlander_dqn_config.py"),
+        k8s_dijob_yaml_file_path=os.path.join(os.path.dirname(__file__), "../template/lunarlander_dijob_with_empty_configmap.yml"),
         time_out=2000)
 
     hpo_info = {

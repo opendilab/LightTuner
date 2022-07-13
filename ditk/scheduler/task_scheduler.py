@@ -14,7 +14,6 @@ import queue
 import traceback
 import json
 import pickle
-import psutil
 from ditk import logging
 from tabulate import tabulate
 from ruamel.yaml import YAML
@@ -50,7 +49,7 @@ def verify_k8s_pod_name(pod_name):
     ), "First character has to be character or digit."
 
 
-def _run_local(command, log_file, directory="./"):
+def _run_local(command, log_file, end_event, directory="./"):
     """
     for run python in shell
     """
@@ -61,6 +60,7 @@ def _run_local(command, log_file, directory="./"):
     fd = open(log_file, "w")
     subprocess.run(command, shell=False, stderr=fd, cwd=directory, check=False)
     fd.close()
+    end_event.set()
 
 
 def _run_kubectl(command, log_file=None, directory="./"):
@@ -380,7 +380,7 @@ class Scheduler:
 
     def check_task_alive(self, rl_task) -> bool:
         if self._mode == "local":
-            return psutil.pid_exists(rl_task.pid)
+            return not rl_task.end_event.is_set()
         elif self._mode == "k8s":
             p = subprocess.run([
                 "kubectl", "get", "pod", rl_task.task_name + "-serial-0",
@@ -423,6 +423,7 @@ class Scheduler:
                         if self.check_task_timeout(rl_task):
                             self.cancel_task(rl_task.task_id)
                     else:
+                        rl_task.process.terminate()
                         rl_task.running = False
                         self.task_running_id.remove(rl_task.task_id)
 
@@ -571,12 +572,15 @@ class Scheduler:
                 self._task_config_template_path, main_file)
 
             command = [sys.executable, main_file]
+            end_event = multiprocessing.Event()
 
             self.task_list[task_id].process = multiprocessing.Process(
                 target=_run_local, args=(
                     command,
                     log_file,
+                    end_event,
                 ))
+            self.task_list[task_id].end_event = end_event
             self.task_list[task_id].process.start()
             self.task_list[task_id].pid = self.task_list[task_id].process.pid
             logging.info("Scheduler: task " + str(task_id) +

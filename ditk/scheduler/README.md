@@ -2,18 +2,18 @@
 
 ## Prerequisite
 
-1, A runnable entry (main program) file with modified config field, such as DI-engine RL config file.
+1. A runnable entry (main program) file with modified config field, such as DI-engine RL config file.
 
-2, Kubenetes clusters access and installing kubectl tools. (For "k8s" mode only.)
+2. Kubenetes clusters access and installing kubectl tools. (For "k8s" mode only.)
 
-3, A good yaml file for running job in Kubenetes. (For "k8s" mode only.)
+3. A good yaml file for running job in Kubenetes. (For "k8s" mode only.)
 
 
 ## Quick Start for HPO Launched by Scheduler in Local and Kubenetes
 
 Here is a simple example:
 
-To start, we need a entry file containing configurations, we use DI-engine RL config as example [link](https://github.com/opendilab/DI-engine/blob/main/dizoo/classic_control/cartpole/config/cartpole_dqn_config.py):
+To start, we need a entry file containing configurations, we use DI-engine RL config as example ([Link](https://github.com/opendilab/DI-engine/blob/main/dizoo/classic_control/cartpole/config/cartpole_dqn_config.py)):
 ```python
 from easydict import EasyDict
 
@@ -72,7 +72,9 @@ if __name__ == "__main__":
 In addition, we should save a binary file named ``<dijob_project_name-id>/hpo/result.pkl`` at the end of the main file, which contains necessary metrics like accuracy, mAP, discount returns and so on.
 
 
-After that, if you want to run hpo with scheduler in your local machine, you can use the following codes:
+After that, we beign to run the first demo  (all the following codes are located in ``di-toolkit/demo`` directory). 
+
+If you want to run hpo with scheduler in your local machine, you can use the following codes:
 ```python
 import os
 from ditk import logging
@@ -87,9 +89,9 @@ def demo():
         task_config_template_path=os.path.join(os.path.dirname(__file__), "../template/cartpole_dqn_config.py"),
         dijob_project_name="cartpole_dqn_hpo")
 
-    hpo_info = {'policy': {'other': {'eps': {'start': uniform(0.5, 1)}}}}
+    hpo_info = {'policy': {'discount_factor': uniform(0.95, 1)}}
 
-    opt = hpo(scheduler.enable_hpo())
+    opt = hpo(scheduler.get_hpo_callable())
     cfg, ret, metrics = opt.grid() \
         .max_steps(5) \
         .max_workers(4) \
@@ -127,7 +129,7 @@ def demo():
         k8s_dijob_yaml_file_path=os.path.join(os.path.dirname(__file__), "../template/cartpole_dijob_with_empty_configmap.yml"),
     )
 
-    hpo_info = {'policy': {'other': {'eps': {'start': uniform(0.5, 1)}}}}
+    hpo_info = {'policy': {'discount_factor': uniform(0.95, 1)}}
 
     opt = hpo(scheduler.get_hpo_callable())
     cfg, ret, metrics = opt.grid() \
@@ -139,6 +141,11 @@ def demo():
     print(ret)
 
     scheduler.stop()
+
+
+if __name__ == "__main__":
+    logging.try_init_root(logging.INFO)
+    demo()
 ```
 
 
@@ -173,10 +180,10 @@ After launching scheduler successfully, you will see the following output from t
 
 2, Specify ``metadata.name`` in DIJob, which will be used to generate the identifier for the job in k8s.
 
-3, Specify ``projectPath`` field in yaml file, in which the hpo projects will be running. Match it with the folder directory to execute python in the k8s yaml file. In my case, it is "/mnt/lustre/zhangjouwen.vendor/hpo/".
+3, Specify ``projectPath`` field in yaml file, in which the hpo projects will be running. Match it with the folder directory to execute python in the k8s yaml file. In my case, it is ``/mnt/lustre/zhangjouwen.vendor/hpo/``.
 
 4, Hpo algorithm minimize/maximize the same value name of the object that pickled in your result file ``result.pkl``. 
 
-	For example, if the pickled return is a dict-like object such as: {"value": 200}, if you aim to maximize the "value", then you should "maximize(R['value'])" in hpo code.
+- For example, if the pickled return is a dict-like object such as: {"value": 200}, if you aim to maximize the "value", then you should "maximize(R['value'])" in hpo code.
 
 5, Have fun!
