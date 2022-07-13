@@ -1,0 +1,83 @@
+apiVersion: diengine.opendilab.org/v2alpha1
+kind: DIJob
+metadata:
+  name: lunarlander-dqn-hpo-k8s
+spec:
+  projectPath: /mnt/lustre/zhangjouwen.vendor/hpo/
+  priority: "normal"  # 表示job的优先级，保留字段，调度中或许可以用到
+  backoffLimit: 0  # 重启次数，可以为nil，表示无限重启；默认为3
+  cleanPodPolicy: "Running"  # 表示job运行完成之后，如何处理worker pods
+  preemptible: false  # 表示job是否允许被抢占，调度中对job资源改动之后涉及到抢占操作
+  tasks:
+  - replicas: 1
+    type: none
+    name: serial
+    template:
+      spec:
+        containers:
+        - name: di-container
+          image: registry.sensetime.com/xlab/ding:cuda-nightly-atari
+          imagePullPolicy: Always
+          env:
+          - name: PYTHONUNBUFFERED
+            value: "1"
+          resources:
+            requests:
+              # nvidia.com/gpu-a100: 1  # user-defined resource
+              cpu: 4
+              memory: "10Gi"
+            limits:
+              # nvidia.com/gpu-a100: 1
+              cpu: 4
+              memory: "10Gi"
+          command: ["/bin/bash", "-c",]
+          args:  # user-defined execution commands
+          - |
+            cat /etc/config/config.py
+            export PATH=/opt/conda/bin:$PATH
+            export http_proxy=http://proxy.sensetime.com:3128/
+            export https_proxy=http://proxy.sensetime.com:3128/
+            export HTTP_PROXY=http://proxy.sensetime.com:3128/
+            export HTTPS_PROXY=http://proxy.sensetime.com:3128/
+            pip config set global.index-url https://pkg.sensetime.com/repository/pypi-proxy/simple/
+            pip config set install.trusted-host pypi.opencloud.sensetime.com
+            python --version
+            pip --version
+            python -m pip install --upgrade pip
+            cd /mnt/lustre/zhangjouwen.vendor/Github/opendilab/DI-engine-ditk
+            pip install -e .
+            pip install -U tensorboard
+            cd /mnt/lustre/zhangjouwen.vendor/hpo/
+            python /etc/config/config.py
+            echo "Done!"
+            sleep 150
+          volumeMounts:
+          - name: config-py
+            mountPath: /etc/config
+          - name: cache-volume
+            mountPath: /dev/shm
+          - name: data-volume
+            mountPath: /mnt/cache/zhangjouwen.vendor
+          - name: lustre-volume
+            mountPath: /mnt/lustre/zhangjouwen.vendor
+        volumes:
+        - name: config-py
+          configMap:
+            name: config-py-
+        - name: cache-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: 128Mi
+        - name: data-volume
+          hostPath:
+            path: /mnt/cache/zhangjouwen.vendor
+        - name: lustre-volume
+          hostPath:
+            path: /mnt/lustre/zhangjouwen.vendor   
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-py-
+data:
+  config.py: |
