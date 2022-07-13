@@ -5,3 +5,5 @@ inflection>=0.5.1
 numpy>=1.18.0
 scipy>=0.14.0
 scikit-learn>=0.18.0
+ruamel.yaml>=0.17.2
+psutil>=5.7.0
