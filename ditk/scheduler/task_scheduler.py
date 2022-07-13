@@ -303,56 +303,64 @@ class Scheduler:
 
         elif self._mode == "k8s":
 
-            result_file_path = "./" + rl_task.task_name + "/result.pkl"
-            result_json_file_path = "./" + rl_task.task_name + "/results.txt"
+            result_file_path = os.path.join(self._k8s_remote_project_path, rl_task.task_name, 'result.pkl')
+            result_json_file_path = os.path.join(self._k8s_remote_project_path, rl_task.task_name, 'result.txt')
 
-            if not os.path.exists(os.path.dirname(result_file_path)):
-                os.makedirs(os.path.dirname(result_file_path))
+            if os.path.exists(result_file_path):
+                with open(result_file_path, "rb") as file:
+                    data = pickle.load(file)
 
-            p = subprocess.run([
-                "kubectl", "exec", "-i", rl_task.task_name + "-serial-0", "--",
-                "ls", self._k8s_remote_project_path + rl_task.task_name +
-                "/result.pkl"
-            ],
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               shell=False,
-                               cwd="./",
-                               check=False)
-            value = p.stdout.decode()
-            if value != "":
-                with open(os.devnull) as nullstd:
-                    subprocess.run([
-                        "kubectl", "cp", rl_task.task_name + "-serial-0:" +
-                        self._k8s_remote_project_path + rl_task.task_name +
-                        "/result.pkl", result_file_path
-                    ],
+                if os.path.exists(result_json_file_path):
+                    with open(result_json_file_path, "r") as file:
+                        json_data = json.load(file)
+            else:  # remote call k8s
+                if not os.path.exists(os.path.dirname(result_file_path)):
+                    os.makedirs(os.path.dirname(result_file_path))
+
+                p = subprocess.run([
+                    "kubectl", "exec", "-i", rl_task.task_name + "-serial-0", "--",
+                    "ls", self._k8s_remote_project_path + rl_task.task_name +
+                    "/result.pkl"
+                ],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
                                    shell=False,
-                                   stdout=nullstd,
-                                   stderr=nullstd,
                                    cwd="./",
                                    check=False)
+                value = p.stdout.decode()
+                if value != "":
+                    with open(os.devnull) as nullstd:
+                        subprocess.run([
+                            "kubectl", "cp", rl_task.task_name + "-serial-0:" +
+                            self._k8s_remote_project_path + rl_task.task_name +
+                            "/result.pkl", result_file_path
+                        ],
+                                       shell=False,
+                                       stdout=nullstd,
+                                       stderr=nullstd,
+                                       cwd="./",
+                                       check=False)
 
-                if os.path.exists(result_file_path):
-                    with open(result_file_path, "rb") as file:
-                        data = pickle.load(file)
+                    if os.path.exists(result_file_path):
+                        with open(result_file_path, "rb") as file:
+                            data = pickle.load(file)
 
-            p = subprocess.run([
-                "kubectl", "exec", "-i", rl_task.task_name + "-serial-0", "--",
-                "cat", self._k8s_remote_project_path + rl_task.task_name +
-                "/results.txt"
-            ],
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               shell=False,
-                               cwd="./",
-                               check=False)
-            json_value = p.stdout.decode()
-            if json_value != "":
-                with open(result_json_file_path, "w") as file:
-                    file.write(json_value)
-                with open(result_json_file_path, "r") as file:
-                    json_data = json.load(file)
+                p = subprocess.run([
+                    "kubectl", "exec", "-i", rl_task.task_name + "-serial-0", "--",
+                    "cat", self._k8s_remote_project_path + rl_task.task_name +
+                    "/results.txt"
+                ],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=False,
+                                   cwd="./",
+                                   check=False)
+                json_value = p.stdout.decode()
+                if json_value != "":
+                    with open(result_json_file_path, "w") as file:
+                        file.write(json_value)
+                    with open(result_json_file_path, "r") as file:
+                        json_data = json.load(file)
 
         return data, json_data
 
@@ -871,13 +879,13 @@ def run_scheduler_k8s(
 
     for content in ryaml_content:
         if content["kind"] == "DIJob":
-            if "projectPath" not in content["spec"]:
+            if "projectPath" not in content["metadata"]:
                 logging.error(
-                    "Scheduler: k8s remote project path is not defined in yaml file, of which should be assigned in 'spec.projectPath'."
+                    "Scheduler: k8s remote project path is not defined in yaml file, of which should be assigned in 'metadata.projectPath'."
                 )
                 return
             dijob_project_name = content["metadata"]["name"]
-            k8s_remote_project_path = content["spec"]["projectPath"]
+            k8s_remote_project_path = content["metadata"]["projectPath"]
 
     if dijob_project_name is None:
         logging.error("Scheduler: no k8s project name is assigned.")

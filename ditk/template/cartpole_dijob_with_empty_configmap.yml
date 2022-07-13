@@ -1,13 +1,16 @@
+var1: &basePath /mnt/lustre/niuyazhe/
+var2: &projectPath /mnt/lustre/niuyazhe/code/di-toolkit/demo/
+
 apiVersion: diengine.opendilab.org/v2alpha1
 kind: DIJob
 metadata:
   name: cartpole-dqn-hpo-k8s
+  projectPath: *projectPath
 spec:
-  projectPath: /mnt/lustre/zhangjouwen.vendor/hpo/
-  priority: "normal"  # 表示job的优先级，保留字段，调度中或许可以用到
-  backoffLimit: 0  # 重启次数，可以为nil，表示无限重启；默认为3
-  cleanPodPolicy: "Running"  # 表示job运行完成之后，如何处理worker pods
-  preemptible: false  # 表示job是否允许被抢占，调度中对job资源改动之后涉及到抢占操作
+  priority: "normal"
+  backoffLimit: 0
+  cleanPodPolicy: "Running"
+  preemptible: false
   tasks:
   - replicas: 1
     type: none
@@ -21,6 +24,8 @@ spec:
           env:
           - name: PYTHONUNBUFFERED
             value: "1"
+          - name: PROJECT_PATH
+            value: *projectPath
           resources:
             requests:
               # nvidia.com/gpu-a100: 1  # user-defined resource
@@ -33,6 +38,7 @@ spec:
           command: ["/bin/bash", "-c",]
           args:  # user-defined execution commands
           - |
+            # prepare env
             cat /etc/config/config.py
             export PATH=/opt/conda/bin:$PATH
             export http_proxy=http://proxy.sensetime.com:3128/
@@ -44,22 +50,19 @@ spec:
             python --version
             pip --version
             python -m pip install --upgrade pip
-            cd /mnt/lustre/zhangjouwen.vendor/Github/opendilab/DI-engine-ditk
+            # install user package (user-defined)
+            cd /mnt/lustre/niuyazhe/code/DI-engine
             pip install -e .
-            pip install -U tensorboard
-            cd /mnt/lustre/zhangjouwen.vendor/hpo/
-            python /etc/config/config.py
-            echo "Done!"
-            sleep 150
+            # run task
+            cd $PROJECT_PATH
+            python /etc/config/config.py  # don't modify this
           volumeMounts:
           - name: config-py
             mountPath: /etc/config
           - name: cache-volume
             mountPath: /dev/shm
-          - name: data-volume
-            mountPath: /mnt/cache/zhangjouwen.vendor
           - name: lustre-volume
-            mountPath: /mnt/lustre/zhangjouwen.vendor
+            mountPath: *basePath
         volumes:
         - name: config-py
           configMap:
@@ -68,12 +71,9 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: 128Mi
-        - name: data-volume
-          hostPath:
-            path: /mnt/cache/zhangjouwen.vendor
         - name: lustre-volume
           hostPath:
-            path: /mnt/lustre/zhangjouwen.vendor   
+            path: *basePath
 ---
 apiVersion: v1
 kind: ConfigMap

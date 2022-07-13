@@ -36,6 +36,10 @@ setup(
     packages=find_packages(
         include=(_package_name, "%s.*" % _package_name)
     ),
+    package_data={
+        package_name: ['*.yaml', '*.yml']
+        for package_name in find_packages(include=('*'))
+    },
     description=meta['__DESCRIPTION__'],
     long_description=readme,
     long_description_content_type='text/markdown',

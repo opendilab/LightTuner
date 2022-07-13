@@ -87,7 +87,8 @@ def demo():
 
     scheduler = run_scheduler_local(
         task_config_template_path=os.path.join(os.path.dirname(__file__), "../template/cartpole_dqn_config.py"),
-        dijob_project_name="cartpole_dqn_hpo")
+        dijob_project_name="cartpole_dqn_hpo"
+    )
 
     hpo_info = {'policy': {'discount_factor': uniform(0.95, 1)}}
 
@@ -180,7 +181,7 @@ After launching scheduler successfully, you will see the following output from t
 
 2, Specify ``metadata.name`` in DIJob, which will be used to generate the identifier for the job in k8s.
 
-3, Specify ``projectPath`` field in yaml file, in which the hpo projects will be running. Match it with the folder directory to execute python in the k8s yaml file. In my case, it is ``/mnt/lustre/zhangjouwen.vendor/hpo/``.
+3, Specify ``metadata.projectPath`` field in yaml file, in which the hpo projects will be running.
 
 4, Hpo algorithm minimize/maximize the same value name of the object that pickled in your result file ``result.pkl``. 
 
