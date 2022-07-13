@@ -4,7 +4,10 @@
 [![pipeline status](https://gitlab.bj.sensetime.com/open-XLab/cell/di-toolkit/badges/main/pipeline.svg)](https://gitlab.bj.sensetime.com/open-XLab/cell/di-toolkit/-/commits/main)
 [![coverage report](https://gitlab.bj.sensetime.com/open-XLab/cell/di-toolkit/badges/main/coverage.svg)](https://gitlab.bj.sensetime.com/open-XLab/cell/di-toolkit/-/commits/main)
 
-A simple tool for automatic parameter tuning.
+A simple toolkit packages:
+  - logger
+  - hpo: automatic hyper-parameter tuning
+  - scheduler: automatic task resource scheduler
 
 
 ## Installation
@@ -15,11 +18,16 @@ You can simply install it with `pip` command line from the official PyPI site.
 pip install DI-toolkit
 ```
 
-For more information about installation, you can refer to [Installation](http://open-xlab.pages.gitlab.bj.sensetime.com/cell/di-toolkit/main/tutorials/installation/index.html).
+Or install from latest source code as follows:
+```shell
+git clone https://gitlab.bj.sensetime.com/open-XLab/cell/di-toolkit.git
+cd di-toolkit
+pip install . --user
+```
 
 ## Quick Start for HPO
 
-Here is a simple example
+Here is a simple example:
 
 ```python
 import random
@@ -66,6 +74,8 @@ if __name__ == '__main__':
 
 This optimization progress is parallel, which has n (number of cpus) workers in default. If you need to customize the count of workers, just use `max_workers(n)` method.
 
+## Quick Start for Scheduler
+You can refer to `ditk/scheduler/README.md` for more details.
 
 ## Contributing
 
@@ -75,4 +85,3 @@ We appreciate all contributions to improve `DI-toolkit`, both logic and system d
 ## License
 
 `DI-toolkit` released under the Apache 2.0 license.
-
