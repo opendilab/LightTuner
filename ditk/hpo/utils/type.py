@@ -10,9 +10,15 @@ except ImportError:
     ClassMethodDescriptorType = type(dict.__dict__['fromkeys'])
 
 _FUNC_TYPES = (
-    FunctionType, BuiltinFunctionType, LambdaType,
-    MethodType, BuiltinMethodType, MethodWrapperType,
-    MethodDescriptorType, ClassMethodDescriptorType, WrapperDescriptorType,
+    FunctionType,
+    BuiltinFunctionType,
+    LambdaType,
+    MethodType,
+    BuiltinMethodType,
+    MethodWrapperType,
+    MethodDescriptorType,
+    ClassMethodDescriptorType,
+    WrapperDescriptorType,
     partial,
 )
 

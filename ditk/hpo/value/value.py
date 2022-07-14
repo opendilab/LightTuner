@@ -4,6 +4,7 @@ from ..space import BaseSpace
 
 
 class HyperValue:
+
     def __init__(self, space: BaseSpace, funcs=None):
         self.__space = space
         self.__funcs = tuple(funcs or ())

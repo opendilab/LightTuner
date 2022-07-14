@@ -6,6 +6,7 @@ from ditk.hpo.space import ContinuousSpace, SeparateSpace, FixedSpace
 
 @pytest.mark.unittest
 class TestHpoValueFuncs:
+
     def test_uniform(self):
         value = uniform(-10, 20.2)
         assert isinstance(value.space, ContinuousSpace)

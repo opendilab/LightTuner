@@ -11,8 +11,15 @@ def _normpath(path: str) -> str:
 
 
 class LoggingFileHandler(logging.FileHandler):
-    def __init__(self, filename: str, mode: str = 'a', encoding: Optional[str] = None, delay: bool = False,
-                 **kwargs) -> None:
+
+    def __init__(
+            self,
+            filename: str,
+            mode: str = 'a',
+            encoding: Optional[str] = None,
+            delay: bool = False,
+            **kwargs
+    ) -> None:
         logging.FileHandler.__init__(self, filename, mode, encoding, delay, **kwargs)
         self.__file_path = _normpath(filename)
 

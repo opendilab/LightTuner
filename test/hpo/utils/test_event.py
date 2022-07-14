@@ -14,6 +14,7 @@ class MyEvents(IntEnum):
 # noinspection DuplicatedCode
 @pytest.mark.unittest
 class TestHpoUtilsEvent:
+
     def test_str_list(self):
         model = EventModel(['start', 'step', 'end'])
 

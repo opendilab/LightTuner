@@ -38,15 +38,10 @@ def verify_k8s_pod_name(pod_name):
     """
     To abey the naming rule of k8s.
     """
-    assert 0 < len(
-        pod_name
-    ) < 64, 'Pod name length should be positive and smaller than 64.'
+    assert 0 < len(pod_name) < 64, 'Pod name length should be positive and smaller than 64.'
     name = [c for c in pod_name if c.islower() or c.isdigit() or c == "-"]
-    assert len(name) == len(
-        pod_name
-    ), "Only lowercase aphanumeric character or '-' is allowed in pod name."
-    assert pod_name[0].isalnum(
-    ), "First character has to be character or digit."
+    assert len(name) == len(pod_name), "Only lowercase aphanumeric character or '-' is allowed in pod name."
+    assert pod_name[0].isalnum(), "First character has to be character or digit."
 
 
 def _run_local(command, log_file, end_event, directory="./"):
@@ -73,18 +68,14 @@ def _run_kubectl(command, log_file=None, directory="./"):
         if not os.path.exists(os.path.dirname(directory)):
             os.makedirs(os.path.dirname(directory))
         fd = open(log_file, "w")
-        subprocess.run(command,
-                       shell=False,
-                       stdout=fd,
-                       stderr=fd,
-                       cwd=directory,
-                       check=False)
+        subprocess.run(command, shell=False, stdout=fd, stderr=fd, cwd=directory, check=False)
         fd.close()
     else:
         subprocess.run(command, shell=False, cwd=directory, check=False)
 
 
 class task:
+
     def __init__(self):
         self.task_id = None
         self.task_name = None
@@ -106,20 +97,16 @@ class task:
         self.hyper_parameter_info = hyper_parameter_info
         self.defined = True
 
-    def write_config_file_to_local(self, task_config_template_path,
-                                   rl_config_file_path):
+    def write_config_file_to_local(self, task_config_template_path, rl_config_file_path):
         """write config file as a python file."""
-        config_file_strings = self.generate_config_file(
-            task_config_template_path)
+        config_file_strings = self.generate_config_file(task_config_template_path)
         with open(rl_config_file_path, mode="w", encoding="UTF-8") as f:
             for item in config_file_strings:
                 f.write(item + "\n")
 
-    def write_config_file_to_k8s_configmap(self, task_config_template_path,
-                                           k8s_yaml_file_path):
+    def write_config_file_to_k8s_configmap(self, task_config_template_path, k8s_yaml_file_path):
         """write config file into k8s yaml file."""
-        config_file_strings = self.generate_config_file(
-            task_config_template_path)
+        config_file_strings = self.generate_config_file(task_config_template_path)
         with open(k8s_yaml_file_path, mode="w", encoding="UTF-8") as f:
             for item in config_file_strings:
                 f.write(item + "\n")
@@ -130,8 +117,7 @@ class task:
         with open(task_config_template_path, mode="r", encoding="UTF-8") as f:
             for line in f.read().splitlines():
                 if line == 'if __name__ == "__main__":':
-                    config_file_strings = config_file_strings + self.generate_extra_config(
-                    )
+                    config_file_strings = config_file_strings + self.generate_extra_config()
                 config_file_strings.append(line)
         return config_file_strings
 
@@ -148,8 +134,7 @@ class task:
             for i in range(len(item)):
                 if i == len(item) - 1:
                     if type(item[i]) is str:
-                        hyper_parameter_extra_string += ' = ' + '"' + item[
-                            i] + '"'
+                        hyper_parameter_extra_string += ' = ' + '"' + item[i] + '"'
                     else:
                         hyper_parameter_extra_string += ' = ' + str(item[i])
                 else:
@@ -172,6 +157,7 @@ class task:
 
 
 class Scheduler:
+
     def __init__(self):
         self._max_number_of_running_task = 2
         self._max_number_of_tasks = 20
@@ -223,8 +209,7 @@ class Scheduler:
         self._max_number_of_tasks = max_number_of_tasks
         self._task_config_template_path = task_config_template_path
         if dijob_project_name is None:
-            self._dijob_project_name = "dijob-project-" + "".join(
-                random.choice(string.digits) for _ in range(8))
+            self._dijob_project_name = "dijob-project-" + "".join(random.choice(string.digits) for _ in range(8))
         else:
             self._dijob_project_name = dijob_project_name
 
@@ -265,8 +250,7 @@ class Scheduler:
         """running process of scheduler"""
         while not self.finish:
             if self.count_running_tasks() < self._max_number_of_running_task:
-                if self.monitor_resource() and len(
-                        self._task_waiting_queue) > 0:
+                if self.monitor_resource() and len(self._task_waiting_queue) > 0:
                     task_id = self._task_waiting_queue.popleft()
                     self.task_list[task_id].waiting = False
                     self.task_list[task_id].running = True
@@ -314,47 +298,54 @@ class Scheduler:
                     with open(result_json_file_path, "r") as file:
                         json_data = json.load(file)
             else:  # remote call k8s
+
+                result_file_path = "./" + rl_task.task_name + "/result.pkl"
+                result_json_file_path = "./" + rl_task.task_name + "/results.txt"
+
                 if not os.path.exists(os.path.dirname(result_file_path)):
                     os.makedirs(os.path.dirname(result_file_path))
 
-                p = subprocess.run([
-                    "kubectl", "exec", "-i", rl_task.task_name + "-serial-0", "--",
-                    "ls", self._k8s_remote_project_path + rl_task.task_name +
-                    "/result.pkl"
-                ],
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   shell=False,
-                                   cwd="./",
-                                   check=False)
+                p = subprocess.run(
+                    [
+                        "kubectl", "exec", "-i", rl_task.task_name + "-serial-0", "--", "ls",
+                        self._k8s_remote_project_path + rl_task.task_name + "/result.pkl"
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    shell=False,
+                    cwd="./",
+                    check=False
+                )
                 value = p.stdout.decode()
                 if value != "":
                     with open(os.devnull) as nullstd:
-                        subprocess.run([
-                            "kubectl", "cp", rl_task.task_name + "-serial-0:" +
-                            self._k8s_remote_project_path + rl_task.task_name +
-                            "/result.pkl", result_file_path
-                        ],
-                                       shell=False,
-                                       stdout=nullstd,
-                                       stderr=nullstd,
-                                       cwd="./",
-                                       check=False)
+                        subprocess.run(
+                            [
+                                "kubectl", "cp", rl_task.task_name + "-serial-0:" + self._k8s_remote_project_path +
+                                rl_task.task_name + "/result.pkl", result_file_path
+                            ],
+                            shell=False,
+                            stdout=nullstd,
+                            stderr=nullstd,
+                            cwd="./",
+                            check=False
+                        )
 
                     if os.path.exists(result_file_path):
                         with open(result_file_path, "rb") as file:
                             data = pickle.load(file)
 
-                p = subprocess.run([
-                    "kubectl", "exec", "-i", rl_task.task_name + "-serial-0", "--",
-                    "cat", self._k8s_remote_project_path + rl_task.task_name +
-                    "/results.txt"
-                ],
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   shell=False,
-                                   cwd="./",
-                                   check=False)
+                p = subprocess.run(
+                    [
+                        "kubectl", "exec", "-i", rl_task.task_name + "-serial-0", "--", "cat",
+                        self._k8s_remote_project_path + rl_task.task_name + "/results.txt"
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    shell=False,
+                    cwd="./",
+                    check=False
+                )
                 json_value = p.stdout.decode()
                 if json_value != "":
                     with open(result_json_file_path, "w") as file:
@@ -371,15 +362,17 @@ class Scheduler:
                 rl_task.start_time = time.time()
         elif self._mode == "k8s":
             if rl_task.start_time is None:
-                p = subprocess.run([
-                    "kubectl", "get", "pod", rl_task.task_name + "-serial-0",
-                    "--no-headers", "-o", "jsonpath='{.status.phase}'"
-                ],
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   shell=False,
-                                   cwd="./",
-                                   check=False)
+                p = subprocess.run(
+                    [
+                        "kubectl", "get", "pod", rl_task.task_name + "-serial-0", "--no-headers", "-o",
+                        "jsonpath='{.status.phase}'"
+                    ],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    shell=False,
+                    cwd="./",
+                    check=False
+                )
                 status = p.stdout.decode()
                 if status == "'Pending'":
                     pass
@@ -390,23 +383,24 @@ class Scheduler:
         if self._mode == "local":
             return not rl_task.end_event.is_set()
         elif self._mode == "k8s":
-            p = subprocess.run([
-                "kubectl", "get", "pod", rl_task.task_name + "-serial-0",
-                "--no-headers", "-o", "jsonpath='{.status.phase}'"
-            ],
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               shell=False,
-                               cwd="./",
-                               check=False)
+            p = subprocess.run(
+                [
+                    "kubectl", "get", "pod", rl_task.task_name + "-serial-0", "--no-headers", "-o",
+                    "jsonpath='{.status.phase}'"
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                shell=False,
+                cwd="./",
+                check=False
+            )
             status = p.stdout.decode()
             if status == "'Pending'" or status == "'Running'":
                 return True
             elif status == "'Succeeded'" or status == "'Failed'" or status == "'Unknown'":
                 return False
             else:
-                logging.info("Scheduler: Unknown Error in checking k8s pod: " +
-                             rl_task.task_name)
+                logging.info("Scheduler: Unknown Error in checking k8s pod: " + rl_task.task_name)
                 return False
 
         else:
@@ -440,8 +434,7 @@ class Scheduler:
                             json_result = {"status": "success"}
                             if json_data is not None:
                                 json_result.update(json_data)
-                            report = rl_task.get_report(return_data=data,
-                                                        result=json_result)
+                            report = rl_task.get_report(return_data=data, result=json_result)
 
                             rl_task.finish = True
                             rl_task.success = True
@@ -450,8 +443,7 @@ class Scheduler:
                             self.task_success_id.append(rl_task.task_id)
                             self.task_reports.append(report)
                         else:
-                            report = rl_task.get_report(
-                                result={"status": "fail"})
+                            report = rl_task.get_report(result={"status": "fail"})
 
                             rl_task.finish = True
                             rl_task.success = False
@@ -467,8 +459,7 @@ class Scheduler:
 
                     if self.check_task_alive(rl_task):
                         if self.check_task_timeout(rl_task):
-                            report = rl_task.get_report(
-                                result={"status": "time out"})
+                            report = rl_task.get_report(result={"status": "time out"})
 
                             rl_task.running = False
                             rl_task.finish = True
@@ -493,8 +484,7 @@ class Scheduler:
                         json_result = {"status": "success"}
                         if json_data is not None:
                             json_result.update(json_data)
-                        report = rl_task.get_report(return_data=data,
-                                                    result=json_result)
+                        report = rl_task.get_report(return_data=data, result=json_result)
 
                         rl_task.running = False
                         rl_task.finish = True
@@ -525,8 +515,7 @@ class Scheduler:
             current_task_list_size = len(self.task_list)
             if current_task_list_size < self._max_number_of_tasks:
                 new_task = task()
-                new_task.config(current_task_list_size,
-                                self._dijob_project_name, hyper_parameter_dict)
+                new_task.config(current_task_list_size, self._dijob_project_name, hyper_parameter_dict)
                 self.task_list.append(new_task)
                 self.task_defined_id.append(new_task.task_id)
         return
@@ -576,8 +565,7 @@ class Scheduler:
         if self._mode == "local":
             main_file = self._dijob_file_folder + str(task_id) + ".py"
             log_file = self.task_list[task_id].task_name + "/log.txt"
-            self.task_list[task_id].write_config_file_to_local(
-                self._task_config_template_path, main_file)
+            self.task_list[task_id].write_config_file_to_local(self._task_config_template_path, main_file)
 
             command = [sys.executable, main_file]
             end_event = multiprocessing.Event()
@@ -587,41 +575,33 @@ class Scheduler:
                     command,
                     log_file,
                     end_event,
-                ))
+                )
+            )
             self.task_list[task_id].end_event = end_event
             self.task_list[task_id].process.start()
             self.task_list[task_id].pid = self.task_list[task_id].process.pid
-            logging.info("Scheduler: task " + str(task_id) +
-                         " emited with pid [" +
-                         str(self.task_list[task_id].pid) + "]")
+            logging.info(
+                "Scheduler: task " + str(task_id) + " emited with pid [" + str(self.task_list[task_id].pid) + "]"
+            )
 
         elif self._mode == "k8s":
-            with open(self._k8s_dijob_yaml_file_path,
-                      mode="r",
-                      encoding="UTF-8") as f:
+            with open(self._k8s_dijob_yaml_file_path, mode="r", encoding="UTF-8") as f:
 
                 ryaml = YAML()
                 ryaml_content = list(ryaml.load_all(f))
 
             for content in ryaml_content:
                 if content["kind"] == "DIJob":
-                    content["metadata"]["name"] = self.task_list[
-                        task_id].task_name
-                    volumes = content["spec"]["tasks"][0]["template"]["spec"][
-                        "volumes"]
+                    content["metadata"]["name"] = self.task_list[task_id].task_name
+                    volumes = content["spec"]["tasks"][0]["template"]["spec"]["volumes"]
                     for volume in volumes:
                         if volume["name"] == "config-py":
-                            volume["configMap"][
-                                "name"] = "config-py-" + self.task_list[
-                                    task_id].task_name
+                            volume["configMap"]["name"] = "config-py-" + self.task_list[task_id].task_name
                             break
                 elif content["kind"] == "ConfigMap":
-                    content["metadata"][
-                        "name"] = "config-py-" + self.task_list[
-                            task_id].task_name
+                    content["metadata"]["name"] = "config-py-" + self.task_list[task_id].task_name
 
-            config_python_code = self.task_list[task_id].generate_config_file(
-                self._task_config_template_path)
+            config_python_code = self.task_list[task_id].generate_config_file(self._task_config_template_path)
 
             dijob_file = self._dijob_file_folder + str(task_id) + ".yml"
 
@@ -636,8 +616,7 @@ class Scheduler:
                     if i < len(ryaml_content) - 1:
                         f.write("---\n")
 
-            _run_kubectl(
-                ["kubectl", "create", "-f", dijob_file, "--validate=false"])
+            _run_kubectl(["kubectl", "create", "-f", dijob_file, "--validate=false"])
 
     def cancel_task(self, task_id):
         if self._mode == "local":
@@ -666,13 +645,9 @@ class Scheduler:
                 ("task_success", str(self.task_success_id)),
                 ("task_abnormal", str(self.task_abnormal_id)),
             ]
-            logging.info("Scheduler: report at time: " +
-                         time.strftime("%H:%M:%S", time.localtime()))
+            logging.info("Scheduler: report at time: " + time.strftime("%H:%M:%S", time.localtime()))
 
-            logging.info(
-                tabulate(tabular_data=table_data,
-                         headers=table_header,
-                         tablefmt='grid'))
+            logging.info(tabulate(tabular_data=table_data, headers=table_header, tablefmt='grid'))
 
             self._last_task_defined_id = copy.deepcopy(self.task_defined_id)
             self._last_task_running_id = copy.deepcopy(self.task_running_id)
@@ -685,11 +660,13 @@ class Scheduler:
             self._mp_queue_output.put(self.task_reports)
 
     def get_hpo_callable(self) -> Callable:
+
         def inner(v):
             new_sample_info = v
             logging.info("Scheduler: Add new sample: " + str(new_sample_info))
             new_sample_info["DI-toolkit-scheduler-hpo-id"] = "".join(
-                random.choice(string.ascii_uppercase) for _ in range(8))
+                random.choice(string.ascii_uppercase) for _ in range(8)
+            )
 
             self._mp_queue_input.put([new_sample_info])
             get_rl_result = False
@@ -712,14 +689,14 @@ class Scheduler:
                             rl_return = data["return"]
                             if rl_result["status"] == "success":
                                 logging.info(
-                                    "Scheduler: id[" + str(data["id"]) +
-                                    "] is successful, of which the return is:")
+                                    "Scheduler: id[" + str(data["id"]) + "] is successful, of which the return is:"
+                                )
                                 logging.info(rl_return)
                             else:
                                 raise ValueError(
-                                    "Scheduler: id[" + str(data["id"]) +
-                                    "] is not successful, current status is: "
-                                    + rl_result["status"])
+                                    "Scheduler: id[" + str(data["id"]) + "] is not successful, current status is: " +
+                                    rl_result["status"]
+                                )
 
                         if get_rl_result:
                             break
@@ -755,16 +732,18 @@ def scheduler_main(
     try:
         logging.try_init_root(logging.INFO)
         scheduler = Scheduler()
-        scheduler.config(max_number_of_running_task=max_number_of_running_task,
-                         max_number_of_tasks=max_number_of_tasks,
-                         task_config_template_path=task_config_template_path,
-                         dijob_project_name=dijob_project_name,
-                         k8s_dijob_yaml_file_path=k8s_dijob_yaml_file_path,
-                         k8s_remote_project_path=k8s_remote_project_path,
-                         mode=mode,
-                         time_out=time_out,
-                         mp_queue_input=mp_queue_input,
-                         mp_queue_output=mp_queue_output)
+        scheduler.config(
+            max_number_of_running_task=max_number_of_running_task,
+            max_number_of_tasks=max_number_of_tasks,
+            task_config_template_path=task_config_template_path,
+            dijob_project_name=dijob_project_name,
+            k8s_dijob_yaml_file_path=k8s_dijob_yaml_file_path,
+            k8s_remote_project_path=k8s_remote_project_path,
+            mode=mode,
+            time_out=time_out,
+            mp_queue_input=mp_queue_input,
+            mp_queue_output=mp_queue_output
+        )
 
         scheduler.run()
 
@@ -808,36 +787,39 @@ def run_scheduler(
         multiprocessing.set_start_method("spawn")
 
     scheduler = Scheduler()
-    scheduler.config(task_config_template_path=task_config_template_path,
-                     dijob_project_name=dijob_project_name,
-                     max_number_of_running_task=max_number_of_running_task,
-                     max_number_of_tasks=max_number_of_tasks,
-                     mode=mode,
-                     time_out=time_out,
-                     k8s_dijob_yaml_file_path=k8s_dijob_yaml_file_path,
-                     k8s_remote_project_path=k8s_remote_project_path)
+    scheduler.config(
+        task_config_template_path=task_config_template_path,
+        dijob_project_name=dijob_project_name,
+        max_number_of_running_task=max_number_of_running_task,
+        max_number_of_tasks=max_number_of_tasks,
+        mode=mode,
+        time_out=time_out,
+        k8s_dijob_yaml_file_path=k8s_dijob_yaml_file_path,
+        k8s_remote_project_path=k8s_remote_project_path
+    )
 
     mp_queue_input, mp_queue_output = scheduler.get_mp_queues()
     mp_queue_error = multiprocessing.Queue()
 
-    p = multiprocessing.Process(target=scheduler_main,
-                                args=(
-                                    task_config_template_path,
-                                    dijob_project_name,
-                                    max_number_of_running_task,
-                                    max_number_of_tasks,
-                                    mode,
-                                    time_out,
-                                    mp_queue_input,
-                                    mp_queue_output,
-                                    k8s_dijob_yaml_file_path,
-                                    k8s_remote_project_path,
-                                    mp_queue_error,
-                                ))
+    p = multiprocessing.Process(
+        target=scheduler_main,
+        args=(
+            task_config_template_path,
+            dijob_project_name,
+            max_number_of_running_task,
+            max_number_of_tasks,
+            mode,
+            time_out,
+            mp_queue_input,
+            mp_queue_output,
+            k8s_dijob_yaml_file_path,
+            k8s_remote_project_path,
+            mp_queue_error,
+        )
+    )
     p.start()
 
-    scheduler.monitor_thread = threading.Thread(
-        target=monitor_scheduler_thead_main, args=(mp_queue_error, ))
+    scheduler.monitor_thread = threading.Thread(target=monitor_scheduler_thead_main, args=(mp_queue_error, ))
     scheduler.monitor_thread.start()
 
     return scheduler
@@ -863,7 +845,7 @@ def run_scheduler_local(
 
 def run_scheduler_k8s(
         task_config_template_path,
-        k8s_dijob_yaml_file_path=None,
+        k8s_dijob_yaml_file_path,
         time_out=None,
 ) -> Scheduler:
 
@@ -894,11 +876,13 @@ def run_scheduler_k8s(
         logging.error("Scheduler: no k8s remote project path is assigned.")
         return
 
-    return run_scheduler(task_config_template_path=task_config_template_path,
-                         dijob_project_name=dijob_project_name,
-                         max_number_of_running_task=max_number_of_running_task,
-                         max_number_of_tasks=max_number_of_tasks,
-                         mode="k8s",
-                         time_out=time_out,
-                         k8s_dijob_yaml_file_path=k8s_dijob_yaml_file_path,
-                         k8s_remote_project_path=k8s_remote_project_path)
+    return run_scheduler(
+        task_config_template_path=task_config_template_path,
+        dijob_project_name=dijob_project_name,
+        max_number_of_running_task=max_number_of_running_task,
+        max_number_of_tasks=max_number_of_tasks,
+        mode="k8s",
+        time_out=time_out,
+        k8s_dijob_yaml_file_path=k8s_dijob_yaml_file_path,
+        k8s_remote_project_path=k8s_remote_project_path
+    )

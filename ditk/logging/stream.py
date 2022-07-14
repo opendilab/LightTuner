@@ -17,6 +17,7 @@ def _strip_rich_markup(text: str) -> str:
 
 
 class NoRichStreamHandler(StreamHandler):
+
     def emit(self, record: LogRecord) -> None:
         if isinstance(record.msg, str):
             record.msg = _strip_rich_markup(record.msg)

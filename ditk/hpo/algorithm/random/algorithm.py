@@ -12,12 +12,14 @@ from ...value import HyperValue
 
 
 class RandomConfigure(BaseConfigure):
+
     def seed(self, s: Optional[int] = None):
         self._settings['seed'] = s
         return self
 
 
 class RandomAlgorithm(BaseAlgorithm):
+
     def __init__(self, seed=None, max_steps=None, **kwargs):
         BaseAlgorithm.__init__(self, seed=seed, max_steps=max_steps, **kwargs)
         self.random = make_native_random(seed)
@@ -32,6 +34,7 @@ class NoMoreRandomSample(Exception):
 
 
 class RandomSession(BaseSession):
+
     def __init__(self, algorithm: RandomAlgorithm, space, service: ThreadService):
         BaseSession.__init__(self, space, service)
         self.__algorithm = algorithm
@@ -59,8 +62,10 @@ class RandomSession(BaseSession):
                         self._exist_pairs.add(_sample)
                         return _sample
             else:
-                raise NoMoreRandomSample(f'All {plural_word(self._total_pairs, "sample")} iterated, '
-                                         f'no more random sample can be provided.')
+                raise NoMoreRandomSample(
+                    f'All {plural_word(self._total_pairs, "sample")} iterated, '
+                    f'no more random sample can be provided.'
+                )
         else:
             return self._create_one_sample()
 

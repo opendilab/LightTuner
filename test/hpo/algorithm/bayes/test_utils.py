@@ -7,26 +7,26 @@ from ditk.hpo.algorithm.bayes import UtilityFunction, acq_max, ensure_rng
 
 
 def get_globals():
-    _x = np.array([
-        [0.00, 0.00],
-        [0.99, 0.99],
-        [0.00, 0.99],
-        [0.99, 0.00],
-        [0.50, 0.50],
-        [0.25, 0.50],
-        [0.50, 0.25],
-        [0.75, 0.50],
-        [0.50, 0.75],
-    ])
+    _x = np.array(
+        [
+            [0.00, 0.00],
+            [0.99, 0.99],
+            [0.00, 0.99],
+            [0.99, 0.00],
+            [0.50, 0.50],
+            [0.25, 0.50],
+            [0.50, 0.25],
+            [0.75, 0.50],
+            [0.50, 0.75],
+        ]
+    )
 
     def get_y(x):
         return -(x[:, 0] - 0.3) ** 2 - 0.5 * (x[:, 1] - 0.6) ** 2 + 2
 
     y = get_y(_x)
 
-    mesh = np.dstack(
-        np.meshgrid(np.arange(0, 1, 0.005), np.arange(0, 1, 0.005))
-    ).reshape(-1, 2)
+    mesh = np.dstack(np.meshgrid(np.arange(0, 1, 0.005), np.arange(0, 1, 0.005))).reshape(-1, 2)
 
     gp = GaussianProcessRegressor(
         kernel=Matern(),
@@ -72,14 +72,7 @@ def test_acq_with_ucb():
     episilon = 1e-2
     y_max = 2.0
 
-    max_arg = acq_max(
-        util.utility,
-        GP,
-        y_max,
-        bounds=np.array([[0, 1], [0, 1]]),
-        random_state=ensure_rng(0),
-        n_iter=20
-    )
+    max_arg = acq_max(util.utility, GP, y_max, bounds=np.array([[0, 1], [0, 1]]), random_state=ensure_rng(0), n_iter=20)
     _, brute_max_arg = brute_force_maximum(MESH, GP, kind='ucb', kappa=1.0, xi=1.0)
 
     assert all(abs(brute_max_arg - max_arg) < episilon)

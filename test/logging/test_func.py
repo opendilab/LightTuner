@@ -11,6 +11,7 @@ from ..testing import init_handlers
 
 @pytest.mark.unittest
 class TestLoggingFunc:
+
     @init_handlers([])
     def test_loggings(self):
         with capture_output() as o:

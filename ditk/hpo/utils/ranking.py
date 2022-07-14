@@ -6,8 +6,16 @@ from tabulate import tabulate
 
 
 class RankList(_MetaSequence):
-    def __init__(self, capacity: int, columns: Sequence[Tuple[str, Callable]], init: Optional[Sequence] = None,
-                 key: Optional[Callable] = None, reverse: bool = False, tablefmt: str = 'psql'):
+
+    def __init__(
+        self,
+        capacity: int,
+        columns: Sequence[Tuple[str, Callable]],
+        init: Optional[Sequence] = None,
+        key: Optional[Callable] = None,
+        reverse: bool = False,
+        tablefmt: str = 'psql'
+    ):
         self.__capacity = capacity
         self.__columns = columns
         key = key or (lambda x: x)
@@ -45,5 +53,6 @@ class RankList(_MetaSequence):
     def __str__(self):
         return tabulate(
             [[name_key(row) for _, name_key in self.__columns] for row in self],
-            headers=[name for name, _ in self.__columns], tablefmt=self.__tablefmt,
+            headers=[name for name, _ in self.__columns],
+            tablefmt=self.__tablefmt,
         )

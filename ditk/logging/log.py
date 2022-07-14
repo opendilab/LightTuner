@@ -6,7 +6,8 @@ from .file import _create_file_handler, LoggingFileHandler, _normpath
 from .terminal import LoggingTerminalHandler
 
 __all__ = [
-    'try_init_root', 'getLogger',
+    'try_init_root',
+    'getLogger',
 ]
 
 
@@ -20,9 +21,11 @@ def try_init_root(level: Optional[_LogLevelType] = None) -> logging.Logger:
 
 
 # noinspection PyPep8Naming
-def getLogger(name: Optional[str] = None,
-              level: Optional[_LogLevelType] = None,
-              with_files: Optional[List[str]] = None) -> logging.Logger:
+def getLogger(
+        name: Optional[str] = None,
+        level: Optional[_LogLevelType] = None,
+        with_files: Optional[List[str]] = None
+) -> logging.Logger:
     """
     Overview:
         Get :class:`logging.Logger` object, with terminal output and file output.
@@ -54,8 +57,10 @@ def getLogger(name: Optional[str] = None,
             nfile = _normpath(file)
             if nfile in fps:
                 to_be_logged.append(
-                    (logging.WARNING, f"File {repr(file)} has already been added to logger {repr(fps[nfile])}, "
-                                      f"so this configuration will be ignored.")
+                    (
+                        logging.WARNING, f"File {repr(file)} has already been added to logger {repr(fps[nfile])}, "
+                        f"so this configuration will be ignored."
+                    )
                 )
             else:
                 handler = _create_file_handler(file)

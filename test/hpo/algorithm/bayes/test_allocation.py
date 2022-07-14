@@ -9,6 +9,7 @@ from ditk.hpo.value import HyperValue
 # noinspection DuplicatedCode
 @pytest.mark.unittest
 class TestHpoAlgorithmBayesAlgorithm:
+
     def test_hyper_to_bound(self):
         hv1 = HyperValue(ContinuousSpace(0.4, 2.2))
         (lbound, ubound), func = hyper_to_bound(hv1)

@@ -10,6 +10,7 @@ from ....testing import no_handlers
 # noinspection DuplicatedCode
 @pytest.mark.unittest
 class TestHpoAlgorithmGridActual:
+
     @no_handlers()
     def test_grid_unlimited(self):
         visited, opt = get_hpo_func()
@@ -165,6 +166,7 @@ class TestHpoAlgorithmGridActual:
 
     @pytest.mark.flaky(reruns=3)
     def test_grid_with_error(self):
+
         @hpo
         def opt_func(v):
             x, y = v['x'], v['y']

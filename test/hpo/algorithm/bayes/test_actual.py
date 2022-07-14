@@ -21,6 +21,7 @@ def opt_func(v):
 # noinspection DuplicatedCode
 @pytest.mark.unittest
 class TestHpoAlgorithmBayesAlgorithm:
+
     @pytest.mark.flaky(reruns=3)
     @no_handlers()
     def test_bayes_single_maximize(self):
@@ -92,6 +93,7 @@ class TestHpoAlgorithmBayesAlgorithm:
 
     @pytest.mark.flaky(reruns=3)
     def test_bayes_single_maximize_with_skip(self):
+
         @hpo
         def funcx(v):
             x, y = v['x'], v['y']

@@ -6,8 +6,11 @@ from ..space import ContinuousSpace, SeparateSpace, FixedSpace
 from ..utils import l2normal
 
 __all__ = [
-    'uniform', 'quniform',
-    'choice', 'randint', 'randn',
+    'uniform',
+    'quniform',
+    'choice',
+    'randint',
+    'randn',
 ]
 
 

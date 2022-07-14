@@ -14,6 +14,7 @@ from ..testing import init_handlers
 
 @pytest.mark.unittest
 class TestLoggingLog:
+
     @init_handlers([])
     def test_simple_rich(self):
         try_init_root(logging.DEBUG)
@@ -98,10 +99,12 @@ class TestLoggingLog:
             root = logging.getLogger()
             root.setLevel(logging.DEBUG)
             hdl = logging.StreamHandler(sys.stdout)
-            hdl.setFormatter(logging.Formatter(
-                fmt='[%(asctime)s][%(filename)s:%(lineno)d][THIS IS UNITTEST][%(levelname)s] %(message)s',
-                datefmt="%m-%d %H:%M:%S",
-            ))
+            hdl.setFormatter(
+                logging.Formatter(
+                    fmt='[%(asctime)s][%(filename)s:%(lineno)d][THIS IS UNITTEST][%(levelname)s] %(message)s',
+                    datefmt="%m-%d %H:%M:%S",
+                )
+            )
             root.addHandler(hdl)
 
             logger = getLogger('basics_stream')

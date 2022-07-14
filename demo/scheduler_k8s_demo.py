@@ -14,7 +14,7 @@ def demo():
         k8s_dijob_yaml_file_path=os.path.join(dirname, "cartpole_dijob_with_empty_configmap.yml"),
     )
 
-    hpo_info = {'policy': {'discount_factor':  uniform(0.95, 1)}}
+    hpo_info = {'policy': {'discount_factor': uniform(0.95, 1)}}
 
     opt = hpo(scheduler.get_hpo_callable())
     cfg, ret, metrics = opt.grid() \

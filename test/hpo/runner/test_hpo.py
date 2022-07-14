@@ -7,6 +7,7 @@ from ..algorithm.public import get_hpo_func
 
 @pytest.mark.unittest
 class TestHpoAlgorithmHpo:
+
     def test_common(self):
         visited, opt = get_hpo_func()
         assert opt({'x': 2, 'y': 3}) == {'result': 6, 'sum': 5}

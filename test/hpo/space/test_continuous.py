@@ -5,6 +5,7 @@ from ditk.hpo.space import ContinuousSpace
 
 @pytest.mark.unittest
 class TestHpoSpaceContinuous:
+
     def test_continuous_space(self):
         space = ContinuousSpace(0.4, 2.2)
         assert space.lbound == pytest.approx(0.4)

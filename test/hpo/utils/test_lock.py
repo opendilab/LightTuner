@@ -9,6 +9,7 @@ from ditk.hpo.utils import ValueProxyLock, RunFailed, func_interact
 
 @pytest.mark.unittest
 class TestHpoUtilsLock:
+
     def test_value_proxy_lock(self):
         p = ValueProxyLock()
         result = None
@@ -79,13 +80,7 @@ class TestHpoUtilsLock:
                 _execute.put(v ** 2 + 5)
 
         t.join()
-        assert _vr == [
-            (True, 9),
-            (True, 14),
-            (True, 30),
-            (True, 54),
-            (False, -1)
-        ]
+        assert _vr == [(True, 9), (True, 14), (True, 30), (True, 54), (False, -1)]
 
         with pytest.raises(BrokenPipeError):
             _call(233)
