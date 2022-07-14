@@ -14,15 +14,16 @@ from ...utils import ThreadService, ServiceNoLongerAccept
 
 
 class BayesConfigure(BaseConfigure):
+
     def init_steps(self, steps: int):
         self._settings['init_steps'] = steps
         return self
 
     def set_utils(self, acq=..., kappa=..., kappa_decay=..., kappa_decay_delay=..., xi=...):
         new_values = {
-            key: value for key, value in
-            dict(acq=acq, kappa=kappa, kappa_decay=kappa_decay,
-                 kappa_decay_delay=kappa_decay_delay, xi=xi)
+            key: value
+            for key, value in
+            dict(acq=acq, kappa=kappa, kappa_decay=kappa_decay, kappa_decay_delay=kappa_decay_delay, xi=xi)
             if value is not Ellipsis
         }
         self._settings.update(new_values)
@@ -37,10 +38,20 @@ class BayesConfigure(BaseConfigure):
 
 class BayesAlgorithm(BaseAlgorithm):
     # noinspection PyUnusedLocal
-    def __init__(self, opt_direction: OptimizeDirection, seed: Optional[int] = None,
-                 max_steps: Optional[int] = None, init_steps: int = 5,
-                 acq='ucb', kappa=2.576, kappa_decay=1, kappa_decay_delay=0, xi=0.0,
-                 gp_params: Optional[Dict] = None, **kwargs):
+    def __init__(
+        self,
+        opt_direction: OptimizeDirection,
+        seed: Optional[int] = None,
+        max_steps: Optional[int] = None,
+        init_steps: int = 5,
+        acq='ucb',
+        kappa=2.576,
+        kappa_decay=1,
+        kappa_decay_delay=0,
+        xi=0.0,
+        gp_params: Optional[Dict] = None,
+        **kwargs
+    ):
         BaseAlgorithm.__init__(self, **kwargs)
         self.opt_direction = OptimizeDirection.loads(opt_direction)
         self.random_seed = seed
@@ -55,12 +66,15 @@ class BayesAlgorithm(BaseAlgorithm):
 
 
 class BayesSession(BaseSession):
+
     def __init__(self, algorithm: BayesAlgorithm, space, service: ThreadService):
         BaseSession.__init__(self, space, service)
         self.__algorithm: BayesAlgorithm = algorithm
 
         self._pbounds: List[Tuple[float, float]] = []
-        self._pfuncs: List[Callable[[float, ], Any]] = []
+        self._pfuncs: List[Callable[[
+            float,
+        ], Any]] = []
         for hv in self.vsp:
             (l, r), post = hyper_to_bound(hv)
             self._pbounds.append((l, r))
@@ -131,7 +145,7 @@ class BayesSession(BaseSession):
             self._opt_regressor.fit(self._space_params, self._space_target)
 
     def _return_on_success(self, task: Task, retval: Any):
-        _, _, (x_probe,) = task
+        _, _, (x_probe, ) = task
         y_value = retval.value
 
         with self._fit_sample_lock:
@@ -149,6 +163,6 @@ class BayesSession(BaseSession):
             x_probe = self._create_new_sample()
             x_actual = tuple(func(xv) for xv, func in zip(x_probe, self._pfuncs))
             try:
-                self._put_via_space(x_actual, (x_probe,))
+                self._put_via_space(x_actual, (x_probe, ))
             except ServiceNoLongerAccept:
                 break

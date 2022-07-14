@@ -10,6 +10,7 @@ from ....testing import no_handlers
 # noinspection DuplicatedCode
 @pytest.mark.unittest
 class TestHpoAlgorithmRandomActual:
+
     @no_handlers()
     def test_random_single(self):
         visited, func = get_hpo_func()
@@ -37,11 +38,13 @@ class TestHpoAlgorithmRandomActual:
 
     def test_random_all(self):
         visited, func = get_hpo_func()
-        func.random(silent=True).max_steps(1000).maximize(R['result']).spaces({
-            'x': uniform(-2, 8),
-            'y': quniform(-1.6, 7.8, 0.2),
-            'z': choice(['a', 'b', 'c'])
-        }).run()
+        func.random(silent=True).max_steps(1000).maximize(R['result']).spaces(
+            {
+                'x': uniform(-2, 8),
+                'y': quniform(-1.6, 7.8, 0.2),
+                'z': choice(['a', 'b', 'c'])
+            }
+        ).run()
 
         assert len(visited) == 1000
         for item in visited:
@@ -126,6 +129,7 @@ class TestHpoAlgorithmRandomActual:
 
     @pytest.mark.flaky(reruns=3)
     def test_random_with_error(self):
+
         @hpo
         def opt_func(v):
             x, y = v['x'], v['y']

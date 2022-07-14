@@ -10,6 +10,7 @@ from ..utils import RankList
 
 
 class RunnerStatus(AutoIntEnum):
+
     def __init__(self, func_name: str):
         self.func_name = func_name
 
@@ -37,8 +38,10 @@ class RunnerEventSet:
     def init(self, algo_cls: Type[BaseAlgorithm], settings: Dict[str, Any], func: Callable):
         pass  # pragma: no cover
 
-    def init_ok(self, target_name: str, params: Iterable[Tuple[str, _ResultExpression]],
-                concerns: Iterable[Tuple[str, _ResultExpression]]):
+    def init_ok(
+        self, target_name: str, params: Iterable[Tuple[str, _ResultExpression]],
+        concerns: Iterable[Tuple[str, _ResultExpression]]
+    ):
         pass  # pragma: no cover
 
     # running stage

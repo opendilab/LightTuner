@@ -21,6 +21,7 @@ class GridConfigure(BaseConfigure):
 
 
 class GridAlgorithm(BaseAlgorithm):
+
     def __init__(self, max_steps, **kwargs):
         BaseAlgorithm.__init__(self, max_steps=max_steps, **kwargs)
         self.max_steps = max_steps
@@ -30,6 +31,7 @@ class GridAlgorithm(BaseAlgorithm):
 
 
 class GridSession(BaseSession):
+
     def __init__(self, algorithm: GridAlgorithm, space, service: ThreadService):
         BaseSession.__init__(self, space, service)
         self.__algorithm = algorithm
@@ -38,12 +40,14 @@ class GridSession(BaseSession):
         if self._alloc_count is None:
             self._alloc_count = +math.inf
 
-        ordered = sorted([(
-            (
-                _ORDER_DICT[type(sp.space)],
-                sp.space.count if isinstance(sp.space, SeparateSpace) else 0,
-            ), i, sp
-        ) for i, sp in enumerate(self.vsp)])
+        ordered = sorted(
+            [
+                ((
+                    _ORDER_DICT[type(sp.space)],
+                    sp.space.count if isinstance(sp.space, SeparateSpace) else 0,
+                ), i, sp) for i, sp in enumerate(self.vsp)
+            ]
+        )
         self._ordered_vsp: Tuple[HyperValue, ...] = tuple(sp for _, _, sp in ordered)
         self._order_map: Tuple[int, ...] = tuple(i for _, i, _ in ordered)
         if math.isinf(self._alloc_count) and self._ordered_vsp \
@@ -85,10 +89,7 @@ class GridSession(BaseSession):
                 raise TypeError(f'Unknown space type - {repr(space)}.')  # pragma: no cover
 
         odim_alloc = [v for _, v in sorted(zip(self._order_map, dim_alloc))]  # reorder the values
-        final_alloc = [
-            tuple(hv.trans(item) for item in v)
-            for hv, v in zip(self.vsp, odim_alloc)
-        ]
+        final_alloc = [tuple(hv.trans(item) for item in v) for hv, v in zip(self.vsp, odim_alloc)]
         for tpl in nested_for(*final_alloc):
             try:
                 self._put_via_space(tuple(tpl))

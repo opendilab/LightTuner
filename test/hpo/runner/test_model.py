@@ -7,10 +7,17 @@ from ditk.hpo.runner.signal import Skip
 
 @pytest.mark.unittest
 class TestHpoRunnerModel:
+
     def test_run_result(self):
         r1 = RunResult(
-            Task(1, {'a': 1, 'b': [2, 3]}, ()),
-            {'aa': 4, 'bb': [5, 6]},
+            Task(1, {
+                'a': 1,
+                'b': [2, 3]
+            }, ()),
+            {
+                'aa': 4,
+                'bb': [5, 6]
+            },
             {'time': 3.1415926535},
             R,
         )
@@ -28,8 +35,14 @@ class TestHpoRunnerModel:
         assert repr(r1) == "<RunResult task_id: 1, value: {'aa': 4, 'bb': [5, 6]}>"
 
         r2 = RunResult(
-            Task(2, {'a': 1, 'b': [2, 3]}, ('abcdefg',)),
-            {'aa': 4, 'bb': [5, 6, 7, 10]},
+            Task(2, {
+                'a': 1,
+                'b': [2, 3]
+            }, ('abcdefg', )),
+            {
+                'aa': 4,
+                'bb': [5, 6, 7, 10]
+            },
             {'time': 3.1415926535},
             R['bb'].mean(),
         )
@@ -47,7 +60,10 @@ class TestHpoRunnerModel:
 
     def test_run_failed(self):
         rf = RunFailed(
-            Task(1, {'a': 1, 'b': [2, 3]}, ()),
+            Task(1, {
+                'a': 1,
+                'b': [2, 3]
+            }, ()),
             ValueError('abcd', 233),
             {'time': 3.1415926535},
         )
@@ -61,7 +77,10 @@ class TestHpoRunnerModel:
 
     def test_run_skip(self):
         rk = RunSkipped(
-            Task(1, {'a': 1, 'b': [2, 3]}, ()),
+            Task(1, {
+                'a': 1,
+                'b': [2, 3]
+            }, ()),
             Skip('abcd', 233),
             {'time': 3.1415926535},
         )

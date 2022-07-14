@@ -25,7 +25,9 @@ def with_root_logger(handlers=None) -> ContextManager[logging.Logger]:
 
 
 def init_handlers(handlers=None):
+
     def _decorator(func):
+
         @wraps(func)
         def _new_func(*args, **kwargs):
             with with_root_logger(handlers):

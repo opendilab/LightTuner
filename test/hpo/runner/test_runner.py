@@ -12,6 +12,7 @@ from ditk.hpo.utils import ThreadService, RankList, ServiceNoLongerAccept
 
 
 class _MyAlgorithm(BaseAlgorithm):
+
     def __init__(self, v, even_only=False, **kwargs):
         BaseAlgorithm.__init__(self, **kwargs)
         self.v = v
@@ -22,6 +23,7 @@ class _MyAlgorithm(BaseAlgorithm):
 
 
 class _MySession(BaseSession):
+
     def __init__(self, algorithm: _MyAlgorithm, space, service: ThreadService):
         BaseSession.__init__(self, space, service)
         self.__algorithm = algorithm
@@ -45,6 +47,7 @@ class _MySession(BaseSession):
 
 
 class _MyEventSet(RunnerEventSet):
+
     def __init__(self):
         self.is_initialized = False
         self.is_started = False
@@ -56,8 +59,10 @@ class _MyEventSet(RunnerEventSet):
         self.fail_count = 0
         self.complete_count = 0
 
-    def init_ok(self, target_name: str, params: Iterable[Tuple[str, _ResultExpression]],
-                concerns: Iterable[Tuple[str, _ResultExpression]]):
+    def init_ok(
+        self, target_name: str, params: Iterable[Tuple[str, _ResultExpression]],
+        concerns: Iterable[Tuple[str, _ResultExpression]]
+    ):
         self.is_initialized = True
 
     def run_start(self):
@@ -85,7 +90,9 @@ class _MyEventSet(RunnerEventSet):
 # noinspection DuplicatedCode
 @pytest.mark.unittest
 class TestHpoRunnerRunner:
+
     def test_simple(self):
+
         def _my_func(v):
             a, (b0, b1) = v['a'], v['b']
             return (a - 5) ** 2
@@ -125,6 +132,7 @@ class TestHpoRunnerRunner:
                 }).run()
 
     def test_skip_fail_event(self):
+
         def _my_func(v):
             a, (b0, b1) = v['a'], v['b']
             if a % 3 == 0:
@@ -169,6 +177,7 @@ class TestHpoRunnerRunner:
         assert _my_event.complete_count == 40
 
     def test_condition(self):
+
         def _my_func(v):
             a, (b0, b1) = v['a'], v['b']
             return {
@@ -200,6 +209,7 @@ class TestHpoRunnerRunner:
         assert 'time' in _metrics
 
     def test_zero(self):
+
         def _my_func(v):
             a, (b0, b1) = v['a'], v['b']
             return {
@@ -225,6 +235,7 @@ class TestHpoRunnerRunner:
         assert _return is None
 
     def test_invalid_max_workers(self):
+
         def _my_func(v):
             a, (b0, b1) = v['a'], v['b']
             return {

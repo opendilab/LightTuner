@@ -27,6 +27,7 @@ def _find_hv(vs):
 
 
 class LoggingEventSet(RunnerEventSet):
+
     def __init__(self, name: Optional[str]):
         try_init_root()
         self._logger = getLogger(name)
@@ -45,10 +46,13 @@ class LoggingEventSet(RunnerEventSet):
         setting_text = rchain(sorted((name, val) for name, val in settings.items()))
         self._logger.info(
             f"{self._algorithm_class.algorithm_name()} will be used, "
-            f"with [bold bright_white underline]{setting_text}[/]".capitalize())
+            f"with [bold bright_white underline]{setting_text}[/]".capitalize()
+        )
 
-    def init_ok(self, target_name: str, params: Iterable[Tuple[str, _ResultExpression]],
-                concerns: Iterable[Tuple[str, _ResultExpression]]):
+    def init_ok(
+        self, target_name: str, params: Iterable[Tuple[str, _ResultExpression]],
+        concerns: Iterable[Tuple[str, _ResultExpression]]
+    ):
         self._target_name = target_name
         self._params = params
         self._concerns = concerns
@@ -67,22 +71,29 @@ class LoggingEventSet(RunnerEventSet):
     def step(self, task: Task):
         _data = {'config': task.config}
         cfg_display_values = [(name, _to_callable(param)(_data)) for name, param in self._params]
-        self._logger.info(dedent(f"""
+        self._logger.info(
+            dedent(
+                f"""
             ======================= {inflection.ordinalize(task.task_id)} step =======================
             Step initialized, with variables - [bold bright_white underline]{rchain(cfg_display_values)}[/].
-        """).strip())
+        """
+            ).strip()
+        )
 
     def step_ok(self, task: Task, result: RunResult):
         r_time_cost = result.metrics['time']
         res_display_values = [
-            (self._target_name, result.value),
-            *((name, result.get(concern)) for name, concern in self._concerns)
+            (self._target_name, result.value), *((name, result.get(concern)) for name, concern in self._concerns)
         ]
 
-        self._logger.info(dedent(f"""
+        self._logger.info(
+            dedent(
+                f"""
             Function running [green]completed[/], time cost: {"%.3f" % r_time_cost} seconds,
             with concerned results - [bold bright_white underline]{rchain(res_display_values)}[/].
-        """).strip())
+        """
+            ).strip()
+        )
 
     def step_fail(self, task: Task, error: RunFailed):
         r_time_cost = error.metrics['time']
@@ -90,26 +101,38 @@ class LoggingEventSet(RunnerEventSet):
         try:
             raise error
         except:
-            self._logger.exception(f'Function running [red]failed[/], '
-                                   f'time cost: {r_time_cost:.3f} seconds, '
-                                   f'this step will be skipped and ignored due to this failure.')
+            self._logger.exception(
+                f'Function running [red]failed[/], '
+                f'time cost: {r_time_cost:.3f} seconds, '
+                f'this step will be skipped and ignored due to this failure.'
+            )
 
     def step_skip(self, task: Task, error: RunSkipped):
         r_time_cost = error.metrics['time']
-        self._logger.info(dedent(f"""
+        self._logger.info(
+            dedent(
+                f"""
             Sample [yellow]skipped[/], time cost: {"%.3f" % r_time_cost} seconds,
             with arguments: [bold bright_white underline]{error.args!r}[/].
-        """).strip())
+        """
+            ).strip()
+        )
 
     def step_final(self, task: Task, ranklist: RankList):
-        self._logger.info(dedent(f"""
+        self._logger.info(
+            dedent(f"""
 Current ranklist ({plural_word(len(ranklist), 'best record')}):
 {ranklist}
-        """).strip())
-        self._logger.info(dedent(f"""
+        """).strip()
+        )
+        self._logger.info(
+            dedent(
+                f"""
             This search task has been lasted for {time_to_delta_str(time.time() - self._start_time)}.
 
-        """.lstrip()))
+        """.lstrip()
+            )
+        )
 
     def try_(self, task: Task, try_id: int, max_try: int):
         self._logger.info(f"Start the {inflection.ordinalize(try_id + 1)} running try of function {self._func}...")

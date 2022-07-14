@@ -36,6 +36,7 @@ class ServiceNoLongerAccept(BaseException):
 
 
 class ThreadService(metaclass=ABCMeta):
+
     def __init__(self, max_workers=None):
         self._max_workers = max_workers or os.cpu_count()
         self._exec_pool: Optional[ThreadPoolExecutor] = None
@@ -67,6 +68,7 @@ class ThreadService(metaclass=ABCMeta):
                 self.shutdown(wait=False)
 
     def _error_wrap(self, method):
+
         @wraps(method)
         def _new_method(*args, **kwargs):
             try:
@@ -88,15 +90,18 @@ class ThreadService(metaclass=ABCMeta):
 
     def __check_recv_busy(self):
         if self._running_count >= self._max_workers:
-            raise ServiceBusy(f'{plural_word(self._running_count, "running task")}, '
-                              f'max workers limits ({self._max_workers}) has already exceeded.')
+            raise ServiceBusy(
+                f'{plural_word(self._running_count, "running task")}, '
+                f'max workers limits ({self._max_workers}) has already exceeded.'
+            )
 
     @abstractmethod
     def _check_recv(self, task: _TaskType):
         raise NotImplementedError  # pragma: no cover
 
-    def send(self, task: _TaskType, fn_callback: Optional[_TaskCallBackType] = None,
-             *, timeout: Optional[float] = None):
+    def send(
+        self, task: _TaskType, fn_callback: Optional[_TaskCallBackType] = None, *, timeout: Optional[float] = None
+    ):
         _busy_err = None
         _call_time, _is_tried, _is_sent = time.time(), False, False
         while not _is_tried or timeout is None or _call_time + timeout > time.time():
@@ -117,8 +122,10 @@ class ThreadService(metaclass=ABCMeta):
                         _is_sent = True
                         break
                 else:
-                    raise ServiceNoLongerAccept(f'Service is {self._state.name.lower()}, '
-                                                f'tasks will be no longer accepted.')
+                    raise ServiceNoLongerAccept(
+                        f'Service is {self._state.name.lower()}, '
+                        f'tasks will be no longer accepted.'
+                    )
 
             if _is_busy:  # do not jam the lock, move the sleep out of above
                 time.sleep(0.05)
@@ -139,7 +146,7 @@ class ThreadService(metaclass=ABCMeta):
         with self._state_lock:
             if self._close_thread is None:
                 _already_closing = Event()
-                self._close_thread = Thread(target=self.__shutdown, args=(_already_closing,))
+                self._close_thread = Thread(target=self.__shutdown, args=(_already_closing, ))
                 self._close_thread.start()
                 _already_closing.wait()
 

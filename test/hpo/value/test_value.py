@@ -6,6 +6,7 @@ from ditk.hpo.value import HyperValue
 
 @pytest.mark.unittest
 class TestHpoValueValue:
+
     def test_common(self):
         space = ContinuousSpace(0, 10)
         value = HyperValue(space)
@@ -15,9 +16,7 @@ class TestHpoValueValue:
 
     def test_common_with_init(self):
         space = ContinuousSpace(0, 10)
-        value = HyperValue(space, [
-            (lambda x: 2 ** x)
-        ])
+        value = HyperValue(space, [(lambda x: 2 ** x)])
         assert value.space is space
         assert value.trans(1) == 2
         assert value.trans(5) == 32

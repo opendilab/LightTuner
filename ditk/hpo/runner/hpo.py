@@ -6,24 +6,28 @@ from ..algorithm import RandomAlgorithm, RandomConfigure, GridConfigure, GridAlg
 
 
 class _RandomRunner(ParallelSearchRunner, RandomConfigure):
+
     def __init__(self, func, silent: bool = False):
         RandomConfigure.__init__(self, {})
         ParallelSearchRunner.__init__(self, RandomAlgorithm, func, silent)
 
 
 class _GridRunner(ParallelSearchRunner, GridConfigure):
+
     def __init__(self, func, silent: bool = False):
         GridConfigure.__init__(self, {})
         ParallelSearchRunner.__init__(self, GridAlgorithm, func, silent)
 
 
 class _BayesRunner(ParallelSearchRunner, BayesConfigure):
+
     def __init__(self, func, silent: bool = False):
         BayesConfigure.__init__(self, {})
         ParallelSearchRunner.__init__(self, BayesAlgorithm, func, silent)
 
 
 class HpoFunc:
+
     def __init__(self, func):
         self.__func = func
 

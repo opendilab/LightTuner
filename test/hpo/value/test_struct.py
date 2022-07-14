@@ -6,13 +6,18 @@ from ditk.hpo.value import struct_values
 
 @pytest.mark.unittest
 class TestHpoValueStruct:
+
     def test_struct_values(self):
         s1 = choice(['a', 'b', 'c'])
         s2 = uniform(-10, 20.2)
         s3 = quniform(-20.2, 10, 0.2)
         s4 = uniform(-5, 10.1)
         func, items = struct_values({
-            'values': {'a': s2, 'b': (s3, s4), 'e': 12.7},
+            'values': {
+                'a': s2,
+                'b': (s3, s4),
+                'e': 12.7
+            },
             'need': s1,
         })
         ns1, ns2, ns3, ns4 = items

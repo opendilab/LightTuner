@@ -14,7 +14,7 @@ def demo():
         dijob_project_name="cartpole_dqn_hpo"
     )
 
-    hpo_info = {'policy': {'discount_factor':  uniform(0.95, 1)}}
+    hpo_info = {'policy': {'discount_factor': uniform(0.95, 1)}}
 
     opt = hpo(scheduler.get_hpo_callable())
     cfg, ret, metrics = opt.grid() \

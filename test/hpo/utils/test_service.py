@@ -9,6 +9,7 @@ from ditk.hpo.utils.service import ServiceState, _TaskType
 
 
 class _JoinableThreadService(ThreadService):
+
     def _check_recv(self, task: _TaskType):
         raise NotImplementedError
 
@@ -37,8 +38,10 @@ class _JoinableThreadService(ThreadService):
 
 @pytest.mark.unittest
 class TestHpoUtilsService:
+
     @pytest.mark.timeout(20)
     def test_common(self):
+
         class MyTask:
             _max_id = 0
 
@@ -52,6 +55,7 @@ class TestHpoUtilsService:
                 return self._id
 
         class _LocalThreadService(_JoinableThreadService):
+
             def _check_recv(self, task):
                 pass
 
@@ -91,8 +95,18 @@ class TestHpoUtilsService:
 
         time.sleep(0.5)
         assert _res == {
-            2: 14, 3: 36, 4: 76, 5: 140, 6: 234, 7: 364,
-            8: 536, 9: 756, 10: 1030, 11: 1364, 12: 1764, 13: 2236,
+            2: 14,
+            3: 36,
+            4: 76,
+            5: 140,
+            6: 234,
+            7: 364,
+            8: 536,
+            9: 756,
+            10: 1030,
+            11: 1364,
+            12: 1764,
+            13: 2236,
         }
 
         # stage 2: waiting test
@@ -102,10 +116,29 @@ class TestHpoUtilsService:
 
         time.sleep(1.0)
         assert _res == {
-            18: 702, 22: 2266, 25: 4300, 21: 1764, 20: 1340, 16: 304,
-            14: 98, 17: 476, 15: 180, 23: 2852, 19: 988, 24: 3528,
-            27: 6156, 30: 9810, 29: 8468, 28: 7252, 26: 5174, 31: 11284,
-            32: 12896, 33: 14652, 34: 16558, 35: 18620, 36: 20844
+            18: 702,
+            22: 2266,
+            25: 4300,
+            21: 1764,
+            20: 1340,
+            16: 304,
+            14: 98,
+            17: 476,
+            15: 180,
+            23: 2852,
+            19: 988,
+            24: 3528,
+            27: 6156,
+            30: 9810,
+            29: 8468,
+            28: 7252,
+            26: 5174,
+            31: 11284,
+            32: 12896,
+            33: 14652,
+            34: 16558,
+            35: 18620,
+            36: 20844
         }
 
         for i in range(48):
@@ -123,7 +156,9 @@ class TestHpoUtilsService:
 
     @pytest.mark.timeout(20)
     def test_busy_and_error(self):
+
         class _LocalThreadService(_JoinableThreadService):
+
             def _check_recv(self, task):
                 pass
 
@@ -173,7 +208,7 @@ class TestHpoUtilsService:
         assert _result.ok is False
         assert _result.retval is None
         assert isinstance(_result.error, ValueError)
-        assert _result.error.args == (-5,)
+        assert _result.error.args == (-5, )
 
         assert s.state == ServiceState.RUNNING
         s.shutdown()
@@ -183,7 +218,9 @@ class TestHpoUtilsService:
         assert s.error is None
 
     def test_service_with_error(self):
+
         class _LocalThreadService(_JoinableThreadService):
+
             def _check_recv(self, task):
                 pass
 
@@ -242,7 +279,7 @@ class TestHpoUtilsService:
         assert s2.state == ServiceState.DEAD
         assert s2.error
         assert isinstance(s2.error, KeyError)
-        assert s2.error.args == ('after_exec task: 2',)
+        assert s2.error.args == ('after_exec task: 2', )
         assert _res_queue.empty()
 
         s3 = _LocalThreadService(1)  # error in _after_sentback
@@ -254,7 +291,7 @@ class TestHpoUtilsService:
         assert s3.state == ServiceState.DEAD
         assert s3.error
         assert isinstance(s3.error, KeyError)
-        assert s3.error.args == ('after_sentback task: 3',)
+        assert s3.error.args == ('after_sentback task: 3', )
         assert not _res_queue.empty()
         assert _get_result() == (3, Result(True, 19, None))
 
@@ -267,7 +304,7 @@ class TestHpoUtilsService:
         assert s4.state == ServiceState.DEAD
         assert s4.error
         assert isinstance(s4.error, RuntimeError)
-        assert s4.error.args == ('after_callback task: 4',)
+        assert s4.error.args == ('after_callback task: 4', )
         assert not _res_queue.empty()
         assert _get_result() == (4, Result(True, 28, None))
 
@@ -280,5 +317,5 @@ class TestHpoUtilsService:
         assert s5.state == ServiceState.DEAD
         assert s5.error
         assert isinstance(s5.error, OverflowError)
-        assert s5.error.args == ('fn_callback task: 5',)
+        assert s5.error.args == ('fn_callback task: 5', )
         assert _res_queue.empty()

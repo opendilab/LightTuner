@@ -7,6 +7,7 @@ from ditk.hpo.runner.result import R, _to_expr, _ResultExpression, _to_callable
 
 @pytest.mark.unittest
 class TestHpoAlgorithmResult:
+
     def test_common(self):
         r = efunc(R)
         assert r(1) == 1
@@ -125,6 +126,7 @@ class TestHpoAlgorithmResult:
         assert not r({'a': 1, 'b': 2})
 
     def test_or_func(self):
+
         def _b_check(x):
             return x['b'] > 2
 

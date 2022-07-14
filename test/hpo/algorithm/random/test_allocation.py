@@ -9,6 +9,7 @@ from ditk.hpo.algorithm.random import make_native_random
 # noinspection DuplicatedCode
 @pytest.mark.unittest
 class TestHpoAlgorithmRandomAllocation:
+
     def test_make_native_random(self):
         r1 = random.Random(233)
         assert make_native_random(r1) is r1

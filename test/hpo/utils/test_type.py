@@ -5,6 +5,7 @@ from ditk.hpo.utils import is_function
 
 @pytest.mark.unittest
 class TestHpoUtilsType:
+
     def test_is_function(self):
         assert is_function(lambda: None)
         assert is_function(max)

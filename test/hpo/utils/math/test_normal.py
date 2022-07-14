@@ -9,6 +9,7 @@ EPS = 1e-12
 
 @pytest.mark.unittest
 class TestHpoUtilsMatchNormal:
+
     def test_l2normal(self):
         assert l2normal(0.0) == -math.inf
         assert l2normal(1.0) == math.inf

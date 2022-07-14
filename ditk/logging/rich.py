@@ -23,17 +23,15 @@ def _get_rich_console(use_stdout: bool = False) -> Console:
     return Console(width=_get_terminal_width(), stderr=not use_stdout)
 
 
-_RICH_FMT = logging.Formatter(
-    fmt="%(message)s",
-    datefmt="[%m-%d %H:%M:%S]"
-)
+_RICH_FMT = logging.Formatter(fmt="%(message)s", datefmt="[%m-%d %H:%M:%S]")
 
 
 def _create_rich_handler(use_stdout: bool = False, level: _LogLevelType = logging.NOTSET) -> RichHandler:
     handler = RichHandler(
         level=level,
         console=_get_rich_console(use_stdout),
-        rich_tracebacks=True, markup=True,
+        rich_tracebacks=True,
+        markup=True,
         tracebacks_suppress=[ditk],
     )
     handler.setFormatter(_RICH_FMT)

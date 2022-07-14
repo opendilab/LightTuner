@@ -7,6 +7,7 @@ from ..utils import is_function
 
 
 class _ResultExpression(GeneralExpression):
+
     def is_(self, obj):
         return self._func(lambda x, y: x is y, self, obj)
 
@@ -41,5 +42,7 @@ def _to_expr(e) -> _ResultExpression:
         return _ResultExpression(lambda x: e)
 
 
-def _to_callable(e) -> Callable[[Any, ], Any]:
+def _to_callable(e) -> Callable[[
+        Any,
+], Any]:
     return efunc(_to_expr(e))

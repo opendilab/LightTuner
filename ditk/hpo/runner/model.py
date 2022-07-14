@@ -11,6 +11,7 @@ M = _OR['metrics']
 
 
 class _IResultMetrics:
+
     def __init__(self, task: Task, metrics: Mapping):
         self.__task = task
         self.__metrics = dict(metrics)
@@ -29,6 +30,7 @@ class _IResultMetrics:
 
 
 class RunResult(_IResultMetrics):
+
     def __init__(self, task: Task, retval, metrics: Mapping, rvalue=R):
         _IResultMetrics.__init__(self, task, metrics)
         self.__retval = retval
@@ -58,6 +60,7 @@ class RunResult(_IResultMetrics):
 
 
 class RunFailed(Exception, _IResultMetrics):
+
     def __init__(self, task: Task, err: BaseException, metrics: Mapping):
         _IResultMetrics.__init__(self, task, metrics)
         Exception.__init__(self, type(err), *err.args)
@@ -69,6 +72,7 @@ class RunFailed(Exception, _IResultMetrics):
 
 
 class RunSkipped(Exception, _IResultMetrics):
+
     def __init__(self, task: Task, err: Skip, metrics: Mapping):
         _IResultMetrics.__init__(self, task, metrics)
         Exception.__init__(self, *err.args)

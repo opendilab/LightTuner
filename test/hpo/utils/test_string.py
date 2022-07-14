@@ -7,21 +7,30 @@ from ditk.hpo.utils import sblock, rchain
 
 @pytest.mark.unittest
 class TestHpoUtilsString:
+
     def test_sblock(self):
-        assert sblock(dedent("""
+        assert sblock(
+            dedent(
+                """
             This is first line
             This is 2nd line
             
             This is fourth line.
-        """).strip()).strip() == dedent(u"""
+        """
+            ).strip()
+        ).strip() == dedent(
+            u"""
             1 \u2502 This is first line
             2 \u2502 This is 2nd line
             3 \u2502 
             4 \u2502 This is fourth line.
-        """).strip()
+        """
+        ).strip()
 
     def test_sblock_multiple_lines(self):
-        assert sblock(dedent("""
+        assert sblock(
+            dedent(
+                """
             This is first line
             This is 2nd line
 
@@ -37,7 +46,10 @@ class TestHpoUtilsString:
             i
             j
             k
-        """).strip()).strip() == dedent(u"""
+        """
+            ).strip()
+        ).strip() == dedent(
+            u"""
              1 \u2502 This is first line
              2 \u2502 This is 2nd line
              3 \u2502 
@@ -53,7 +65,8 @@ class TestHpoUtilsString:
             13 \u2502 i
             14 \u2502 j
             15 \u2502 k
-        """).strip()
+        """
+        ).strip()
 
     def test_rchain(self):
         assert rchain([('name', 'str'), ('val', 233), ('float', 233.5)]) == "name: 'str', val: 233, float: 233.5"

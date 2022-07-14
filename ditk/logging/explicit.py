@@ -1,10 +1,20 @@
 import logging
 
 __all__ = [
-    'CRITICAL', 'FATAL', 'ERROR',
-    'WARNING', 'WARN', 'INFO', 'DEBUG', 'NOTSET',
-    'Logger', 'Handler', "FileHandler",
-    'StreamHandler', 'NullHandler', 'getLogger',
+    'CRITICAL',
+    'FATAL',
+    'ERROR',
+    'WARNING',
+    'WARN',
+    'INFO',
+    'DEBUG',
+    'NOTSET',
+    'Logger',
+    'Handler',
+    "FileHandler",
+    'StreamHandler',
+    'NullHandler',
+    'getLogger',
 ]
 
 CRITICAL = logging.CRITICAL

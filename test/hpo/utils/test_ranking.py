@@ -15,6 +15,7 @@ def _strip(s: str) -> str:
 # noinspection DuplicatedCode
 @pytest.mark.unittest
 class TestHpoUtilsRanking:
+
     def test_init_empty(self):
         r = RankList(
             capacity=5,
@@ -61,9 +62,7 @@ class TestHpoUtilsRanking:
                 ('name', lambda x: x[1]),
                 ('score', lambda x: x[2]),
             ],
-            init=[
-                (-9, 'hansbug', 99)
-            ],
+            init=[(-9, 'hansbug', 99)],
             key=lambda x: x[2],
             reverse=True,
         )
@@ -74,13 +73,15 @@ class TestHpoUtilsRanking:
         assert list(r) == [
             (-9, 'hansbug', 99),
         ]
-        assert _strip(str(r)) == _strip("""
+        assert _strip(str(r)) == _strip(
+            """
 +------+---------+---------+
 |   id | name    |   score |
 |------+---------+---------|
 |   -9 | hansbug |      99 |
 +------+---------+---------+
-        """)
+        """
+        )
 
         r.append((1, 'hansbug', 90))
         r.append((2, 'nyz', 95))
@@ -97,7 +98,8 @@ class TestHpoUtilsRanking:
             (4, 'hhh', 90),
             (3, 'hahaha', 80),
         ]
-        assert _strip(str(r)) == _strip("""
+        assert _strip(str(r)) == _strip(
+            """
 +------+---------+---------+
 |   id | name    |   score |
 |------+---------+---------|
@@ -107,7 +109,8 @@ class TestHpoUtilsRanking:
 |    4 | hhh     |      90 |
 |    3 | hahaha  |      80 |
 +------+---------+---------+
-        """)
+        """
+        )
 
         r.append((1, 'hansbug', 90))
         r.append((2, 'nyz', 95))
@@ -124,7 +127,8 @@ class TestHpoUtilsRanking:
             (1, 'hansbug', 90),
             (4, 'hhh', 90),
         ]
-        assert _strip(str(r)) == _strip("""
+        assert _strip(str(r)) == _strip(
+            """
 +------+---------+---------+
 |   id | name    |   score |
 |------+---------+---------|
@@ -134,4 +138,5 @@ class TestHpoUtilsRanking:
 |    1 | hansbug |      90 |
 |    4 | hhh     |      90 |
 +------+---------+---------+
-        """)
+        """
+        )

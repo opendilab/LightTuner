@@ -34,6 +34,7 @@ def _expr_to_frank(expr):
 
 
 class ParallelSearchRunner:
+
     def __init__(self, algo_cls: Type[BaseAlgorithm], func, silent: bool = False):
         # about algorithm
         self.__func = func
@@ -75,8 +76,11 @@ class ParallelSearchRunner:
 
         return self
 
-    def __getattr__(self, item: str) -> Callable[[object, ], 'ParallelSearchRunner']:
+    def __getattr__(self, item: str) -> Callable[[
+            object,
+    ], 'ParallelSearchRunner']:
         if not item.startswith('_'):
+
             def _get_config_value(v) -> ParallelSearchRunner:
                 self._settings[item] = v
                 return self
@@ -158,8 +162,10 @@ class ParallelSearchRunner:
 
     def _check_config(self):
         if not self._opt_direction:
-            raise SyntaxError('Optimize target is not given, '
-                              'please use maximize or minimize method to assign a target for optimization.')
+            raise SyntaxError(
+                'Optimize target is not given, '
+                'please use maximize or minimize method to assign a target for optimization.'
+            )
 
     def run(self) -> Optional[Tuple[Any, Any, Any]]:
         self._check_config()
@@ -192,6 +198,7 @@ class ParallelSearchRunner:
         _this: ParallelSearchRunner = self
 
         class AlgorithmRunnerService(ThreadService):
+
             def __init__(self):
                 ThreadService.__init__(self, max_workers=_max_workers)
 
@@ -253,7 +260,8 @@ class ParallelSearchRunner:
                         _events.trigger(RunnerStatus.STEP_SKIP, task, result.error)
                     else:  # strange error, it should be already raised on _after_exec
                         raise RuntimeError(
-                            'Unexpected error occurred, please notify the developers.')  # pragma: no cover
+                            'Unexpected error occurred, please notify the developers.'
+                        )  # pragma: no cover
 
                 _events.trigger(RunnerStatus.STEP_FINAL, task, _ranklist)
 

@@ -1,8 +1,15 @@
 from .log import try_init_root as _root
 
 __all__ = [
-    'critical', 'fatal', 'error', 'exception',
-    'warning', 'warn', 'info', 'debug', 'log',
+    'critical',
+    'fatal',
+    'error',
+    'exception',
+    'warning',
+    'warn',
+    'info',
+    'debug',
+    'log',
 ]
 
 

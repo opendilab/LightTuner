@@ -10,11 +10,13 @@ from ...value import struct_values, HyperValue
 
 
 class BaseConfigure:
+
     def __init__(self, settings: Optional[dict] = None):
         self._settings = dict(settings or {})
 
 
 class BaseAlgorithm:
+
     def __init__(self, **kwargs):
         pass
 
@@ -34,6 +36,7 @@ class SessionState(IntEnum):
 
 
 class BaseSession:
+
     def __init__(self, space, service: ThreadService):
         self.__service = service
         self.__state = SessionState.PENDING
@@ -73,15 +76,13 @@ class BaseSession:
         with self.__state_lock:
             if self.__state == SessionState.RUNNING:
                 self.__max_id += 1
-                self.__service.send(
-                    Task(self.__max_id, config, attachment),
-                    self.__actual_return, timeout=timeout
-                )
+                self.__service.send(Task(self.__max_id, config, attachment), self.__actual_return, timeout=timeout)
             else:
                 raise RuntimeError(f'Algorithm session is {self.__state.name}, sample putting is disabled.')
 
-    def _put_via_space(self, vp: Tuple[Any, ...], attachment: Optional[Tuple[Any, ...]] = None,
-                       *, timeout: Optional[float] = None):
+    def _put_via_space(
+        self, vp: Tuple[Any, ...], attachment: Optional[Tuple[Any, ...]] = None, *, timeout: Optional[float] = None
+    ):
         self.put(self.__sfunc(*vp), attachment, timeout=timeout)
 
     def _run(self):
