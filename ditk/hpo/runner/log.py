@@ -145,9 +145,9 @@ Current ranklist ({plural_word(len(ranklist), 'best record')}):
 
     def try_fail(self, task: Task, try_id: int, max_try: int, error: Exception, metrics: Dict[str, Any]):
         if try_id + 1 < max_try:
-            try_again_str = f'will try again later'
+            try_again_str = 'will try again later'
         else:
-            try_again_str = f'max retry limit is reached'
+            try_again_str = 'max retry limit is reached'
         error_str = escape(repr(error))
         time_count = f"{try_id + 1}/{max_try}"
 
