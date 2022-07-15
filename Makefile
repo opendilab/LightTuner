@@ -34,3 +34,13 @@ docs:
 	$(MAKE) -C "${DOC_DIR}" build
 pdocs:
 	$(MAKE) -C "${DOC_DIR}" prod
+
+format:
+	yapf --in-place --recursive -p --verbose --style .style.yapf ${RANGE_SRC_DIR}
+	yapf --in-place --recursive -p --verbose --style .style.yapf ${RANGE_TEST_DIR}
+format_test:
+	bash format.sh ${RANGE_SRC_DIR} --test
+	bash format.sh ${RANGE_TEST_DIR} --test
+flake_check:
+	flake8 ${RANGE_SRC_DIR}
+	flake8 ${RANGE_TEST_DIR}

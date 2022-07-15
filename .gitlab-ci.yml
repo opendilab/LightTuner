@@ -4,10 +4,17 @@ variables:
   CI: "true"
 
 stages:
+  - style
   - test
   - doc
   - build
   - deploy
+
+style_check:
+  stage: style
+  script:
+    - pip install -r requirements-style.txt
+    - make format_test flake_check
 
 test_py_3_6_3:
   stage: test
