@@ -16,7 +16,9 @@ class TestHpoUtilsString:
             This is 2nd line
             
             This is fourth line.
-        """  # noqa: W293
+        """
+
+                # noqa: W293
             ).strip()
         ).strip() == dedent(
             u"""
@@ -24,7 +26,9 @@ class TestHpoUtilsString:
             2 \u2502 This is 2nd line
             3 \u2502 
             4 \u2502 This is fourth line.
-        """  # noqa: W291
+        """
+
+            # noqa: W291
         ).strip()
 
     def test_sblock_multiple_lines(self):
@@ -65,7 +69,9 @@ class TestHpoUtilsString:
             13 \u2502 i
             14 \u2502 j
             15 \u2502 k
-        """  # noqa: W291
+        """
+
+            # noqa: W291
         ).strip()
 
     def test_rchain(self):
