@@ -5,6 +5,7 @@ from threading import Lock
 from typing import Tuple, Any, Type, Dict, Callable, Optional, Iterator
 
 from hbutils.collection import nested_walk
+from hbutils.reflection import sigsupply, dynamic_call
 
 from .event import RunnerStatus, RunnerEventSet
 from .log import LoggingEventSet
@@ -176,7 +177,7 @@ class ParallelSearchRunner:
         _max_workers = self.__max_workers
         _max_try = self.__max_try
 
-        _target_func = self.__func
+        _target_func = dynamic_call(sigsupply(self.__func, lambda v: None))
         _target_key = self.__target_key
         _params = list(_space_exprs(self.__spaces))
 
@@ -216,7 +217,7 @@ class ParallelSearchRunner:
                     _events.trigger(RunnerStatus.TRY, task, i, _max_try)
                     _before_time = time.time()
                     try:
-                        cur_retval, cur_err, cur_skip = _target_func(_config), None, False
+                        cur_retval, cur_err, cur_skip = _target_func(_config, _task_id), None, False
                     except Skip as err:
                         cur_retval, cur_err, cur_skip = None, err, True
                     except BaseException as err:
