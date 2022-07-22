@@ -57,10 +57,10 @@ SBLOCK_OUTPUT_2 = """
 class TestHpoUtilsString:
 
     def test_sblock(self):
-        assert sblock(SBLOCK_INPUT_1).strip() == SBLOCK_OUTPUT_1.strip()
+        assert sblock(SBLOCK_INPUT_1.strip()).strip() == SBLOCK_OUTPUT_1.strip()
 
     def test_sblock_multiple_lines(self):
-        assert sblock(SBLOCK_INPUT_2).strip() == SBLOCK_OUTPUT_2.strip()
+        assert sblock(SBLOCK_INPUT_2.strip()).strip() == SBLOCK_OUTPUT_2.strip()
 
     def test_rchain(self):
         assert rchain([('name', 'str'), ('val', 233), ('float', 233.5)]) == "name: 'str', val: 233, float: 233.5"
