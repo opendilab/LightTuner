@@ -7,7 +7,7 @@ from ditk.hpo import hpo
 
 
 def demo():
-    dirname = os.path.join(ditk.__path__[0], 'template')
+    dirname = os.path.abspath('./template')
 
     scheduler = run_scheduler_k8s(
         task_config_template_path=os.path.join(dirname, "cartpole_dqn_config.py"),

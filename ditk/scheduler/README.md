@@ -130,7 +130,7 @@ After launching scheduler successfully, you will see the following output from t
 1, Adjust k8s yaml file content to fit your own setting
 - ``basePath (volumes mount path)``
 - ``projectPath``, which the hpo projects will be running and output results
-- ``metadata.name``, which will be used to generate the identifier for the job in k8s.
+- ``jobName``, which will be used to generate the identifier for the job in k8s.
 - computational resource, such as GPU, CPU and memory
 - args, which installs user-defined packages
 
