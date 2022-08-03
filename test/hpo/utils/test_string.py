@@ -1,66 +1,9 @@
 import pytest
 
-from ditk.hpo.utils import sblock, rchain
-
-SBLOCK_INPUT_1 = """
-This is first line
-This is 2nd line
-
-This is fourth line.
-"""
-
-SBLOCK_OUTPUT_1 = """
-1 \u2502 This is first line
-2 \u2502 This is 2nd line
-3 \u2502 
-4 \u2502 This is fourth line.
-"""  # noqa: W291
-
-SBLOCK_INPUT_2 = """
-This is first line
-This is 2nd line
-
-This is fourth line.
-a
-b
-c
-d
-e
-f
-g
-h
-i
-j
-k
-"""
-
-SBLOCK_OUTPUT_2 = """
- 1 \u2502 This is first line
- 2 \u2502 This is 2nd line
- 3 \u2502 
- 4 \u2502 This is fourth line.
- 5 \u2502 a
- 6 \u2502 b
- 7 \u2502 c
- 8 \u2502 d
- 9 \u2502 e
-10 \u2502 f
-11 \u2502 g
-12 \u2502 h
-13 \u2502 i
-14 \u2502 j
-15 \u2502 k
-"""  # noqa: W291
+from ditk.hpo.utils import rchain
 
 
 @pytest.mark.unittest
 class TestHpoUtilsString:
-
-    def test_sblock(self):
-        assert sblock(SBLOCK_INPUT_1.strip()).strip() == SBLOCK_OUTPUT_1.strip()
-
-    def test_sblock_multiple_lines(self):
-        assert sblock(SBLOCK_INPUT_2.strip()).strip() == SBLOCK_OUTPUT_2.strip()
-
     def test_rchain(self):
         assert rchain([('name', 'str'), ('val', 233), ('float', 233.5)]) == "name: 'str', val: 233, float: 233.5"
