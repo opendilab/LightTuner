@@ -2,7 +2,7 @@
 
 PYTHON := $(shell which python)
 
-PROJ_DIR  := $(shell readlink -f ${CURDIR})
+PROJ_DIR  := .
 DOC_DIR   := ${PROJ_DIR}/docs
 BUILD_DIR := ${PROJ_DIR}/build
 DIST_DIR  := ${PROJ_DIR}/dist

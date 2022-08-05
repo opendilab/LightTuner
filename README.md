@@ -3,7 +3,6 @@
 
 [![PyPI](https://img.shields.io/pypi/v/lighttuner)](https://pypi.org/project/lighttuner/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/lighttuner)
-![PyPI - Implementation](https://img.shields.io/pypi/implementation/lighttuner)
 ![Loc](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/HansBug/cfbcfc91f1353f1d4b2607c433d46bd6/raw/loc.json)
 ![Comments](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/HansBug/cfbcfc91f1353f1d4b2607c433d46bd6/raw/comments.json)
 
