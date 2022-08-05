@@ -1,9 +1,9 @@
-ditk.config.meta
+lighttuner.config.meta
 ==========================
 
-.. currentmodule:: ditk.config.meta
+.. currentmodule:: lighttuner.config.meta
 
-.. automodule:: ditk.config.meta
+.. automodule:: lighttuner.config.meta
 
 
 \_\_TITLE\_\_

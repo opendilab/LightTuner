@@ -1,9 +1,9 @@
-ditk.hpo.value
+lighttuner.hpo.value
 =====================
 
-.. currentmodule:: ditk.hpo.value
+.. currentmodule:: lighttuner.hpo.value
 
-.. automodule:: ditk.hpo.value
+.. automodule:: lighttuner.hpo.value
 
 
 .. toctree::

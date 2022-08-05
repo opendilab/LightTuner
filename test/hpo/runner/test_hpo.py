@@ -1,7 +1,7 @@
 import pytest
 
-from ditk.hpo import hpo, R
-from ditk.hpo.runner.hpo import HpoFunc
+from lighttuner.hpo import hpo, R
+from lighttuner.hpo.runner.hpo import HpoFunc
 from ..algorithm.public import get_hpo_func
 
 

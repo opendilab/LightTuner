@@ -1,7 +1,7 @@
 import pytest
 
-from ditk.hpo.algorithm.grid import allocate_continuous, allocate_separate, allocate_fixed
-from ditk.hpo.space import ContinuousSpace, SeparateSpace, FixedSpace
+from lighttuner.hpo.algorithm.grid import allocate_continuous, allocate_separate, allocate_fixed
+from lighttuner.hpo.space import ContinuousSpace, SeparateSpace, FixedSpace
 
 
 # noinspection DuplicatedCode

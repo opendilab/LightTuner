@@ -4,10 +4,10 @@ Overview:
 """
 
 #: Title of this project (should be `DI-toolkit`).
-__TITLE__ = "DI-toolkit"
+__TITLE__ = "lighttuner"
 
 #: Version of this project.
-__VERSION__ = "0.0.2"
+__VERSION__ = "0.0.1"
 
 #: Short description of the project, will be included in ``setup.py``.
 __DESCRIPTION__ = 'A simple tool for automatic parameter tuning.'
@@ -16,4 +16,4 @@ __DESCRIPTION__ = 'A simple tool for automatic parameter tuning.'
 __AUTHOR__ = "HansBug"
 
 #: Email of the authors'.
-__AUTHOR_EMAIL__ = "zhangshaoang@sensetime.com"
+__AUTHOR_EMAIL__ = "hansbug@buaa.edu.cn"

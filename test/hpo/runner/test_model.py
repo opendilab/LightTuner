@@ -1,8 +1,8 @@
 import pytest
 
-from ditk.hpo.algorithm import Task
-from ditk.hpo.runner.model import RunResult, R, M, C, RunFailed, RunSkipped
-from ditk.hpo.runner.signal import Skip
+from lighttuner.hpo.algorithm import Task
+from lighttuner.hpo.runner.model import RunResult, R, M, C, RunFailed, RunSkipped
+from lighttuner.hpo.runner.signal import Skip
 
 
 @pytest.mark.unittest

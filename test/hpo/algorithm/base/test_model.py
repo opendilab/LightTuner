@@ -1,6 +1,6 @@
 import pytest
 
-from ditk.hpo.algorithm.base import Task, OptimizeDirection
+from lighttuner.hpo.algorithm.base import Task, OptimizeDirection
 
 
 @pytest.mark.unittest

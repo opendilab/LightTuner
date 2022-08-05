@@ -2,10 +2,10 @@ from typing import Any
 
 import pytest
 
-from ditk.hpo import uniform
-from ditk.hpo.algorithm.base import BaseConfigure, Task, BaseAlgorithm, BaseSession, SessionState
-from ditk.hpo.utils import ThreadService, Result
-from ditk.hpo.utils.service import ServiceState
+from lighttuner.hpo import uniform
+from lighttuner.hpo.algorithm.base import BaseConfigure, Task, BaseAlgorithm, BaseSession, SessionState
+from lighttuner.hpo.utils import ThreadService, Result
+from lighttuner.hpo.utils.service import ServiceState
 
 
 class _TestThreadService(ThreadService):

@@ -7,7 +7,7 @@ DOC_DIR   := ${PROJ_DIR}/docs
 BUILD_DIR := ${PROJ_DIR}/build
 DIST_DIR  := ${PROJ_DIR}/dist
 TEST_DIR  := ${PROJ_DIR}/test
-SRC_DIR   := ${PROJ_DIR}/ditk
+SRC_DIR   := ${PROJ_DIR}/lighttuner
 
 RANGE_DIR      ?= .
 RANGE_TEST_DIR := ${TEST_DIR}/${RANGE_DIR}

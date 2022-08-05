@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from ditk.hpo import uniform, quniform, choice, R, hpo, M
+from lighttuner.hpo import uniform, quniform, choice, R, hpo, M
 from ..public import get_hpo_func, EPS
 from ....testing import no_handlers
 

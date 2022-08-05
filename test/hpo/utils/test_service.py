@@ -4,8 +4,8 @@ from typing import Tuple
 
 import pytest
 
-from ditk.hpo.utils import ThreadService, Result, ServiceNoLongerAccept, ServiceBusy
-from ditk.hpo.utils.service import ServiceState, _TaskType
+from lighttuner.hpo.utils import ThreadService, Result, ServiceNoLongerAccept, ServiceBusy
+from lighttuner.hpo.utils.service import ServiceState, _TaskType
 
 
 class _JoinableThreadService(ThreadService):

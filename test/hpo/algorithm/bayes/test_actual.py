@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from ditk.hpo import hpo, R, quniform, uniform, M, Skip
+from lighttuner.hpo import hpo, R, quniform, uniform, M, Skip
 from ....testing import no_handlers
 
 

@@ -3,6 +3,7 @@ from textwrap import dedent
 from typing import Type, Dict, Any, Callable, Tuple, Optional, Iterable, List
 
 import inflection
+from ditk.logging import getLogger, try_init_root
 from hbutils.collection import nested_walk
 from hbutils.scale import time_to_delta_str
 from hbutils.string import plural_word
@@ -14,7 +15,6 @@ from .result import _ResultExpression
 from ..algorithm import BaseAlgorithm, Task
 from ..utils import rchain, RankList
 from ..value import HyperValue
-from ...logging import getLogger, try_init_root
 
 
 def _find_hv(vs):
@@ -50,8 +50,8 @@ class LoggingEventSet(RunnerEventSet):
         )
 
     def init_ok(
-        self, target_name: str, params: Iterable[Tuple[str, _ResultExpression]],
-        concerns: Iterable[Tuple[str, _ResultExpression]]
+            self, target_name: str, params: Iterable[Tuple[str, _ResultExpression]],
+            concerns: Iterable[Tuple[str, _ResultExpression]]
     ):
         self._target_name = target_name
         self._params = params

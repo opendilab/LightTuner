@@ -18,7 +18,7 @@ def l2normal(x, mu=0.0, sigma=1.0):
     Examples::
         - Simple usage
 
-        >>> from ditk.hpo.utils.math import l2normal
+        >>> from lighttuner.hpo.utils.math import l2normal
         >>> l2normal(0.0)
         -inf
         >>> l2normal(0.2)

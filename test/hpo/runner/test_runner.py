@@ -2,13 +2,13 @@ from typing import Any, Tuple, Iterable
 
 import pytest
 
-from ditk.hpo import uniform, Skip
-from ditk.hpo.algorithm import BaseAlgorithm, BaseSession, Task
-from ditk.hpo.runner.event import RunnerEventSet
-from ditk.hpo.runner.model import R, RunSkipped, RunFailed, RunResult
-from ditk.hpo.runner.result import _ResultExpression
-from ditk.hpo.runner.runner import ParallelSearchRunner
-from ditk.hpo.utils import ThreadService, RankList, ServiceNoLongerAccept
+from lighttuner.hpo import uniform, Skip
+from lighttuner.hpo.algorithm import BaseAlgorithm, BaseSession, Task
+from lighttuner.hpo.runner.event import RunnerEventSet
+from lighttuner.hpo.runner.model import R, RunSkipped, RunFailed, RunResult
+from lighttuner.hpo.runner.result import _ResultExpression
+from lighttuner.hpo.runner.runner import ParallelSearchRunner
+from lighttuner.hpo.utils import ThreadService, RankList, ServiceNoLongerAccept
 
 
 class _MyAlgorithm(BaseAlgorithm):

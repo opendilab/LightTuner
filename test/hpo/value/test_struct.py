@@ -1,7 +1,7 @@
 import pytest
 
-from ditk.hpo import uniform, choice, quniform
-from ditk.hpo.value import struct_values
+from lighttuner.hpo import uniform, choice, quniform
+from lighttuner.hpo.value import struct_values
 
 
 @pytest.mark.unittest

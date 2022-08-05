@@ -1,9 +1,9 @@
-ditk.hpo.utils
+lighttuner.hpo.utils
 =====================
 
-.. currentmodule:: ditk.hpo.utils
+.. currentmodule:: lighttuner.hpo.utils
 
-.. automodule:: ditk.hpo.utils
+.. automodule:: lighttuner.hpo.utils
 
 
 .. toctree::

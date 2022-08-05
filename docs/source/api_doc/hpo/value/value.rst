@@ -1,9 +1,9 @@
-ditk.hpo.value.value
+lighttuner.hpo.value.value
 ===========================
 
-.. currentmodule:: ditk.hpo.value.value
+.. currentmodule:: lighttuner.hpo.value.value
 
-.. automodule:: ditk.hpo.value.value
+.. automodule:: lighttuner.hpo.value.value
 
 
 HyperValue

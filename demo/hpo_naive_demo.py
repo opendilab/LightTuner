@@ -2,7 +2,8 @@ import random
 import time
 
 from ditk import logging
-from ditk.hpo import hpo, R, M, uniform, randint
+
+from lighttuner.hpo import hpo, R, M, uniform, randint
 
 
 @hpo

@@ -10,7 +10,7 @@ import pytest
 import copy
 import pickle
 
-from ditk.scheduler import Scheduler, Task
+from lighttuner.scheduler import Scheduler, Task
 
 
 def clean_up(dir):
@@ -337,7 +337,7 @@ class TestTaskScheduler:
         clean_up("./unittest_for_scheduler_local/")
         clean_up("./unittest-cartpole-local/")
 
-    @patch('ditk.scheduler.task_scheduler._run_kubectl')
+    @patch('lighttuner.scheduler.task_scheduler._run_kubectl')
     def test_emit_task_k8s(self, mock_run_kubectl):
 
         mock_run_kubectl.return_value = None
@@ -415,56 +415,56 @@ class TestTaskScheduler:
         scheduler.emit_task(0)
         scheduler.emit_task(1)
 
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_status",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_status",
                    wraps=mock_run_kubectl_check_status_pending) as mock_func:
             scheduler.check_task_start(scheduler.task_list[0])
             assert scheduler.task_list[0].start_time is None
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_status",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_status",
                    wraps=mock_run_kubectl_check_status_running) as mock_func:
             scheduler.check_task_start(scheduler.task_list[0])
             assert scheduler.task_list[0].start_time is not None
             scheduler.check_task_start(scheduler.task_list[1])
 
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_status",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_status",
                    wraps=mock_run_kubectl_check_status_none) as mock_func:
             assert scheduler.check_task_alive(scheduler.task_list[0]) is False
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_status",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_status",
                    wraps=mock_run_kubectl_check_status_pending) as mock_func:
             assert scheduler.check_task_alive(scheduler.task_list[0]) is True
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_status",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_status",
                    wraps=mock_run_kubectl_check_status_running) as mock_func:
             assert scheduler.check_task_alive(scheduler.task_list[0]) is True
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_status",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_status",
                    wraps=mock_run_kubectl_check_status_succeeded) as mock_func:
             assert scheduler.check_task_alive(scheduler.task_list[0]) is False
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_status",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_status",
                    wraps=mock_run_kubectl_check_status_failed) as mock_func:
             assert scheduler.check_task_alive(scheduler.task_list[0]) is False
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_status",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_status",
                    wraps=mock_run_kubectl_check_status_unknown) as mock_func:
             assert scheduler.check_task_alive(scheduler.task_list[0]) is False
 
         scheduler.cancel_task(1)
 
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_file",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_file",
                    wraps=mock_run_kubectl_check_no_file) as mock_func:
-            with patch("ditk.scheduler.task_scheduler._run_kubectl_copy_file",
+            with patch("lighttuner.scheduler.task_scheduler._run_kubectl_copy_file",
                        wraps=mock_run_kubectl_copy_no_file) as mock_func:
                 data, _ = scheduler.load_task_result(scheduler.task_list[0])
                 assert data is None
 
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_file",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_file",
                    wraps=mock_run_kubectl_check_file) as mock_func:
-            with patch("ditk.scheduler.task_scheduler._run_kubectl_copy_file",
+            with patch("lighttuner.scheduler.task_scheduler._run_kubectl_copy_file",
                        wraps=mock_run_kubectl_copy_file) as mock_func:
                 data, _ = scheduler.load_task_result(scheduler.task_list[0])
                 assert isinstance(data, dict)
 
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_status",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_status",
                    wraps=mock_run_kubectl_check_status_running) as mock_func:
-            with patch("ditk.scheduler.task_scheduler._run_kubectl_check_file",
+            with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_file",
                        wraps=mock_run_kubectl_check_no_file) as mock_func:
-                with patch("ditk.scheduler.task_scheduler._run_kubectl_copy_file",
+                with patch("lighttuner.scheduler.task_scheduler._run_kubectl_copy_file",
                            wraps=mock_run_kubectl_copy_no_file) as mock_func:
                     assert len(scheduler.task_running_id) == 2
                     assert len(scheduler.task_finished_id) == 0
@@ -474,11 +474,11 @@ class TestTaskScheduler:
                     assert len(scheduler.task_finished_id) == 0
                     assert len(scheduler.task_success_id) == 0
 
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_status",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_status",
                    wraps=mock_run_kubectl_check_status_running) as mock_func:
-            with patch("ditk.scheduler.task_scheduler._run_kubectl_check_file",
+            with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_file",
                        wraps=mock_run_kubectl_check_file) as mock_func:
-                with patch("ditk.scheduler.task_scheduler._run_kubectl_copy_file",
+                with patch("lighttuner.scheduler.task_scheduler._run_kubectl_copy_file",
                            wraps=mock_run_kubectl_copy_file) as mock_func:
                     assert len(scheduler.task_running_id) == 2
                     assert len(scheduler.task_finished_id) == 0
@@ -490,11 +490,11 @@ class TestTaskScheduler:
 
         scheduler.emit_task(2)
 
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_status",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_status",
                    wraps=mock_run_kubectl_check_status_running) as mock_func:
-            with patch("ditk.scheduler.task_scheduler._run_kubectl_check_file",
+            with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_file",
                        wraps=mock_run_kubectl_check_no_file) as mock_func:
-                with patch("ditk.scheduler.task_scheduler._run_kubectl_copy_file",
+                with patch("lighttuner.scheduler.task_scheduler._run_kubectl_copy_file",
                            wraps=mock_run_kubectl_copy_no_file) as mock_func:
 
                     assert len(scheduler.task_running_id) == 1
@@ -507,11 +507,11 @@ class TestTaskScheduler:
 
         time.sleep(4)
 
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_status",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_status",
                    wraps=mock_run_kubectl_check_status_running) as mock_func:
-            with patch("ditk.scheduler.task_scheduler._run_kubectl_check_file",
+            with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_file",
                        wraps=mock_run_kubectl_check_no_file) as mock_func:
-                with patch("ditk.scheduler.task_scheduler._run_kubectl_copy_file",
+                with patch("lighttuner.scheduler.task_scheduler._run_kubectl_copy_file",
                            wraps=mock_run_kubectl_copy_no_file) as mock_func:
                     assert len(scheduler.task_running_id) == 1
                     assert len(scheduler.task_finished_id) == 2
@@ -524,11 +524,11 @@ class TestTaskScheduler:
 
         scheduler.emit_task(3)
 
-        with patch("ditk.scheduler.task_scheduler._run_kubectl_check_status",
+        with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_status",
                    wraps=mock_run_kubectl_check_status_none) as mock_func:
-            with patch("ditk.scheduler.task_scheduler._run_kubectl_check_file",
+            with patch("lighttuner.scheduler.task_scheduler._run_kubectl_check_file",
                        wraps=mock_run_kubectl_check_no_file) as mock_func:
-                with patch("ditk.scheduler.task_scheduler._run_kubectl_copy_file",
+                with patch("lighttuner.scheduler.task_scheduler._run_kubectl_copy_file",
                            wraps=mock_run_kubectl_copy_no_file) as mock_func:
                     assert len(scheduler.task_running_id) == 1
                     assert len(scheduler.task_finished_id) == 3

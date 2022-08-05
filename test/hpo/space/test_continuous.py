@@ -1,6 +1,6 @@
 import pytest
 
-from ditk.hpo.space import ContinuousSpace
+from lighttuner.hpo.space import ContinuousSpace
 
 
 @pytest.mark.unittest

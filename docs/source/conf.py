@@ -33,7 +33,7 @@ os.chdir(_PROJ_PATH)
 
 # Set environment, remove the pre-installed package
 sys.path.insert(0, _PROJ_PATH)
-modnames = [mname for mname in sys.modules if mname.startswith('ditk')]
+modnames = [mname for mname in sys.modules if mname.startswith('lighttuner')]
 for modname in modnames:
     del sys.modules[modname]
 
@@ -82,7 +82,7 @@ if not os.environ.get("NO_CONTENTS_BUILD"):
 
     print("Build of contents complete.")
 
-from ditk.config.meta import __TITLE__, __AUTHOR__, __VERSION__
+from lighttuner.config.meta import __TITLE__, __AUTHOR__, __VERSION__
 
 project = __TITLE__
 copyright = '{year}, {author}'.format(year=datetime.now().year, author=__AUTHOR__)

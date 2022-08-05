@@ -4,7 +4,7 @@ from threading import Thread
 
 import pytest
 
-from ditk.hpo.utils import ValueProxyLock, RunFailed, func_interact
+from lighttuner.hpo.utils import ValueProxyLock, RunFailed, func_interact
 
 
 @pytest.mark.unittest

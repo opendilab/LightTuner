@@ -1,9 +1,9 @@
-ditk.hpo.utils.math
+lighttuner.hpo.utils.math
 ==========================
 
-.. currentmodule:: ditk.hpo.utils.math
+.. currentmodule:: lighttuner.hpo.utils.math
 
-.. automodule:: ditk.hpo.utils.math
+.. automodule:: lighttuner.hpo.utils.math
 
 
 l2normal

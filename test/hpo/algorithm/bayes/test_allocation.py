@@ -1,9 +1,9 @@
 import pytest
 
-from ditk.hpo import choice
-from ditk.hpo.algorithm.bayes import hyper_to_bound
-from ditk.hpo.space import ContinuousSpace, SeparateSpace
-from ditk.hpo.value import HyperValue
+from lighttuner.hpo import choice
+from lighttuner.hpo.algorithm.bayes import hyper_to_bound
+from lighttuner.hpo.space import ContinuousSpace, SeparateSpace
+from lighttuner.hpo.value import HyperValue
 
 
 # noinspection DuplicatedCode

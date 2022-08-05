@@ -1,22 +1,23 @@
 """task scheduler for DI-engine"""
-import os
-import string
-import sys
 import copy
-from typing import Callable, List, Tuple
-import subprocess
-import threading
-from collections import deque
-import random
-import time
-import multiprocessing
-import queue
-import traceback
 import json
+import multiprocessing
+import os
 import pickle
-from tabulate import tabulate
-from ruamel.yaml import YAML
+import queue
+import random
+import string
+import subprocess
+import sys
+import threading
+import time
+import traceback
+from collections import deque
+from typing import Callable, List, Tuple
+
 from ditk import logging
+from ruamel.yaml import YAML
+from tabulate import tabulate
 
 
 def parse_dict(info_dict: dict) -> List:
@@ -93,7 +94,7 @@ def _run_kubectl_check_file(
     p = subprocess.run(
         [
             "kubectl", "exec", "-i", task_name + "-serial-0", "--", "ls",
-            _k8s_remote_project_path + _dijob_project_name + "/" + task_name + "/" + file_name
+                                     _k8s_remote_project_path + _dijob_project_name + "/" + task_name + "/" + file_name
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -112,7 +113,7 @@ def _run_kubectl_copy_file(
         subprocess.run(
             [
                 "kubectl", "cp", task_name + "-serial-0:" + _k8s_remote_project_path + _dijob_project_name + "/" +
-                task_name + "/" + file_name, file_saved_path
+                                 task_name + "/" + file_name, file_saved_path
             ],
             shell=False,
             stdout=nullstd,
@@ -222,7 +223,7 @@ class Scheduler:
         self.finish = False
         self.task_list = []
         self._task_waiting_queue = deque()
-        #["local", "k8s"]
+        # ["local", "k8s"]
         self._mode = "local"
         self._time_out = None
         self._task_config_template_path = None
@@ -496,7 +497,7 @@ class Scheduler:
                             self.cancel_task(rl_task.task_id)
                             self.task_reports.append(report)
                     else:
-                        #task failed or task emited but not found in few seconds but will start later.
+                        # task failed or task emited but not found in few seconds but will start later.
                         rl_task.running = False
                         rl_task.finish = True
                         rl_task.success = False
@@ -522,7 +523,7 @@ class Scheduler:
 
                 elif rl_task.normal and rl_task.task_id not in self.task_success_id \
                         and rl_task.task_id in self.task_finished_id:
-                    #check for a second time after sleep
+                    # check for a second time after sleep
                     time.sleep(5)
                     if self.check_task_alive(rl_task):
                         rl_task.running = True
@@ -567,7 +568,7 @@ class Scheduler:
         return is_finish
 
     def monitor_resource(self) -> bool:
-        #TODO
+        # TODO
         return True
 
     def monitor_real_tasks(self) -> None:
@@ -583,7 +584,7 @@ class Scheduler:
                 else:
                     new_samples = new_info
             except queue.Empty:
-                #do nothing if no new data in queue.
+                # do nothing if no new data in queue.
                 pass
 
             if new_samples:
@@ -681,7 +682,6 @@ class Scheduler:
                 self._last_task_finished_id != self.task_finished_id or \
                 self._last_task_success_id != self.task_success_id or \
                 self._last_task_abnormal_id != self.task_abnormal_id:
-
             table_header = ['status', 'instances']
             table_data = [
                 ("task_defined", ",".join(self.task_list[task_id].hpo_id for task_id in self.task_defined_id)),
@@ -706,7 +706,7 @@ class Scheduler:
             self._mp_queue_output.put(self.task_reports)
 
     def get_hpo_callable(self) -> Callable:
-        """scheduler handler for ditk-hpo"""
+        """scheduler handler for lighttuner-hpo"""
 
         def inner(v, tid):
             new_sample_info = v
@@ -762,17 +762,17 @@ class Scheduler:
 
 
 def scheduler_main(
-    task_config_template_path,
-    dijob_project_name=None,
-    max_number_of_running_task=2,
-    max_number_of_tasks=20,
-    mode="local",
-    time_out=None,
-    mp_queue_input=None,
-    mp_queue_output=None,
-    k8s_dijob_yaml_file_path=None,
-    k8s_remote_project_path=None,
-    mp_queue_error=None,
+        task_config_template_path,
+        dijob_project_name=None,
+        max_number_of_running_task=2,
+        max_number_of_tasks=20,
+        mode="local",
+        time_out=None,
+        mp_queue_input=None,
+        mp_queue_output=None,
+        k8s_dijob_yaml_file_path=None,
+        k8s_remote_project_path=None,
+        mp_queue_error=None,
 ):
     """inner scheduler main function"""
     if mp_queue_error is None:
@@ -871,7 +871,7 @@ def run_scheduler(
     )
     p.start()
 
-    scheduler.monitor_thread = threading.Thread(target=monitor_scheduler_thead_main, args=(mp_queue_error, ))
+    scheduler.monitor_thread = threading.Thread(target=monitor_scheduler_thead_main, args=(mp_queue_error,))
     scheduler.monitor_thread.start()
 
     return scheduler

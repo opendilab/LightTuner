@@ -1,6 +1,6 @@
 import pytest
 
-from ditk.hpo.utils import rchain
+from lighttuner.hpo.utils import rchain
 
 
 @pytest.mark.unittest

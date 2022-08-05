@@ -2,4 +2,4 @@ include README.md
 include MANIFEST.in
 include requirements.txt
 include requirements-*.txt
-recursive-include ditk *.pyx *.pxd
+recursive-include lighttuner *.pyx *.pxd

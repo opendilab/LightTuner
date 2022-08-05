@@ -1,7 +1,7 @@
 import pytest
 
-from ditk.hpo import uniform, quniform, choice, randint
-from ditk.hpo.space import ContinuousSpace, SeparateSpace, FixedSpace
+from lighttuner.hpo import uniform, quniform, choice, randint
+from lighttuner.hpo.space import ContinuousSpace, SeparateSpace, FixedSpace
 
 
 @pytest.mark.unittest

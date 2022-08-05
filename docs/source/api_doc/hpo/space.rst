@@ -1,9 +1,9 @@
-ditk.hpo.space
+lighttuner.hpo.space
 ==========================
 
-.. currentmodule:: ditk.hpo.space
+.. currentmodule:: lighttuner.hpo.space
 
-.. automodule:: ditk.hpo.space
+.. automodule:: lighttuner.hpo.space
 
 
 BaseSpace

@@ -2,7 +2,7 @@ from enum import IntEnum
 
 import pytest
 
-from ditk.hpo.utils import EventModel
+from lighttuner.hpo.utils import EventModel
 
 
 class MyEvents(IntEnum):

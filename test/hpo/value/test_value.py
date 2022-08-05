@@ -1,7 +1,7 @@
 import pytest
 
-from ditk.hpo.space import ContinuousSpace
-from ditk.hpo.value import HyperValue
+from lighttuner.hpo.space import ContinuousSpace
+from lighttuner.hpo.value import HyperValue
 
 
 @pytest.mark.unittest

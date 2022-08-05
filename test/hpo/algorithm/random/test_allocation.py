@@ -3,7 +3,7 @@ from random import _inst as _RANDOM_INST
 
 import pytest
 
-from ditk.hpo.algorithm.random import make_native_random
+from lighttuner.hpo.algorithm.random import make_native_random
 
 
 # noinspection DuplicatedCode

@@ -1,6 +1,6 @@
 import pytest
 
-from ditk.hpo.utils import is_function
+from lighttuner.hpo.utils import is_function
 
 
 @pytest.mark.unittest

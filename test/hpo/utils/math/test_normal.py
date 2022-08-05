@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from ditk.hpo.utils.math import l2normal
+from lighttuner.hpo.utils.math import l2normal
 
 EPS = 1e-12
 

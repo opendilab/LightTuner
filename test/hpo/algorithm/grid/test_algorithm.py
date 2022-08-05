@@ -1,6 +1,6 @@
 import pytest
 
-from ditk.hpo.algorithm.grid import GridAlgorithm
+from lighttuner.hpo.algorithm.grid import GridAlgorithm
 
 
 # noinspection DuplicatedCode

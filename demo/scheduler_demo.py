@@ -1,9 +1,10 @@
 import os
-import ditk
+
 from ditk import logging
-from ditk.scheduler import run_scheduler_local
-from ditk.hpo import R, uniform
-from ditk.hpo import hpo
+
+from lighttuner.hpo import R, uniform
+from lighttuner.hpo import hpo
+from lighttuner.scheduler import run_scheduler_local
 
 
 def demo():

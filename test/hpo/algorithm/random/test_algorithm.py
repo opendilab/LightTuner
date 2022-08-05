@@ -1,6 +1,6 @@
 import pytest
 
-from ditk.hpo.algorithm import RandomAlgorithm
+from lighttuner.hpo.algorithm import RandomAlgorithm
 
 
 # noinspection DuplicatedCode

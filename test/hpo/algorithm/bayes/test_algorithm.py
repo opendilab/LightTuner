@@ -1,6 +1,6 @@
 import pytest
 
-from ditk.hpo.algorithm.bayes import BayesAlgorithm
+from lighttuner.hpo.algorithm.bayes import BayesAlgorithm
 
 
 # noinspection DuplicatedCode

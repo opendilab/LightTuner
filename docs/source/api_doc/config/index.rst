@@ -1,9 +1,9 @@
-ditk.config
+lighttuner.config
 =====================
 
-.. currentmodule:: ditk.config
+.. currentmodule:: lighttuner.config
 
-.. automodule:: ditk.config
+.. automodule:: lighttuner.config
 
 
 .. toctree::

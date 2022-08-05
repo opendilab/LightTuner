@@ -5,7 +5,7 @@ from distutils.core import setup
 
 from setuptools import find_packages
 
-_package_name = "ditk"
+_package_name = "lighttuner"
 
 here = os.path.abspath(os.path.dirname(__file__))
 meta = {}
@@ -34,8 +34,10 @@ setup(
     name=meta['__TITLE__'],
     version=meta['__VERSION__'],
     packages=find_packages(include=(_package_name, "%s.*" % _package_name)),
-    package_data={package_name: ['*.yaml', '*.yml']
-                  for package_name in find_packages(include=('*'))},
+    package_data={
+        package_name: ['*.yaml', '*.yml']
+        for package_name in find_packages(include=('*'))
+    },
     description=meta['__DESCRIPTION__'],
     long_description=readme,
     long_description_content_type='text/markdown',
@@ -51,11 +53,16 @@ setup(
     tests_require=group_requirements['test'],
     extras_require=group_requirements,
     classifiers=[
-        'Development Status :: 5 - Production/Stable', 'Intended Audience :: Developers',
-        'License :: OSI Approved :: Apache Software License', 'Programming Language :: Python',
-        'Programming Language :: Python :: 3', 'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7', 'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9', 'Programming Language :: Python :: 3.10',
+        'Development Status :: 5 - Production/Stable',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: Implementation :: PyPy'
     ],
 )

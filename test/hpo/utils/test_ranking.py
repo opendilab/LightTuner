@@ -4,7 +4,7 @@ import textwrap
 
 import pytest
 
-from ditk.hpo.utils import RankList
+from lighttuner.hpo.utils import RankList
 
 
 def _strip(s: str) -> str:

@@ -1,8 +1,25 @@
 # DI-toolkit
 
 
-[![pipeline status](https://gitlab.bj.sensetime.com/open-XLab/cell/di-toolkit/badges/main/pipeline.svg)](https://gitlab.bj.sensetime.com/open-XLab/cell/di-toolkit/-/commits/main)
-[![coverage report](https://gitlab.bj.sensetime.com/open-XLab/cell/di-toolkit/badges/main/coverage.svg)](https://gitlab.bj.sensetime.com/open-XLab/cell/di-toolkit/-/commits/main)
+[![PyPI](https://img.shields.io/pypi/v/lighttuner)](https://pypi.org/project/lighttuner/)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/lighttuner)
+![PyPI - Implementation](https://img.shields.io/pypi/implementation/lighttuner)
+![Loc](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/HansBug/cfbcfc91f1353f1d4b2607c433d46bd6/raw/loc.json)
+![Comments](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/HansBug/cfbcfc91f1353f1d4b2607c433d46bd6/raw/comments.json)
+
+[![Docs Deploy](https://github.com/opendilab/LightTuner/workflows/Docs%20Deploy/badge.svg)](https://github.com/opendilab/LightTuner/actions?query=workflow%3A%22Docs+Deploy%22)
+[![Code Test](https://github.com/opendilab/LightTuner/workflows/Code%20Test/badge.svg)](https://github.com/opendilab/LightTuner/actions?query=workflow%3A%22Code+Test%22)
+[![Badge Creation](https://github.com/opendilab/LightTuner/workflows/Badge%20Creation/badge.svg)](https://github.com/opendilab/LightTuner/actions?query=workflow%3A%22Badge+Creation%22)
+[![Package Release](https://github.com/opendilab/LightTuner/workflows/Package%20Release/badge.svg)](https://github.com/opendilab/LightTuner/actions?query=workflow%3A%22Package+Release%22)
+[![codecov](https://codecov.io/gh/opendilab/LightTuner/branch/main/graph/badge.svg?token=XJVDP4EFAT)](https://codecov.io/gh/opendilab/LightTuner)
+
+[![GitHub stars](https://img.shields.io/github/stars/opendilab/LightTuner)](https://github.com/opendilab/LightTuner/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/opendilab/LightTuner)](https://github.com/opendilab/LightTuner/network)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/opendilab/LightTuner)
+[![GitHub issues](https://img.shields.io/github/issues/opendilab/LightTuner)](https://github.com/opendilab/LightTuner/issues)
+[![GitHub pulls](https://img.shields.io/github/issues-pr/opendilab/LightTuner)](https://github.com/opendilab/LightTuner/pulls)
+[![Contributors](https://img.shields.io/github/contributors/opendilab/LightTuner)](https://github.com/opendilab/LightTuner/graphs/contributors)
+[![GitHub license](https://img.shields.io/github/license/opendilab/LightTuner)](https://github.com/opendilab/LightTuner/blob/master/LICENSE)
 
 A simple toolkit packages:
   - logger

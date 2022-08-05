@@ -2,7 +2,7 @@ import pytest
 from easydict import EasyDict
 from hbutils.expression import efunc
 
-from ditk.hpo.runner.result import R, _to_expr, _ResultExpression, _to_callable
+from lighttuner.hpo.runner.result import R, _to_expr, _ResultExpression, _to_callable
 
 
 @pytest.mark.unittest
