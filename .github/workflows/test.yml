@@ -1,7 +1,6 @@
 name: Code Test
 
-on:
-  - push
+on: [push, pull_request]
 
 jobs:
   unittest:
