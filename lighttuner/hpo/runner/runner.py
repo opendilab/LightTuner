@@ -34,13 +34,6 @@ def _expr_to_frank(expr):
     return _func
 
 
-def _cpu_count() -> int:
-    if os.environ.get('CPU_COUNT'):
-        return int(os.environ['CPU_COUNT'])
-    else:
-        return os.cpu_count()
-
-
 class ParallelSearchRunner:
 
     def __init__(self, algo_cls: Type[BaseAlgorithm], func, silent: bool = False):
@@ -53,12 +46,12 @@ class ParallelSearchRunner:
         self._settings.update({
             'max_steps': None,
             'opt_direction': None,
-            'max_workers': _cpu_count(),
+            'max_workers': os.cpu_count(),
         })
         self.__algorithm_cls = algo_cls  # old_algorithm class
 
         # about control
-        self.__max_workers = _cpu_count()
+        self.__max_workers = os.cpu_count()
         self.__max_try = 3
         self.__stop_condition = None
 
