@@ -1,0 +1,386 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lighttuner.hpo.space &mdash; lighttuner 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/custom.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="prev" title="lighttuner.hpo.value.value" href="value/value.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> lighttuner
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p><span class="caption-text">Tutorials</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/quick_start/index.html">Quick Start</a></li>
+</ul>
+<p><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../config/index.html">lighttuner.config</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">lighttuner.hpo</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="utils/index.html">lighttuner.hpo.utils</a></li>
+<li class="toctree-l2"><a class="reference internal" href="value/index.html">lighttuner.hpo.value</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">lighttuner.hpo.space</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#basespace">BaseSpace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#continuousspace">ContinuousSpace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#separatespace">SeparateSpace</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fixedspace">FixedSpace</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">lighttuner</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">lighttuner.hpo</a> &raquo;</li>
+        
+      <li>lighttuner.hpo.space</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/api_doc/hpo/space.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+    
+    
+  <section id="module-lighttuner.hpo.space">
+<span id="lighttuner-hpo-space"></span><h1>lighttuner.hpo.space<a class="headerlink" href="#module-lighttuner.hpo.space" title="Permalink to this headline">¶</a></h1>
+<section id="basespace">
+<h2>BaseSpace<a class="headerlink" href="#basespace" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="lighttuner.hpo.space.BaseSpace">
+<em class="property">class </em><code class="sig-prename descclassname">lighttuner.hpo.space.</code><code class="sig-name descname">BaseSpace</code><a class="reference internal" href="../../_modules/lighttuner/hpo/space/base.html#BaseSpace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lighttuner.hpo.space.BaseSpace" title="Permalink to this definition">¶</a></dt>
+<dd><dl>
+<dt>Overview:</dt><dd><p>Base class of spaces.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is an abstract class, do not use.</p>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="lighttuner.hpo.space.BaseSpace.count">
+<em class="property">property </em><code class="sig-name descname">count</code><a class="headerlink" href="#lighttuner.hpo.space.BaseSpace.count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count of elements in space.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lighttuner.hpo.space.BaseSpace.length">
+<em class="property">property </em><code class="sig-name descname">length</code><a class="headerlink" href="#lighttuner.hpo.space.BaseSpace.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Length of space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="continuousspace">
+<h2>ContinuousSpace<a class="headerlink" href="#continuousspace" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="lighttuner.hpo.space.ContinuousSpace">
+<em class="property">class </em><code class="sig-prename descclassname">lighttuner.hpo.space.</code><code class="sig-name descname">ContinuousSpace</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lower</span></em>, <em class="sig-param"><span class="n">upper</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lighttuner/hpo/space/continuous.html#ContinuousSpace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lighttuner.hpo.space.ContinuousSpace" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Overview:</dt><dd><p>Continuous space.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="lighttuner.hpo.space.ContinuousSpace.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lower</span></em>, <em class="sig-param"><span class="n">upper</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lighttuner/hpo/space/continuous.html#ContinuousSpace.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lighttuner.hpo.space.ContinuousSpace.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructor of <a class="reference internal" href="#lighttuner.hpo.space.ContinuousSpace" title="lighttuner.hpo.space.ContinuousSpace"><code class="xref py py-class docutils literal notranslate"><span class="pre">ContinuousSpace</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lower</strong> – Left bound.</p></li>
+<li><p><strong>upper</strong> – Right bound.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lighttuner.hpo.space.ContinuousSpace.count">
+<em class="property">property </em><code class="sig-name descname">count</code><a class="headerlink" href="#lighttuner.hpo.space.ContinuousSpace.count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count of elements in space.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lighttuner.hpo.space.ContinuousSpace.length">
+<em class="property">property </em><code class="sig-name descname">length</code><a class="headerlink" href="#lighttuner.hpo.space.ContinuousSpace.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Length of space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="separatespace">
+<h2>SeparateSpace<a class="headerlink" href="#separatespace" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="lighttuner.hpo.space.SeparateSpace">
+<em class="property">class </em><code class="sig-prename descclassname">lighttuner.hpo.space.</code><code class="sig-name descname">SeparateSpace</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">end</span></em>, <em class="sig-param"><span class="n">step</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lighttuner/hpo/space/separate.html#SeparateSpace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lighttuner.hpo.space.SeparateSpace" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Overview:</dt><dd><p>Separated space.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="lighttuner.hpo.space.SeparateSpace.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">start</span></em>, <em class="sig-param"><span class="n">end</span></em>, <em class="sig-param"><span class="n">step</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lighttuner/hpo/space/separate.html#SeparateSpace.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lighttuner.hpo.space.SeparateSpace.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructor of <a class="reference internal" href="#lighttuner.hpo.space.SeparateSpace" title="lighttuner.hpo.space.SeparateSpace"><code class="xref py py-class docutils literal notranslate"><span class="pre">SeparateSpace</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – Start value.</p></li>
+<li><p><strong>end</strong> – End value.</p></li>
+<li><p><strong>step</strong> – Step interval.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lighttuner.hpo.space.SeparateSpace.count">
+<em class="property">property </em><code class="sig-name descname">count</code><a class="headerlink" href="#lighttuner.hpo.space.SeparateSpace.count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count of elements in space.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lighttuner.hpo.space.SeparateSpace.length">
+<em class="property">property </em><code class="sig-name descname">length</code><a class="headerlink" href="#lighttuner.hpo.space.SeparateSpace.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Length of space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="fixedspace">
+<h2>FixedSpace<a class="headerlink" href="#fixedspace" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="lighttuner.hpo.space.FixedSpace">
+<em class="property">class </em><code class="sig-prename descclassname">lighttuner.hpo.space.</code><code class="sig-name descname">FixedSpace</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lighttuner/hpo/space/fixed.html#FixedSpace"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lighttuner.hpo.space.FixedSpace" title="Permalink to this definition">¶</a></dt>
+<dd><dl>
+<dt>Overview:</dt><dd><p>Fixed space.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Can be used to drive the enumeration.</p>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="lighttuner.hpo.space.FixedSpace.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lighttuner/hpo/space/fixed.html#FixedSpace.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lighttuner.hpo.space.FixedSpace.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructor of <a class="reference internal" href="#lighttuner.hpo.space.FixedSpace" title="lighttuner.hpo.space.FixedSpace"><code class="xref py py-class docutils literal notranslate"><span class="pre">FixedSpace</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> – Count of values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lighttuner.hpo.space.FixedSpace.count">
+<em class="property">property </em><code class="sig-name descname">count</code><a class="headerlink" href="#lighttuner.hpo.space.FixedSpace.count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count of elements in space.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="lighttuner.hpo.space.FixedSpace.length">
+<em class="property">property </em><code class="sig-name descname">length</code><a class="headerlink" href="#lighttuner.hpo.space.FixedSpace.length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Length of space.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="value/value.html" class="btn btn-neutral float-left" title="lighttuner.hpo.value.value" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2022, HansBug
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+    <div class="rst-versions" data-toggle="rst-versions" role="note" aria-label="versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    <span class="fa fa-book"> Other Versions</span>
+    v: main
+    <span class="fa fa-caret-down"></span>
+  </span>
+        <div class="rst-other-versions">
+                <dl>
+                    <dt>Branches</dt>
+                        <dd><a href="space.html">main</a></dd>
+                </dl>
+        </div>
+    </div>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
