@@ -94,7 +94,7 @@ def _run_kubectl_check_file(
     p = subprocess.run(
         [
             "kubectl", "exec", "-i", task_name + "-serial-0", "--", "ls",
-                                     _k8s_remote_project_path + _dijob_project_name + "/" + task_name + "/" + file_name
+            _k8s_remote_project_path + _dijob_project_name + "/" + task_name + "/" + file_name
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -113,7 +113,7 @@ def _run_kubectl_copy_file(
         subprocess.run(
             [
                 "kubectl", "cp", task_name + "-serial-0:" + _k8s_remote_project_path + _dijob_project_name + "/" +
-                                 task_name + "/" + file_name, file_saved_path
+                task_name + "/" + file_name, file_saved_path
             ],
             shell=False,
             stdout=nullstd,
@@ -762,17 +762,17 @@ class Scheduler:
 
 
 def scheduler_main(
-        task_config_template_path,
-        dijob_project_name=None,
-        max_number_of_running_task=2,
-        max_number_of_tasks=20,
-        mode="local",
-        time_out=None,
-        mp_queue_input=None,
-        mp_queue_output=None,
-        k8s_dijob_yaml_file_path=None,
-        k8s_remote_project_path=None,
-        mp_queue_error=None,
+    task_config_template_path,
+    dijob_project_name=None,
+    max_number_of_running_task=2,
+    max_number_of_tasks=20,
+    mode="local",
+    time_out=None,
+    mp_queue_input=None,
+    mp_queue_output=None,
+    k8s_dijob_yaml_file_path=None,
+    k8s_remote_project_path=None,
+    mp_queue_error=None,
 ):
     """inner scheduler main function"""
     if mp_queue_error is None:
@@ -871,7 +871,7 @@ def run_scheduler(
     )
     p.start()
 
-    scheduler.monitor_thread = threading.Thread(target=monitor_scheduler_thead_main, args=(mp_queue_error,))
+    scheduler.monitor_thread = threading.Thread(target=monitor_scheduler_thead_main, args=(mp_queue_error, ))
     scheduler.monitor_thread.start()
 
     return scheduler

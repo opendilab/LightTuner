@@ -50,8 +50,8 @@ class LoggingEventSet(RunnerEventSet):
         )
 
     def init_ok(
-            self, target_name: str, params: Iterable[Tuple[str, _ResultExpression]],
-            concerns: Iterable[Tuple[str, _ResultExpression]]
+        self, target_name: str, params: Iterable[Tuple[str, _ResultExpression]],
+        concerns: Iterable[Tuple[str, _ResultExpression]]
     ):
         self._target_name = target_name
         self._params = params
