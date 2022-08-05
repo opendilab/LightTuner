@@ -1,19 +1,19 @@
 Installation
 ===================
 
-DI-toolkit is currently hosted on PyPI. It required python >= 3.6.
+LightTuner is currently hosted on PyPI. It required python >= 3.7.
 
-You can simply install DI-toolkit from PyPI with the following command:
+You can simply install LightTuner from PyPI with the following command:
 
 .. code:: shell
 
-    pip install DI-toolkit
+    pip install lighttuner
 
 You can also install with the newest version through GitHub:
 
 .. code:: shell
 
-    pip install -U git+https://gitlab.bj.sensetime.com/open-XLab/cell/di-toolkit@main
+    pip install -U git+https://github.com/opendilab/LightTuner@main
 
 You can check your installation by the following python \
 script:
@@ -29,5 +29,5 @@ is successful.
     :language: text
     :linenos:
 
-DI-toolkit is still under development, you can also check out the \
-documents in stable version through `http://open-xlab.pages.gitlab.bj.sensetime.com/cell/di-toolkit/main/index.html <http://open-xlab.pages.gitlab.bj.sensetime.com/cell/di-toolkit/main/index.html>`_.
+LightTuner is still under development, you can also check out the \
+documents in stable version through `https://opendilab.github.io/LightTuner/main/index.html <https://opendilab.github.io/LightTuner/main/index.html>`_.

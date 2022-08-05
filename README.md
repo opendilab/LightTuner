@@ -1,4 +1,4 @@
-# DI-toolkit
+# LightTuner
 
 
 [![PyPI](https://img.shields.io/pypi/v/lighttuner)](https://pypi.org/project/lighttuner/)
@@ -32,13 +32,13 @@ A simple toolkit packages:
 You can simply install it with `pip` command line from the official PyPI site.
 
 ```shell
-pip install DI-toolkit
+pip install lighttuner
 ```
 
 Or install from latest source code as follows:
 ```shell
-git clone https://gitlab.bj.sensetime.com/open-XLab/cell/di-toolkit.git
-cd di-toolkit
+git clone https://github.com/opendilab/LightTuner.git
+cd LightTuner
 pip install . --user
 ```
 
@@ -51,7 +51,8 @@ import random
 import time
 
 from ditk import logging
-from ditk.hpo import hpo, R, M, uniform, randint
+
+from lighttuner.hpo import hpo, R, M, uniform, randint
 
 
 @hpo
@@ -96,9 +97,9 @@ You can refer to `ditk/scheduler/README.md` for more details.
 
 ## Contributing
 
-We appreciate all contributions to improve `DI-toolkit`, both logic and system designs. Please refer to CONTRIBUTING.md for more guides.
+We appreciate all contributions to improve `LightTuner`, both logic and system designs. Please refer to CONTRIBUTING.md for more guides.
 
 
 ## License
 
-`DI-toolkit` released under the Apache 2.0 license.
+`LightTuner` released under the Apache 2.0 license.

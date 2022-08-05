@@ -1,10 +1,10 @@
-Welcome to DI-toolkit's Documentation
+Welcome to LightTuner's Documentation
 =========================================================
 
 Overview
 -------------
 
-``DI-toolkit`` is a module which can parse and manage the \
+``LightTuner`` is a module which can parse and manage the \
 configuration file's structure and their versions.
 
 .. toctree::
