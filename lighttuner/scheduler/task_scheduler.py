@@ -19,6 +19,8 @@ from ditk import logging
 from ruamel.yaml import YAML
 from tabulate import tabulate
 
+from .cross_platform_mp_queue import MPQueue
+
 
 def parse_dict(info_dict: dict) -> List:
     """
@@ -89,7 +91,7 @@ def _run_kubectl_check_status(task_name: str) -> str:
 
 
 def _run_kubectl_check_file(
-        task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str
+    task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str
 ) -> str:
     p = subprocess.run(
         [
@@ -107,7 +109,7 @@ def _run_kubectl_check_file(
 
 
 def _run_kubectl_copy_file(
-        task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str, file_saved_path: str
+    task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str, file_saved_path: str
 ) -> None:
     with open(os.devnull) as nullstd:
         subprocess.run(
@@ -254,17 +256,17 @@ class Scheduler:
         self.monitor_thread = None
 
     def config(
-            self,
-            task_config_template_path: str,
-            dijob_project_name: str = None,
-            max_number_of_running_task: int = 2,
-            max_number_of_tasks: int = 10,
-            mode: str = "local",
-            time_out: int = None,
-            mp_queue_input: multiprocessing.Queue = None,
-            mp_queue_output: multiprocessing.Queue = None,
-            k8s_dijob_yaml_file_path: str = None,
-            k8s_remote_project_path: str = None,
+        self,
+        task_config_template_path: str,
+        dijob_project_name: str = None,
+        max_number_of_running_task: int = 2,
+        max_number_of_tasks: int = 10,
+        mode: str = "local",
+        time_out: int = None,
+        mp_queue_input: MPQueue = None,
+        mp_queue_output: MPQueue = None,
+        k8s_dijob_yaml_file_path: str = None,
+        k8s_remote_project_path: str = None,
     ) -> None:
         """To do scheduler basic configurations."""
 
@@ -292,17 +294,17 @@ class Scheduler:
         if mp_queue_input:
             self._mp_queue_input = mp_queue_input
         else:
-            self._mp_queue_input = multiprocessing.Queue()
+            self._mp_queue_input = MPQueue()
         if mp_queue_output:
             self._mp_queue_output = mp_queue_output
         else:
-            self._mp_queue_output = multiprocessing.Queue()
+            self._mp_queue_output = MPQueue()
 
         if mode == "k8s":
             self._k8s_dijob_yaml_file_path = k8s_dijob_yaml_file_path
             self._k8s_remote_project_path = k8s_remote_project_path
 
-    def get_mp_queues(self) -> Tuple[multiprocessing.Queue]:
+    def get_mp_queues(self) -> Tuple[MPQueue]:
         """return scheduler multiprocessing queues."""
         if self._mp_queue_input is not None and self._mp_queue_output is not None:
             return self._mp_queue_input, self._mp_queue_output
@@ -825,14 +827,14 @@ def monitor_scheduler_thead_main(mp_queue_error):
 
 
 def run_scheduler(
-        task_config_template_path,
-        dijob_project_name=None,
-        max_number_of_running_task=10,
-        max_number_of_tasks=100000,
-        mode="local",
-        time_out=None,
-        k8s_dijob_yaml_file_path=None,
-        k8s_remote_project_path=None,
+    task_config_template_path,
+    dijob_project_name=None,
+    max_number_of_running_task=10,
+    max_number_of_tasks=100000,
+    mode="local",
+    time_out=None,
+    k8s_dijob_yaml_file_path=None,
+    k8s_remote_project_path=None,
 ) -> Scheduler:
     """running scheduler in a subprocess."""
     if mode == "local":
@@ -851,7 +853,7 @@ def run_scheduler(
     )
 
     mp_queue_input, mp_queue_output = scheduler.get_mp_queues()
-    mp_queue_error = multiprocessing.Queue()
+    mp_queue_error = MPQueue()
 
     p = multiprocessing.Process(
         target=scheduler_main,
@@ -878,11 +880,11 @@ def run_scheduler(
 
 
 def run_scheduler_local(
-        task_config_template_path,
-        dijob_project_name=None,
-        max_number_of_running_task=2,
-        max_number_of_tasks=100000,
-        time_out=None,
+    task_config_template_path,
+    dijob_project_name=None,
+    max_number_of_running_task=2,
+    max_number_of_tasks=100000,
+    time_out=None,
 ) -> Scheduler:
     """running scheduler in local mode in a subprocess."""
     return run_scheduler(
@@ -896,9 +898,9 @@ def run_scheduler_local(
 
 
 def run_scheduler_k8s(
-        task_config_template_path,
-        k8s_dijob_yaml_file_path,
-        time_out=None,
+    task_config_template_path,
+    k8s_dijob_yaml_file_path,
+    time_out=None,
 ) -> Scheduler:
     """running scheduler in k8s mode in a subprocess."""
     k8s_remote_project_path = None
