@@ -92,7 +92,7 @@ if __name__ == '__main__':
 This optimization progress is parallel, which has n (number of cpus) workers in default. If you need to customize the count of workers, just use `max_workers(n)` method.
 
 ## Quick Start for Scheduler
-You can refer to `ditk/scheduler/README.md` for more details.
+You can refer to `lighttuner/scheduler/README.md` for more details.
 
 ## Contributing
 
