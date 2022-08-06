@@ -1,6 +1,5 @@
 # LightTuner
 
-
 [![PyPI](https://img.shields.io/pypi/v/lighttuner)](https://pypi.org/project/lighttuner/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/lighttuner)
 ![Loc](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/HansBug/cfbcfc91f1353f1d4b2607c433d46bd6/raw/loc.json)
@@ -20,11 +19,10 @@
 [![Contributors](https://img.shields.io/github/contributors/opendilab/LightTuner)](https://github.com/opendilab/LightTuner/graphs/contributors)
 [![GitHub license](https://img.shields.io/github/license/opendilab/LightTuner)](https://github.com/opendilab/LightTuner/blob/master/LICENSE)
 
-A simple toolkit packages:
-  - logger
-  - hpo: automatic hyper-parameter tuning
-  - scheduler: automatic task resource scheduler
+A simple hyper-parameter optimization toolkit:
 
+- hpo: automatic hyper-parameter tuning
+- scheduler: automatic task resource scheduler
 
 ## Installation
 
@@ -35,6 +33,7 @@ pip install lighttuner
 ```
 
 Or install from latest source code as follows:
+
 ```shell
 git clone https://github.com/opendilab/LightTuner.git
 cd LightTuner
@@ -89,15 +88,17 @@ if __name__ == '__main__':
 
 ```
 
-This optimization progress is parallel, which has n (number of cpus) workers in default. If you need to customize the count of workers, just use `max_workers(n)` method.
+This optimization progress is parallel, which has n (number of cpus) workers in default. If you need to customize the
+count of workers, just use `max_workers(n)` method.
 
 ## Quick Start for Scheduler
+
 You can refer to `lighttuner/scheduler/README.md` for more details.
 
 ## Contributing
 
-We appreciate all contributions to improve `LightTuner`, both logic and system designs. Please refer to CONTRIBUTING.md for more guides.
-
+We appreciate all contributions to improve `LightTuner`, both logic and system designs. Please refer to CONTRIBUTING.md
+for more guides.
 
 ## License
 
