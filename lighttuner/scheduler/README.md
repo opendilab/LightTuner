@@ -1,4 +1,4 @@
-# DI-toolkit: Scheduler
+# LightTuner: Scheduler
 
 ## Prerequisite
 
@@ -13,25 +13,25 @@
 
 Here is a simple example:
 
-To start, we need a entry file containing configurations, we use DI-engine RL config as example ([Link](https://gitlab.bj.sensetime.com/open-XLab/cell/di-toolkit/-/blob/main/ditk/template/cartpole_dqn_config.py)):
+To start, we need a entry file containing configurations, we use DI-engine RL config as example ([Link](https://github.com/opendilab/LightTuner/blob/main/template/cartpole_dqn_config.py)):
 
 In addition, we should save a binary file named ``<dijob_project_name-id>/hpo/result.pkl`` at the end of the main file, which contains necessary metrics like accuracy, mAP, discount returns and so on.
 
 
-After that, we beign to run the first demo  (all the following codes are located in ``di-toolkit/demo`` directory). 
+After that, we beign to run the first demo  (all the following codes are located in ``LightTuner/demo`` directory). 
 
 If you want to run hpo with scheduler in your local machine, you can use the following codes:
 ```python
 import os
-import ditk
+import lighttuner
 from ditk import logging
-from ditk.scheduler import run_scheduler_local
-from ditk.hpo import R, uniform
-from ditk.hpo import hpo
+from lighttuner.scheduler import run_scheduler_local
+from lighttuner.hpo import R, uniform
+from lighttuner.hpo import hpo
 
 
 def demo():
-    dirname = os.path.join(ditk.__path__[0], 'template')
+    dirname = os.path.join(lighttuner.__path__[0], 'template')
 
     scheduler = run_scheduler_local(
         task_config_template_path=os.path.join(dirname, "cartpole_dqn_config.py"),
@@ -59,21 +59,21 @@ if __name__ == "__main__":
 
 If you want to run it in K8s, a k8s yaml file template is necessary, of which the settings has to fit the k8s clusters and RL algo requirement, needs to be prepared. 
 
-[Here](https://gitlab.bj.sensetime.com/open-XLab/cell/di-toolkit/-/blob/main/ditk/template/cartpole_dijob_with_empty_configmap.yml) is an template, you can modify it according to your demands.
+[Here](https://github.com/opendilab/LightTuner/blob/main/demo/scheduler_k8s_demo.py) is an template, you can modify it according to your demands.
 
 Then, we could start the hpo algo and scheduler by few lines of python code.
 
 ```python
 import os
-import ditk
+import lighttuner
 from ditk import logging
-from ditk.scheduler import run_scheduler_k8s
-from ditk.hpo import R, uniform
-from ditk.hpo import hpo
+from lighttuner.scheduler import run_scheduler_k8s
+from lighttuner.hpo import R, uniform
+from lighttuner.hpo import hpo
 
 
 def demo():
-    dirname = os.path.join(ditk.__path__[0], 'template')
+    dirname = os.path.join(lighttuner.__path__[0], 'template')
 
     scheduler = run_scheduler_k8s(
         task_config_template_path=os.path.join(dirname, "cartpole_dqn_config.py"),
