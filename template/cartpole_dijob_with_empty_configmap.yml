@@ -1,5 +1,5 @@
-var1: &basePath /mnt/lustre/niuyazhe/
-var2: &projectPath /mnt/lustre/niuyazhe/code/di-toolkit/demo/
+var1: &basePath /mnt/nfs/USER/
+var2: &projectPath /mnt/nfs/USER/LightTuner/demo/
 var3: &jobName cartpole-dqn-hpo-k8s
 
 apiVersion: diengine.opendilab.org/v2alpha1
@@ -20,7 +20,7 @@ spec:
       spec:
         containers:
         - name: di-container
-          image: registry.sensetime.com/xlab/ding:cuda-nightly-atari
+          image: opendilab/ding:cuda-nightly
           imagePullPolicy: Always
           env:
           - name: PYTHONUNBUFFERED
@@ -42,18 +42,11 @@ spec:
             # prepare env
             cat /etc/config/config.py
             export PATH=/opt/conda/bin:$PATH
-            export http_proxy=http://proxy.sensetime.com:3128/
-            export https_proxy=http://proxy.sensetime.com:3128/
-            export HTTP_PROXY=http://proxy.sensetime.com:3128/
-            export HTTPS_PROXY=http://proxy.sensetime.com:3128/
-            pip config set global.index-url https://pkg.sensetime.com/repository/pypi-proxy/simple/
-            pip config set install.trusted-host pypi.opencloud.sensetime.com
             python --version
             pip --version
             python -m pip install --upgrade pip
             # install user package (user-defined)
-            cd /mnt/lustre/niuyazhe/code/DI-engine
-            pip install -e .
+
             # run task
             cd $PROJECT_PATH
             mkdir $JOB_NAME
