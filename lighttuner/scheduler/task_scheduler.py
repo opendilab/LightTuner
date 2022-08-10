@@ -144,6 +144,7 @@ class Task:
         self.pid = None
         self.process = None
         self.start_time = None
+        self.emit_time = None
 
     def define(self, task_id: int, hpo_project_name: str, hyper_parameter_info: dict) -> None:
         """config a task."""
@@ -172,7 +173,7 @@ class Task:
         config_file_strings = []
         with open(task_config_template_path, mode="r", encoding="UTF-8") as f:
             for line in f.read().splitlines():
-                if line == 'if __name__ == "__main__":':
+                if line == 'if __name__ == "__main__":' or line == "if __name__ == '__main__':":
                     config_file_strings = config_file_strings + self.generate_extra_config()
                 config_file_strings.append(line)
         return config_file_strings
@@ -426,7 +427,7 @@ class Scheduler:
             elif status == "'Succeeded'" or status == "'Failed'" or status == "'Unknown'":
                 return False
             else:
-                logging.info("Scheduler: Unknown Error in checking k8s job: " + rl_task.task_name)
+                logging.warning("Scheduler: Unknown Error in checking k8s job: " + rl_task.task_name)
                 return False
 
         else:
@@ -533,11 +534,15 @@ class Scheduler:
                         self.task_finished_id.remove(rl_task.task_id)
                         self.task_running_id.append(rl_task.task_id)
                     else:
-                        report = rl_task.get_report(result={"status": "fail"})
-                        rl_task.normal = False
-                        self.task_abnormal_id.append(rl_task.task_id)
-                        self.cancel_task(rl_task.task_id)
-                        self.task_reports.append(report)
+                        if time.time()-rl_task.emit_time > 180:
+                            report = rl_task.get_report(result={"status": "fail"})
+                            rl_task.normal = False
+                            self.task_abnormal_id.append(rl_task.task_id)
+                            self.cancel_task(rl_task.task_id)
+                            self.task_reports.append(report)
+                        else:
+                            logging.warning("Scheduler: Status of k8s job: " + rl_task.task_name \
+                                + ", seems to meet some problem.")
 
     def define_rl_task(self, new_samples: List[dict]) -> None:
         """Add and define new tasks to scheduler"""
@@ -661,7 +666,8 @@ class Scheduler:
                         f.write("---\n")
 
             _run_kubectl(["kubectl", "create", "-f", dijob_file, "--validate=false"])
-
+        
+        self.task_list[task_id].emit_time=time.time()
         self.task_running_id.append(task_id)
         self.task_waiting_id.remove(task_id)
 
