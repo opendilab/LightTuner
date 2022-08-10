@@ -538,7 +538,7 @@ class TestTaskScheduler:
                     assert len(scheduler.task_running_id) == 0
                     assert len(scheduler.task_finished_id) == 4
                     assert len(scheduler.task_success_id) == 2
-                    assert len(scheduler.task_abnormal_id) == 2
+                    assert len(scheduler.task_abnormal_id) == 1
 
         clean_up("./unittest_for_scheduler_k8s/")
         clean_up("./unittest-cartpole-k8s/")
