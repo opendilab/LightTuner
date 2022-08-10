@@ -27,6 +27,8 @@ spec:
             value: "1"
           - name: PROJECT_PATH
             value: *projectPath
+          - name: JOB_NAME
+            value: *jobName
           resources:
             requests:
               # nvidia.com/gpu-a100: 1  # user-defined resource
