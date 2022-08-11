@@ -1,9 +1,9 @@
 """
 Overview:
-    Meta information for DI-toolkit package.
+    Meta information for LightTuner package.
 """
 
-#: Title of this project (should be `DI-toolkit`).
+#: Title of this project (should be `lighttuner`).
 __TITLE__ = "lighttuner"
 
 #: Version of this project.
