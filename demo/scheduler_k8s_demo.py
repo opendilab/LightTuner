@@ -20,7 +20,29 @@ def demo():
     opt = hpo(scheduler.get_hpo_callable())
     cfg, ret, metrics = opt.grid() \
         .max_steps(5) \
-        .max_workers(4) \
+        .max_workers(5) \
+        .maximize(R['eval_value']) \
+        .spaces(hpo_info).run()
+    print(cfg)
+    print(ret)
+
+    scheduler.stop()
+
+
+def didrive_demo():
+    dirname = os.path.abspath('./template')
+
+    scheduler = run_scheduler_k8s(
+        task_config_template_path=os.path.join(dirname, "macro_ppo_config.py"),
+        k8s_dijob_yaml_file_path=os.path.join(dirname, "macro_dijob_with_empty_configmap.yml"),
+    )
+
+    hpo_info = {'policy': {'learn': {'learning_rate': uniform(1e-4, 5e-4)}}}
+
+    opt = hpo(scheduler.get_hpo_callable())
+    cfg, ret, metrics = opt.grid() \
+        .max_steps(5) \
+        .max_workers(5) \
         .maximize(R['eval_value']) \
         .spaces(hpo_info).run()
     print(cfg)
