@@ -52,6 +52,28 @@ def didrive_demo():
     scheduler.stop()
 
 
+def tianshou_demo():
+    dirname = os.path.abspath('./template')
+
+    scheduler = run_scheduler_local(
+        task_config_template_path=os.path.join(dirname, "tianshou_cartpole_dqn_config.py"),
+        dijob_project_name="cartpole_dqn_hpo"
+    )
+
+    hpo_info = {'policy': {'learning_rate': uniform(1e-3, 2e-3)}}
+
+    opt = hpo(scheduler.get_hpo_callable())
+    cfg, ret, metrics = opt.grid() \
+        .max_steps(3) \
+        .max_workers(3) \
+        .maximize(R['best_reward']) \
+        .spaces(hpo_info).run()
+    print(cfg)
+    print(ret)
+
+    scheduler.stop()
+
+
 if __name__ == "__main__":
     logging.try_init_root(logging.INFO)
     demo()
