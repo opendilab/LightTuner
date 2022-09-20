@@ -1,6 +1,6 @@
 var1: &basePath /mnt/nfs/USER/
 var2: &projectPath /mnt/nfs/USER/LightTuner/demo/
-var3: &jobName cartpole-dqn-hpo-k8s
+var3: &jobName tianshou-cartpole-dqn-k8s
 
 apiVersion: diengine.opendilab.org/v2alpha1
 kind: DIJob
@@ -31,32 +31,22 @@ spec:
             value: *jobName
           resources:
             requests:
-              nvidia.com/gpu-a100: 1  # user-defined resource
-              cpu: 10
-              memory: "80Gi"
+              # nvidia.com/gpu-a100: 1  # user-defined resource
+              cpu: 4
+              memory: "10Gi"
             limits:
-              nvidia.com/gpu-a100: 1
-              cpu: 10
-              memory: "80Gi"
+              # nvidia.com/gpu-a100: 1
+              cpu: 4
+              memory: "10Gi"
           command: ["/bin/bash", "-c",]
           args:  # user-defined execution commands
           - |
             # prepare env
             cat /etc/config/config.py
             export PATH=/opt/conda/bin:$PATH
-            # install and use python3.7
-            conda create -n didrive-py37 python=3.7
-            conda activate didrive-py37
-            python --version # make sure your python version is 3.7 
-            pip --version
-            python -m pip install --upgrade pip
-            # install user package (user-defined)
-            pip install setuptools==50.0.0
-            pip install DI-engine[commen_env]>=0.4.0
-            cd ######DI-drive Folder########
-            pip install -e .[metadrive]
-            cd ######Carla Folder########/Carla/carla_0910/PythonAPI/carla/dist/
-            easy_install --user carla-0.9.10-py3.7-linux-x86_64.egg
+            # install tianshou
+            pip install tianshou
+            pip install easydict
             pip list -v
             # run task
             cd $PROJECT_PATH

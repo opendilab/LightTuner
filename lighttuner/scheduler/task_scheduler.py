@@ -256,6 +256,13 @@ class Scheduler:
         self._scheduler_monitor_time_interval = 3
         self.monitor_thread = None
 
+    def __enter__(self):
+        b = 1
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.stop()
+
     def config(
         self,
         task_config_template_path: str,
@@ -534,7 +541,7 @@ class Scheduler:
                         self.task_finished_id.remove(rl_task.task_id)
                         self.task_running_id.append(rl_task.task_id)
                     else:
-                        if time.time()-rl_task.emit_time > 180:
+                        if time.time() - rl_task.emit_time > 180:
                             report = rl_task.get_report(result={"status": "fail"})
                             rl_task.normal = False
                             self.task_abnormal_id.append(rl_task.task_id)
@@ -666,8 +673,8 @@ class Scheduler:
                         f.write("---\n")
 
             _run_kubectl(["kubectl", "create", "-f", dijob_file, "--validate=false"])
-        
-        self.task_list[task_id].emit_time=time.time()
+
+        self.task_list[task_id].emit_time = time.time()
         self.task_running_id.append(task_id)
         self.task_waiting_id.remove(task_id)
 
