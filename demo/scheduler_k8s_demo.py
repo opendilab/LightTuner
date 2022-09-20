@@ -8,69 +8,57 @@ from lighttuner.scheduler import run_scheduler_k8s
 
 
 def demo():
-    dirname = os.path.abspath('./template')
+    dir_name = os.path.abspath('./template')
 
-    scheduler = run_scheduler_k8s(
-        task_config_template_path=os.path.join(dirname, "cartpole_dqn_config.py"),
-        k8s_dijob_yaml_file_path=os.path.join(dirname, "cartpole_dijob_with_empty_configmap.yml"),
-    )
+    with run_scheduler_k8s(
+            task_config_template_path=os.path.join(dir_name, "cartpole_dqn_config.py"),
+            k8s_dijob_yaml_file_path=os.path.join(dir_name, "cartpole_dijob_with_empty_configmap.yml"),
+    ) as scheduler:
 
-    hpo_info = {'policy': {'discount_factor': uniform(0.95, 1)}}
-
-    opt = hpo(scheduler.get_hpo_callable())
-    cfg, ret, metrics = opt.grid() \
-        .max_steps(5) \
-        .max_workers(5) \
-        .maximize(R['eval_value']) \
-        .spaces(hpo_info).run()
-    print(cfg)
-    print(ret)
-
-    scheduler.stop()
+        opt = hpo(scheduler.get_hpo_callable())
+        cfg, ret, metrics = opt.grid() \
+            .max_steps(5) \
+            .max_workers(5) \
+            .maximize(R['eval_value']) \
+            .spaces({'policy': {'discount_factor': uniform(0.95, 1)}}).run()
+        print(cfg)
+        print(ret)
 
 
 def didrive_demo():
-    dirname = os.path.abspath('./template')
+    dir_name = os.path.abspath('./template')
 
-    scheduler = run_scheduler_k8s(
-        task_config_template_path=os.path.join(dirname, "macro_ppo_config.py"),
-        k8s_dijob_yaml_file_path=os.path.join(dirname, "macro_dijob_with_empty_configmap.yml"),
-    )
+    with run_scheduler_k8s(
+            task_config_template_path=os.path.join(dir_name, "macro_ppo_config.py"),
+            k8s_dijob_yaml_file_path=os.path.join(dir_name, "macro_dijob_with_empty_configmap.yml"),
+    ) as scheduler:
 
-    hpo_info = {'policy': {'learn': {'learning_rate': uniform(1e-4, 5e-4)}}}
-
-    opt = hpo(scheduler.get_hpo_callable())
-    cfg, ret, metrics = opt.grid() \
-        .max_steps(5) \
-        .max_workers(5) \
-        .maximize(R['eval_value']) \
-        .spaces(hpo_info).run()
-    print(cfg)
-    print(ret)
-
-    scheduler.stop()
+        opt = hpo(scheduler.get_hpo_callable())
+        cfg, ret, metrics = opt.grid() \
+            .max_steps(5) \
+            .max_workers(5) \
+            .maximize(R['eval_value']) \
+            .spaces({'policy': {'learn': {'learning_rate': uniform(1e-4, 5e-4)}}}).run()
+        print(cfg)
+        print(ret)
 
 
 def tianshou_demo():
-    dirname = os.path.abspath('./template')
+    dir_name = os.path.abspath('./template')
 
-    scheduler = run_scheduler_k8s(
-        task_config_template_path=os.path.join(dirname, "tianshou_cartpole_dqn_config.py"),
-        k8s_dijob_yaml_file_path=os.path.join(dirname, "tianshou_dijob_with_empty_configmap.yml"),
-    )
+    with run_scheduler_k8s(
+            task_config_template_path=os.path.join(dir_name, "tianshou_cartpole_dqn_config.py"),
+            k8s_dijob_yaml_file_path=os.path.join(dir_name, "tianshou_dijob_with_empty_configmap.yml"),
+    ) as scheduler:
 
-    hpo_info = {'policy': {'learning_rate': uniform(1e-3, 2e-3)}}
-
-    opt = hpo(scheduler.get_hpo_callable())
-    cfg, ret, metrics = opt.grid() \
-        .max_steps(3) \
-        .max_workers(3) \
-        .maximize(R['best_reward']) \
-        .spaces(hpo_info).run()
-    print(cfg)
-    print(ret)
-
-    scheduler.stop()
+        opt = hpo(scheduler.get_hpo_callable())
+        cfg, ret, metrics = opt.grid() \
+            .max_steps(3) \
+            .max_workers(3) \
+            .maximize(R['best_reward']) \
+            .spaces({'policy': {'learning_rate': uniform(1e-3, 2e-3)}}).run()
+        print(cfg)
+        print(ret)
 
 
 if __name__ == "__main__":

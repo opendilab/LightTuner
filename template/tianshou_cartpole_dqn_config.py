@@ -1,15 +1,18 @@
 import gym
-import tianshou as ts
-import torch, numpy as np
+import tianshou
+import torch
+import numpy as np
 from torch import nn
 from easydict import EasyDict
 
-main_config = dict(exp_name='tianshou_cartpole_dqn_seed0',
-                   env=dict(env_id='CartPole-v0', ),
-                   policy=dict(learn=dict(
-                       learning_rate=1e-3,
-                       batch_size=64,
-                   ), ))
+main_config = dict(
+    exp_name='tianshou_cartpole_dqn_seed0',
+    env=dict(env_id='CartPole-v0', ),
+    policy=dict(learn=dict(
+        learning_rate=1e-3,
+        batch_size=64,
+    ), )
+)
 main_config = EasyDict(main_config)
 
 
@@ -17,15 +20,17 @@ class Net(nn.Module):
 
     def __init__(self, state_shape, action_shape):
         super().__init__()
-        self.model = nn.Sequential(*[
-            nn.Linear(np.prod(state_shape), 128),
-            nn.ReLU(inplace=True),
-            nn.Linear(128, 128),
-            nn.ReLU(inplace=True),
-            nn.Linear(128, 128),
-            nn.ReLU(inplace=True),
-            nn.Linear(128, np.prod(action_shape))
-        ])
+        self.model = nn.Sequential(
+            *[
+                nn.Linear(np.prod(state_shape), 128),
+                nn.ReLU(inplace=True),
+                nn.Linear(128, 128),
+                nn.ReLU(inplace=True),
+                nn.Linear(128, 128),
+                nn.ReLU(inplace=True),
+                nn.Linear(128, np.prod(action_shape))
+            ]
+        )
 
     def forward(self, obs, state=None, info={}):
         if not isinstance(obs, torch.Tensor):
@@ -44,24 +49,16 @@ def serial_pipeline(cfg, seed: int = 0):
     state_shape = env.observation_space.shape or env.observation_space.n
     action_shape = env.action_space.shape or env.action_space.n
     net = Net(state_shape, action_shape)
-    optim = torch.optim.Adam(net.parameters(),
-                             lr=cfg.policy.learn.learning_rate)
+    optim = torch.optim.Adam(net.parameters(), lr=cfg.policy.learn.learning_rate)
 
-    policy = ts.policy.DQNPolicy(net,
-                                 optim,
-                                 discount_factor=0.9,
-                                 estimation_step=3,
-                                 target_update_freq=320)
+    policy = tianshou.policy.DQNPolicy(net, optim, discount_factor=0.9, estimation_step=3, target_update_freq=320)
 
-    train_collector = ts.data.Collector(policy,
-                                        train_envs,
-                                        ts.data.VectorReplayBuffer(20000, 10),
-                                        exploration_noise=True)
-    test_collector = ts.data.Collector(policy,
-                                       test_envs,
-                                       exploration_noise=True)
+    train_collector = tianshou.data.Collector(
+        policy, train_envs, tianshou.data.VectorReplayBuffer(20000, 10), exploration_noise=True
+    )
+    test_collector = tianshou.data.Collector(policy, test_envs, exploration_noise=True)
 
-    result = ts.trainer.offpolicy_trainer(
+    result = tianshou.trainer.offpolicy_trainer(
         policy,
         train_collector,
         test_collector,
@@ -73,7 +70,8 @@ def serial_pipeline(cfg, seed: int = 0):
         batch_size=cfg.policy.learn.batch_size,
         train_fn=lambda epoch, env_step: policy.set_eps(0.1),
         test_fn=lambda epoch, env_step: policy.set_eps(0.05),
-        stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold)
+        stop_fn=lambda mean_rewards: mean_rewards >= env.spec.reward_threshold
+    )
     print(f'Finished training! Use {result["duration"]}')
 
     import os
