@@ -177,14 +177,19 @@ class Task:
         ]
         config_file_strings = []
         having_main_entrance = False
+        having_main_config = False
         with open(task_config_template_path, mode="r", encoding="UTF-8") as f:
             for line in f.read().splitlines():
+                if len(line) >= len("main_config") and line[:len("main_config")] == "main_config":
+                    having_main_config = True
                 if line in main_entrance:
                     config_file_strings = config_file_strings + self.generate_extra_config()
                     having_main_entrance = True
                 config_file_strings.append(line)
         if not having_main_entrance:
-            raise ValueError("Please indicate main entrance in main file in the form of if __name__ =='__main__': .")
+            raise ValueError("Please indicate main entrance in main file in the form of if __name__ =='__main__':")
+        if not having_main_config:
+            raise ValueError("Please indicate main config in main file by variable named as 'main_config=...'")
         return config_file_strings
 
     def generate_extra_config(self) -> List[str]:
