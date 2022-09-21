@@ -2,7 +2,7 @@ import os
 
 from ditk import logging
 
-from lighttuner.hpo import R, uniform
+from lighttuner.hpo import R, uniform, choice
 from lighttuner.hpo import hpo
 from lighttuner.scheduler import run_scheduler_k8s
 
@@ -57,6 +57,24 @@ def tianshou_demo():
             .max_workers(3) \
             .maximize(R['best_reward']) \
             .spaces({'policy': {'learning_rate': uniform(1e-3, 2e-3)}}).run()
+        print(cfg)
+        print(ret)
+
+
+def d3rlpy_demo():
+    dir_name = os.path.abspath('./template')
+
+    with run_scheduler_k8s(
+            task_config_template_path=os.path.join(dir_name, "d3rlpy_cartpole_dqn_config.py"),
+            k8s_dijob_yaml_file_path=os.path.join(dir_name, "d3rlpy_dijob_with_empty_configmap.yml"),
+    ) as scheduler:
+
+        opt = hpo(scheduler.get_hpo_callable())
+        cfg, ret, metrics = opt.grid() \
+            .max_steps(3) \
+            .max_workers(1) \
+            .maximize(R['rewards']) \
+            .spaces({'n_epochs': choice([5, 10, 20])}).run()
         print(cfg)
         print(ret)
 
