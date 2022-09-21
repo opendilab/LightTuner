@@ -170,12 +170,21 @@ class Task:
 
     def generate_config_file(self, task_config_template_path: str) -> List[str]:
         """generate config file as string list."""
+        main_entrance = [
+            'if __name__ == "__main__":', 'if __name__== "__main__":', 'if __name__ =="__main__":',
+            'if __name__=="__main__":', "if __name__ == '__main__':", "if __name__== '__main__':",
+            "if __name__ =='__main__':", "if __name__=='__main__':"
+        ]
         config_file_strings = []
+        having_main_entrance = False
         with open(task_config_template_path, mode="r", encoding="UTF-8") as f:
             for line in f.read().splitlines():
-                if line == 'if __name__ == "__main__":' or line == "if __name__ == '__main__':":
+                if line in main_entrance:
                     config_file_strings = config_file_strings + self.generate_extra_config()
+                    having_main_entrance = True
                 config_file_strings.append(line)
+        if not having_main_entrance:
+            raise ValueError("Please indicate main entrance in main file in the form of if __name__ =='__main__': .")
         return config_file_strings
 
     def generate_extra_config(self) -> List[str]:
