@@ -65,16 +65,21 @@ def d3rlpy_demo():
     dir_name = os.path.abspath('./template')
 
     with run_scheduler_k8s(
-            task_config_template_path=os.path.join(dir_name, "d3rlpy_cartpole_dqn_config.py"),
-            k8s_dijob_yaml_file_path=os.path.join(dir_name, "d3rlpy_dijob_with_empty_configmap.yml"),
+            task_config_template_path=os.path.join(dir_name, "d3rlpy_d4rl_halfcheetah_sac_config.py"),
+            k8s_dijob_yaml_file_path=os.path.join(dir_name, "d3rlpy_d4rl_dijob_with_empty_configmap.yml"),
     ) as scheduler:
+
+        hpo_info = {
+            'env_id': choice(['halfcheetah-random-v0', 'halfcheetah-medium-v0', 'halfcheetah-expert-v0']),
+            'seed': choice([0, 1, 2]),
+        }
 
         opt = hpo(scheduler.get_hpo_callable())
         cfg, ret, metrics = opt.grid() \
-            .max_steps(3) \
+            .max_steps(9) \
             .max_workers(1) \
             .maximize(R['rewards']) \
-            .spaces({'n_epochs': choice([5, 10, 20])}).run()
+            .spaces(hpo_info).run()
         print(cfg)
         print(ret)
 
