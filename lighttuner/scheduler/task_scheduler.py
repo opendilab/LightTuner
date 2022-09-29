@@ -171,7 +171,7 @@ class Task:
 
     def generate_config_file(self, task_config_template_path: str) -> List[str]:
         """generate config file as string list."""
-        main_entrance_pattern = re.compile(r'if__name__(==|is)(\"|\')__main__(\"|\'):')
+        main_entrance_pattern = re.compile(r'if\s+__name__(\s*==\s*|\s+is\s+)(\"|\')__main__(\"|\')\s*:\s*')
         config_file_strings = []
         having_main_entrance = False
         having_main_config = False
@@ -179,8 +179,8 @@ class Task:
             for line in f.read().splitlines():
                 if len(line) >= len("main_config") and line[:len("main_config")] == "main_config":
                     having_main_config = True
-                if not having_main_entrance and len(line) > 0 and line[:3] == "if ":
-                    match_obj = re.match(main_entrance_pattern, "".join(re.split('\s+', re.split('#', line)[0])))
+                if not having_main_entrance:
+                    match_obj = re.match(main_entrance_pattern, line)
                     if match_obj is not None:
                         config_file_strings = config_file_strings + self.generate_extra_config()
                         having_main_entrance = True
