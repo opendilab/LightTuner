@@ -3,6 +3,7 @@ import copy
 import json
 import multiprocessing
 import os
+import re
 import pickle
 import queue
 import random
@@ -170,11 +171,7 @@ class Task:
 
     def generate_config_file(self, task_config_template_path: str) -> List[str]:
         """generate config file as string list."""
-        main_entrance = [
-            'if __name__ == "__main__":', 'if __name__== "__main__":', 'if __name__ =="__main__":',
-            'if __name__=="__main__":', "if __name__ == '__main__':", "if __name__== '__main__':",
-            "if __name__ =='__main__':", "if __name__=='__main__':"
-        ]
+        main_entrance_pattern = re.compile(r'if__name__(==|is)(\"|\')__main__(\"|\'):')
         config_file_strings = []
         having_main_entrance = False
         having_main_config = False
@@ -182,9 +179,11 @@ class Task:
             for line in f.read().splitlines():
                 if len(line) >= len("main_config") and line[:len("main_config")] == "main_config":
                     having_main_config = True
-                if line in main_entrance:
-                    config_file_strings = config_file_strings + self.generate_extra_config()
-                    having_main_entrance = True
+                if not having_main_entrance and len(line) > 0 and line[0] == "i":
+                    match_obj = re.match(main_entrance_pattern, "".join(re.split('\s+', re.split('#', line)[0])))
+                    if match_obj is not None:
+                        config_file_strings = config_file_strings + self.generate_extra_config()
+                        having_main_entrance = True
                 config_file_strings.append(line)
         if not having_main_entrance:
             raise ValueError("Please indicate main entrance in main file in the form of if __name__ =='__main__':")
