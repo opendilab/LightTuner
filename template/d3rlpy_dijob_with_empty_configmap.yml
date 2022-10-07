@@ -1,0 +1,81 @@
+var1: &basePath /mnt/nfs/USER/
+var2: &projectPath /mnt/nfs/USER/LightTuner/demo/
+var3: &jobName d3rlpy-cartpole-dqn-k8s
+
+apiVersion: diengine.opendilab.org/v2alpha1
+kind: DIJob
+metadata:
+  name: *jobName
+  projectPath: *projectPath
+spec:
+  priority: "normal"
+  backoffLimit: 0
+  cleanPodPolicy: "Running"
+  preemptible: false
+  tasks:
+  - replicas: 1
+    type: none
+    name: serial
+    template:
+      spec:
+        containers:
+        - name: di-container
+          image: opendilab/ding:nightly
+          imagePullPolicy: Always
+          env:
+          - name: PYTHONUNBUFFERED
+            value: "1"
+          - name: PROJECT_PATH
+            value: *projectPath
+          - name: JOB_NAME
+            value: *jobName
+          resources:
+            requests:
+              # nvidia.com/gpu-a100: 1  # user-defined resource
+              cpu: 4
+              memory: "10Gi"
+            limits:
+              # nvidia.com/gpu-a100: 1
+              cpu: 4
+              memory: "10Gi"
+          command: ["/bin/bash", "-c",]
+          args:  # user-defined execution commands
+          - |
+            # prepare env
+            cat /etc/config/config.py
+            export PATH=/opt/conda/bin:$PATH
+            # install d3rlpy
+            pip install d3rlpy
+            pip install easydict
+            pip list -v
+            # run task
+            cd $PROJECT_PATH
+            mkdir $JOB_NAME
+            cd $JOB_NAME
+            python /etc/config/config.py  # don't modify this
+            sleep 150
+          volumeMounts:
+          - name: config-py
+            mountPath: /etc/config
+          - name: cache-volume
+            mountPath: /dev/shm
+          - name: nfs-volume
+            mountPath: *basePath
+        volumes:
+        - name: config-py
+          configMap:
+            name: config-py-
+        - name: cache-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: 128Mi
+        - name: nfs-volume
+          hostPath:
+            path: *basePath
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-py-
+data:
+  config.py: |
