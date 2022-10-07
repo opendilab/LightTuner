@@ -43,25 +43,25 @@ def mock_run_kubectl_check_status_unknown(task_name: str) -> str:
 
 
 def mock_run_kubectl_check_no_file(
-        task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str
+    task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str
 ) -> str:
     return ""
 
 
 def mock_run_kubectl_check_file(
-        task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str
+    task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str
 ) -> str:
     return file_name
 
 
 def mock_run_kubectl_copy_no_file(
-        task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str, file_saved_path: str
+    task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str, file_saved_path: str
 ) -> None:
     pass
 
 
 def mock_run_kubectl_copy_file(
-        task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str, file_saved_path: str
+    task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str, file_saved_path: str
 ) -> None:
     result = {"eval_value": 100 + random.random()}
     with open(file_saved_path, "wb") as f:
@@ -143,6 +143,33 @@ class TestTask:
                     assert lines[i] == extra_lines[i - 2]
 
         clean_up("./unittest_for_scheduler/")
+
+    def test_illegal_config_file_with_no_main(self):
+
+        example_hyper_parameter = {"DI-toolkit-hpo-id": 0, "p1": 1, "p2": 2}
+
+        rl_config_template_file_path = "./unittest_for_scheduler_illegal/config.py"
+        rl_config_file_path = "./unittest_for_scheduler_illegal/rl_config_file.py"
+
+        #test when no main entrance and no main config
+        for main_file_str in ['main_config = EasyDict({})\n', 'if __name__ == "__main__":\n']:
+            if not os.path.exists(os.path.dirname(rl_config_template_file_path)):
+                os.makedirs(os.path.dirname(rl_config_template_file_path))
+            with open(rl_config_template_file_path, mode="w", encoding="UTF-8") as f:
+                f.write('from easydict import EasyDict\n')
+                f.write(main_file_str)
+            rl_task = Task()
+            rl_task.define(task_id=100, hpo_project_name="cartpole", hyper_parameter_info=example_hyper_parameter)
+            error_catched = True
+            try:
+                rl_task.write_config_file(
+                    task_config_template_path=rl_config_template_file_path, rl_config_file_path=rl_config_file_path
+                )
+                error_catched = False
+            except ValueError:
+                pass  # catch the raised value error
+            assert error_catched, "Illegal main config should be tested when generate new config files."
+            clean_up("./unittest_for_scheduler_illegal/")
 
 
 @pytest.mark.unittest

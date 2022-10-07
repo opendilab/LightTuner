@@ -270,7 +270,6 @@ class Scheduler:
         self.monitor_thread = None
 
     def __enter__(self):
-        b = 1
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
