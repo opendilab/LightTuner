@@ -8,3 +8,4 @@ scikit-learn>=0.18.0
 ruamel.yaml>=0.17.2
 psutil>=5.7.0
 DI-toolkit>=0.0.2
+wandb>=0.13.3

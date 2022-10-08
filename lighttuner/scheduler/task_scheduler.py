@@ -20,6 +20,8 @@ from ditk import logging
 from ruamel.yaml import YAML
 from tabulate import tabulate
 
+import wandb
+
 from .cross_platform_mp_queue import MPQueue
 
 
@@ -92,7 +94,7 @@ def _run_kubectl_check_status(task_name: str) -> str:
 
 
 def _run_kubectl_check_file(
-    task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str
+        task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str
 ) -> str:
     p = subprocess.run(
         [
@@ -110,7 +112,7 @@ def _run_kubectl_check_file(
 
 
 def _run_kubectl_copy_file(
-    task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str, file_saved_path: str
+        task_name: str, _k8s_remote_project_path: str, _dijob_project_name: str, file_name: str, file_saved_path: str
 ) -> None:
     with open(os.devnull) as nullstd:
         subprocess.run(
@@ -142,6 +144,8 @@ class Task:
         self.success = False
         self.normal = True
         self.hyper_parameter_info = {}
+        self.hyper_parameter_info_parsed = None
+        self.hyper_parameter_info_dict = {}
         self.pid = None
         self.process = None
         self.start_time = None
@@ -150,12 +154,18 @@ class Task:
     def define(self, task_id: int, hpo_project_name: str, hyper_parameter_info: dict) -> None:
         """config a task."""
         self.task_id = task_id
-        if "DI-toolkit-hpo-id" in hyper_parameter_info.keys():
-            self.hpo_id = str(hyper_parameter_info["DI-toolkit-hpo-id"])
+        if "Light-tuner-hpo-id" in hyper_parameter_info.keys():
+            self.hpo_id = str(hyper_parameter_info["Light-tuner-hpo-id"])
         else:
             self.hpo_id = str(task_id + 1)
+
         self.task_name = hpo_project_name + "-hpo-id-" + str(self.hpo_id) + "-task-" + str(self.task_id)
         self.hyper_parameter_info = hyper_parameter_info
+        if "exp_name" not in self.hyper_parameter_info:
+            self.hyper_parameter_info["exp_name"] = self.task_name
+        self.hyper_parameter_info_parsed = parse_dict(self.hyper_parameter_info)
+        for hyper_param in self.hyper_parameter_info_parsed:
+            self.hyper_parameter_info_dict.update({".".join(hyper_param[:-1]): hyper_param[-1]})
         self.defined = True
 
     def write_config_file(self, task_config_template_path: str, rl_config_file_path: str) -> None:
@@ -195,11 +205,7 @@ class Task:
         """generate extra config as string list."""
         config_file_strings = []
 
-        if "exp_name" not in self.hyper_parameter_info:
-            self.hyper_parameter_info["exp_name"] = self.task_name
-
-        hyper_parameter_list = parse_dict(self.hyper_parameter_info)
-        for item in hyper_parameter_list:
+        for item in self.hyper_parameter_info_parsed:
             hyper_parameter_extra_string = 'main_config'
             for i, _ in enumerate(item):
                 if i == len(item) - 1:
@@ -212,6 +218,24 @@ class Task:
             config_file_strings.append(hyper_parameter_extra_string)
 
         return config_file_strings
+
+    def get_status(self) -> str:
+        """string description of status."""
+
+        if not self.defined:
+            return "undefined"
+
+        if self.waiting:
+            return "waiting"
+
+        if self.running:
+            return "running"
+
+        if self.finish:
+            if self.success:
+                return "success"
+            else:
+                return "failed"
 
     def get_report(self, return_data=None, result=None):
         """get task basic report."""
@@ -266,6 +290,8 @@ class Scheduler:
         self._last_task_success_id = []
         self._last_task_abnormal_id = []
 
+        self._wandb_project_name = None
+
         self._scheduler_monitor_time_interval = 3
         self.monitor_thread = None
 
@@ -276,17 +302,18 @@ class Scheduler:
         self.stop()
 
     def config(
-        self,
-        task_config_template_path: str,
-        dijob_project_name: str = None,
-        max_number_of_running_task: int = 2,
-        max_number_of_tasks: int = 10,
-        mode: str = "local",
-        time_out: int = None,
-        mp_queue_input: MPQueue = None,
-        mp_queue_output: MPQueue = None,
-        k8s_dijob_yaml_file_path: str = None,
-        k8s_remote_project_path: str = None,
+            self,
+            task_config_template_path: str,
+            dijob_project_name: str = None,
+            max_number_of_running_task: int = 2,
+            max_number_of_tasks: int = 10,
+            mode: str = "local",
+            time_out: int = None,
+            mp_queue_input: MPQueue = None,
+            mp_queue_output: MPQueue = None,
+            k8s_dijob_yaml_file_path: str = None,
+            k8s_remote_project_path: str = None,
+            wandb_project_name: str = None
     ) -> None:
         """To do scheduler basic configurations."""
 
@@ -324,6 +351,11 @@ class Scheduler:
             self._k8s_dijob_yaml_file_path = k8s_dijob_yaml_file_path
             self._k8s_remote_project_path = k8s_remote_project_path
 
+        if wandb_project_name is not None:
+            self._wandb_project_name = wandb_project_name
+            self._wandb_project_table_column = None
+            wandb.init(project=dijob_project_name)
+
     def get_mp_queues(self) -> Tuple[MPQueue]:
         """return scheduler multiprocessing queues."""
         if self._mp_queue_input is not None and self._mp_queue_output is not None:
@@ -358,32 +390,41 @@ class Scheduler:
         json_data = None
         if self._mode == "local":
 
-            result_file_path = self._dijob_file_folder + rl_task.task_name + "/result.pkl"
-            if os.path.exists(result_file_path):
-                with open(result_file_path, "rb") as file:
-                    data = pickle.load(file)
+            task_folder = [
+                os.path.join(self._dijob_file_folder, i) for i in os.listdir(self._dijob_file_folder)
+                if not os.path.isfile(os.path.join(self._dijob_file_folder, i)) and rl_task.task_name in i
+            ]
 
-            result_json_file_path = self._dijob_file_folder + rl_task.task_name + "/result.txt"
-            if os.path.exists(result_json_file_path):
-                with open(result_json_file_path, "r", encoding="UTF-8") as file:
-                    json_data = json.load(file)
+            if len(task_folder) > 0:
 
-        elif self._mode == "k8s":
+                result_file_path = os.path.join(task_folder[-1], "result.pkl")
+                if os.path.exists(result_file_path):
+                    with open(result_file_path, "rb") as file:
+                        data = pickle.load(file)
 
-            result_file_path = os.path.join(
-                self._k8s_remote_project_path, self._dijob_file_folder, rl_task.task_name, 'result.pkl'
-            )
-            result_json_file_path = os.path.join(
-                self._k8s_remote_project_path, self._dijob_file_folder, rl_task.task_name, 'result.txt'
-            )
-
-            if os.path.exists(result_file_path):
-                with open(result_file_path, "rb") as file:
-                    data = pickle.load(file)
-
+                result_json_file_path = os.path.join(task_folder[-1], "result.txt")
                 if os.path.exists(result_json_file_path):
                     with open(result_json_file_path, "r", encoding="UTF-8") as file:
                         json_data = json.load(file)
+
+        elif self._mode == "k8s":
+
+            task_folder = [
+                os.path.join(self._dijob_file_folder, i) for i in os.listdir(self._dijob_file_folder)
+                if not os.path.isfile(os.path.join(self._k8s_remote_project_path, self._dijob_file_folder, i))
+                and rl_task.task_name in i
+            ]
+
+            if len(task_folder) > 0:
+                result_file_path = os.path.join(task_folder[-1], 'result.pkl')
+                result_json_file_path = os.path.join(task_folder[-1], 'result.txt')
+                if os.path.exists(result_file_path):
+                    with open(result_file_path, "rb") as file:
+                        data = pickle.load(file)
+
+                    if os.path.exists(result_json_file_path):
+                        with open(result_json_file_path, "r", encoding="UTF-8") as file:
+                            json_data = json.load(file)
             else:  # remote call k8s
 
                 result_file_path = self._dijob_file_folder + rl_task.task_name + "/result.pkl"
@@ -630,7 +671,7 @@ class Scheduler:
             self.task_list[task_id].write_config_file(self._task_config_template_path, local_main_file_path)
 
             main_file = "./" + local_file_name
-            log_file = self._dijob_file_folder + self.task_list[task_id].task_name + "/log.txt"
+            log_file = self._dijob_file_folder + self.task_list[task_id].task_name + "-log.txt"
             running_directory = self._dijob_file_folder
             command = [sys.executable, main_file]
             end_event = multiprocessing.Event()
@@ -729,6 +770,20 @@ class Scheduler:
             self._last_task_success_id = copy.deepcopy(self.task_success_id)
             self._last_task_abnormal_id = copy.deepcopy(self.task_abnormal_id)
 
+            if self._wandb_project_name:
+                if self._wandb_project_table_column is None and len(self.task_defined_id) > 0:
+                    self._wandb_project_table_column = ["Task_ID"] + [
+                        key for key, _ in self.task_list[0].hyper_parameter_info_dict.items()
+                    ] + ["Status"]
+                else:
+                    task_table = wandb.Table(columns=self._wandb_project_table_column)
+                    for rl_task in self.task_list:
+                        table_data = [rl_task.task_id] + [
+                            value for _, value in rl_task.hyper_parameter_info_dict.items()
+                        ] + [rl_task.get_status()]
+                        task_table.add_data(*table_data)
+                    wandb.log({"task_status": task_table})
+
         if self._mp_queue_output:
             self._mp_queue_output.put(self.task_reports)
 
@@ -739,8 +794,8 @@ class Scheduler:
             new_sample_info = v
             logging.info("Scheduler: Add new sample [" + str(tid) + "]: " + str(new_sample_info))
 
-            new_sample_info["DI-toolkit-hpo-id"] = tid
-            new_sample_info["DI-toolkit-scheduler-hpo-id"] = "".join(
+            new_sample_info["Light-tuner-hpo-id"] = tid
+            new_sample_info["Light-tuner-scheduler-hpo-id"] = "".join(
                 random.choice(string.ascii_uppercase) for _ in range(8)
             )
 
@@ -800,6 +855,7 @@ def scheduler_main(
     k8s_dijob_yaml_file_path=None,
     k8s_remote_project_path=None,
     mp_queue_error=None,
+    wandb_project_name=None,
 ):
     """inner scheduler main function"""
     if mp_queue_error is None:
@@ -820,7 +876,8 @@ def scheduler_main(
             mode=mode,
             time_out=time_out,
             mp_queue_input=mp_queue_input,
-            mp_queue_output=mp_queue_output
+            mp_queue_output=mp_queue_output,
+            wandb_project_name=wandb_project_name,
         )
 
         scheduler.run()
@@ -852,14 +909,15 @@ def monitor_scheduler_thead_main(mp_queue_error):
 
 
 def run_scheduler(
-    task_config_template_path,
-    dijob_project_name=None,
-    max_number_of_running_task=10,
-    max_number_of_tasks=100000,
-    mode="local",
-    time_out=None,
-    k8s_dijob_yaml_file_path=None,
-    k8s_remote_project_path=None,
+        task_config_template_path,
+        dijob_project_name=None,
+        max_number_of_running_task=10,
+        max_number_of_tasks=100000,
+        mode="local",
+        time_out=None,
+        k8s_dijob_yaml_file_path=None,
+        k8s_remote_project_path=None,
+        wandb_project_name=None,
 ) -> Scheduler:
     """running scheduler in a subprocess."""
     if mode == "local":
@@ -894,6 +952,7 @@ def run_scheduler(
             k8s_dijob_yaml_file_path,
             k8s_remote_project_path,
             mp_queue_error,
+            wandb_project_name,
         )
     )
     p.start()
@@ -905,11 +964,12 @@ def run_scheduler(
 
 
 def run_scheduler_local(
-    task_config_template_path,
-    dijob_project_name=None,
-    max_number_of_running_task=2,
-    max_number_of_tasks=100000,
-    time_out=None,
+        task_config_template_path,
+        dijob_project_name=None,
+        max_number_of_running_task=2,
+        max_number_of_tasks=100000,
+        time_out=None,
+        wandb_project_name=None,
 ) -> Scheduler:
     """running scheduler in local mode in a subprocess."""
     return run_scheduler(
@@ -919,13 +979,15 @@ def run_scheduler_local(
         max_number_of_tasks=max_number_of_tasks,
         mode="local",
         time_out=time_out,
+        wandb_project_name=wandb_project_name,
     )
 
 
 def run_scheduler_k8s(
-    task_config_template_path,
-    k8s_dijob_yaml_file_path,
-    time_out=None,
+        task_config_template_path,
+        k8s_dijob_yaml_file_path,
+        time_out=None,
+        wandb_project_name=None,
 ) -> Scheduler:
     """running scheduler in k8s mode in a subprocess."""
     k8s_remote_project_path = None
@@ -964,5 +1026,6 @@ def run_scheduler_k8s(
         mode="k8s",
         time_out=time_out,
         k8s_dijob_yaml_file_path=k8s_dijob_yaml_file_path,
-        k8s_remote_project_path=k8s_remote_project_path
+        k8s_remote_project_path=k8s_remote_project_path,
+        wandb_project_name=wandb_project_name,
     )
